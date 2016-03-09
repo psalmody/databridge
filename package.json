@@ -1,0 +1,25 @@
+{
+  "name": "dbutil",
+  "version": "0.0.1",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Smith @psalmody",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.5.2",
+    "csv-stringify": "^1.0.2",
+    "mkdirp": "^0.5.1",
+    "mysql": "^2.10.2",
+    "oracledb": "^1.7.1",
+    "tmp": "0.0.28"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-jsbeautifier": "^0.2.10",
+    "grunt-prettify": "^0.4.0"
+  }
+}
