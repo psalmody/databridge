@@ -31,15 +31,16 @@ module.exports = function(file, callback) {
     },
     function(cols, data, cb) {
       var sql = 'CREATE TABLE ' + table + ' ( ';
-      var indexes = [];
+      var indexes = [],
+        columns = [];
       for (var i = 0; i < cols.length; i++) {
-        var col = cols[i].replace(/\ /g, '').replace('_IND', '');
+        var col = cols[i].replace(/\ /g, '').replace('_IND', '').replace(/:/g, '');
         if (cols[i].indexOf('_IND') >= 0) indexes.push('`' + col + '` (`' + col + '`)');
-        sql += col + ' ';
-        sql += typeof(data[i]) == 'number' ? (data[i].indexOf('GPA') !== -1 ? " INT " : " DECIMAL(4,2) ") : " VARCHAR(255) ";
-        sql += ", ";
+        var type = typeof(data[i]) == 'number' ? (data[i].indexOf('GPA') !== -1 ? " INT " : " DECIMAL(4,2) ") : " VARCHAR(255) ";
+        columns.push(' ' + col + ' ' + type + ' ');
       }
-      sql += indexes.length > 0 ? ' INDEX ' : '';
+      sql += columns.join(', ');
+      sql += indexes.length > 0 ? ', INDEX ' : '';
       sql += indexes.length > 0 ? indexes.join(', ') : '';
       sql += ")";
       log.log(sql);

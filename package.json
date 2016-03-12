@@ -1,7 +1,7 @@
 {
   "name": "dbutil",
   "version": "0.0.1",
-  "description": "",
+  "description": "DB Utilities",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,7 @@
     "deploy": "git add . && git commit -m \"npm deploy\" && git push origin master",
     "pullinstall": "git pull && npm install"
   },
-  "author": "Michael Smith @psalmody",
+  "author": "Michael A Smith msmith104@uaa.alaska.edu @psalmody psalmody@gmail.com",
   "license": "MIT",
   "dependencies": {
     "async": "^1.5.2",
@@ -18,9 +18,11 @@
     "csv-stringify": "^1.0.2",
     "find-remove": "^0.2.10",
     "mkdirp": "^0.5.1",
+    "mssql": "^3.1.2",
     "mysql": "^2.10.2",
     "oracledb": "^1.7.1",
     "prompt": "^1.0.0",
+    "read": "^1.0.7",
     "tmp": "0.0.28"
   },
   "devDependencies": {

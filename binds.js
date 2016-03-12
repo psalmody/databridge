@@ -1,3 +1,3 @@
 module.exports = {
-  term: 201601
+  "term_code": 201601
 }

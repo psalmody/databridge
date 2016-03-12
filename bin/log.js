@@ -16,11 +16,11 @@ module.exports = function(table) {
     if (err) return console.error(err);
   })
 
-  if (fs.writeFile(log.filename, ''), function(err) {
-      if (err) return console.error(err);
-    })
+  fs.writeFile(log.filename, '', function(err) {
+    if (err) return console.error(err);
+  })
 
-    log.error = function(err) {
+  log.error = function(err) {
     return fs.appendFile(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + "\n");
   };
 

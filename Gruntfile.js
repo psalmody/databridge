@@ -3,7 +3,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     "jsbeautifier": {
-      src: ['*.js', 'bin/*.js'],
+      src: ['*.js', 'bin/**/*.js', 'creds/*'],
       options: {
         js: {
           indentSize: 2
@@ -12,7 +12,7 @@ module.exports = function(grunt) {
       },
     },
     watch: {
-      files: ['*.js', 'bin/*.js'],
+      files: ['*.js', 'bin/**/*.js', 'creds/*'],
       tasks: ['default'],
       options: {
         livereload: true

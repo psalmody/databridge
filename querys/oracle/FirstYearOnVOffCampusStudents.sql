@@ -23,7 +23,8 @@ SELECT TO_NUMBER (spriden.spriden_id) "StudentID_IND",
        SHRTGPA.SHRTGPA_HOURS_ATTEMPTED "CreditsAttempted",
        SHRTGPA.SHRTGPA_HOURS_EARNED "CreditsEarned",
        SHRTGPA.SHRTGPA_GPA_HOURS "GPAHours",
-       cumcredits.HOURS_EARNED AS "CumulativeHoursEarned"
+       cumcredits.HOURS_EARNED AS "CumulativeHoursEarned",
+       SHRTGPA.SHRTGPA_LEVL_CODE as "Level"
   FROM shrtgpa
        LEFT JOIN SPRIDEN
           ON     SHRTGPA.SHRTGPA_PIDM = SPRIDEN.SPRIDEN_PIDM
