@@ -4,7 +4,7 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
     mySqlCreds = require('../../creds/mysql'),
     db = mysql.createConnection(mySqlCreds),
     async = require('async'),
-    table = args[2] + '.' + args[5];
+    table = args[2] + '.' + args[3];
 
   function sqlTable() {
     var cols = [],
@@ -20,6 +20,13 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
   }
 
   async.waterfall([
+    //create database if not existing
+    function(cb) {
+      db.query('CREATE DATABASE IF NOT EXISTS ' + args[2], function(err) {
+        if (err) return cb(err);
+        cb(null);
+      })
+    },
     //drop existing table
     function(cb) {
       db.query('DROP TABLE IF EXISTS ' + table, function(err) {
@@ -40,7 +47,7 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
     //load data into table
     function(cb) {
       log.log('Loading data in opfile to MySQL');
-      var sql = "LOAD DATA INFILE '" + opfile.filename + "' INTO TABLE " + table + " FIELDS TERMINATED BY '\t' ENCLOSED BY '\"' LINES TERMINATED BY '\n'";
+      var sql = "LOAD DATA INFILE '" + opfile.filename + "' INTO TABLE " + table + " FIELDS TERMINATED BY '\t' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES ";
       db.query(sql, function(err) {
         if (err) return cb('Load data infile error: ' + err);
         cb(null);
@@ -62,7 +69,10 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
     } catch (e) {
 
     }
-    if (err) return callback(err);
+    if (err) {
+      log.error(err);
+      return callback(err);
+    }
     log.group('Finished').log(timer.now.str());
     callback(null, opfile);
   })

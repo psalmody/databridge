@@ -2,7 +2,7 @@ module.exports = function(args, callback) {
   var oracledb = require('oracledb'),
     async = require('async'),
     fs = require('fs'),
-    table = args[5],
+    table = args[3],
     log = require('../log')(table),
     timer = require('../timer'),
     stringify = require('csv-stringify'),
@@ -27,7 +27,7 @@ module.exports = function(args, callback) {
       //read query
       function(cb) {
         log.group('readquery');
-        fs.readFile('querys/oracle/' + table + '.sql', 'utf-8', function(err, data) {
+        fs.readFile('input/oracle/' + table + '.sql', 'utf-8', function(err, data) {
           if (err) return cb("fs readFile error on input query: " + err);
           cb(null, data);
         })
@@ -116,7 +116,7 @@ module.exports = function(args, callback) {
         })
       }
     ],
-    function(err, opfile, columnDefs) {
+    function(err, opfile) {
       if (err) {
         log.error(err);
         try {

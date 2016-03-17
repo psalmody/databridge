@@ -1,19 +1,20 @@
+//setup timer and define shortcuts for log/error
 var tmr = require('./bin/timer'),
   args = process.argv,
   async = require('async'),
   l = console.log,
   error = console.error,
   fs = require('fs'),
-  colParser = require('./bin/colParser');
+  colParser = require('./bin/colParser'),
+  argvs = require('minimist')(process.argv.slice(2));
 
-if (args.length < 6) return console.error('Incorrect usage. Try: \n   npm start <source> to <destination> <query filename>');
+console.dir(argvs)
 
-/*var processor = require('./bin/' + args[2] + '2' + args[4]), //processor is based on arguments
-  file = args[2] == 'csv' ? args[5] + '.csv' : args[5] + '.sql', //file is in querys if not from csv source
-  dir = args[2] == 'csv' ? './csv/' : './querys/';*/
+//make sure enough parameters were passed
+if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
 
 try {
-  var source = require('./bin/sources/' + args[2]);
+  var source = require('./bin/sources/' + argvs._[0]);
 } catch (e) {
   error('"' + args[2] + '" is not a valid source.');
   error(e.stack);
@@ -21,9 +22,9 @@ try {
 }
 
 try {
-  var destination = require('./bin/destinations/' + args[4]);
+  var destination = require('./bin/destinations/' + argvs._[3]);
 } catch (e) {
-  error('"' + args[4] + '" is not a valid destination.')
+  error('"' + args[5] + '" is not a valid destination.')
   error(e.stack);
   return;
 }
@@ -33,7 +34,6 @@ async.waterfall([
   function(cb) {
     source(args, function(err, opfile, log, timer) {
       if (err) return cb(err);
-      //console.log(opfile);
       cb(null, opfile, log, timer);
     })
   },
@@ -41,7 +41,6 @@ async.waterfall([
   function(opfile, log, timer, cb) {
     colParser(opfile, function(err, columns) {
       if (err) return cb(err);
-      //console.log(columns);
       cb(null, opfile, columns, log, timer);
     })
   },
@@ -51,37 +50,6 @@ async.waterfall([
       cb(null, opfile);
     })
   }
-  /*function(cb) {
-    //check file exists
-    fs.stat(dir + file, function(err, stats) {
-      if (err) return cb(err);
-      log('Found query ' + file);
-      cb(null);
-    })
-  },*/
-  /*function(cb) {
-    //process
-    processor(file, function(err) {
-      if (err) return cb(err);
-      cb(null);
-    })
-  },*/
-
-  /*function(cb) {
-    //cleanup tmp folder
-    fs.readdir('./tmp/', function(err, files) {
-      if (err) return cb(err);
-      files.splice(files.indexOf('.gitignore'), 1);
-      cb(null, files);
-    })
-  },
-  function(files, cb) {
-    if (!files.length) return cb(null);
-    for (var i = 0; i < files.length; i++) {
-      var filePath = './tmp/' + files[i];
-      fs.unlinkSync(filePath);
-    }
-  }*/
 ], function(err, opfile) {
   try {
     opfile.clean();

@@ -1,7 +1,7 @@
 module.exports = function(file, callback) {
 
   var mssql = require('mssql'),
-    creds = require('../creds/mssql'),
+    creds = require('../../creds/mssql'),
     async = require('async'),
     mssql;
 
