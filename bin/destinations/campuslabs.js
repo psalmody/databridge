@@ -12,9 +12,13 @@ oauth2.getOAuthAccessToken('', {
   console.log(e, access_token, refresh_token, results);
 
   request.post({
-    url: 'https://alaska.campuslabs.com/accounts/import',
+    //url: 'https://alaska.campuslabs.com/accounts/import', //404
+    //url: 'https://alaska.home.campuslabs.com/accounts/import', //Cannot POST /accounts/import
+    //url: 'https://uaa.campuslabs.com/accounts/import', //404
+    url: 'https://api.campuslabs.com/accounts/import',
     headers: {
-      'access_token': access_token
+      'access_token': access_token,
+      'Authorization': 'Bearer ' + access_token
     },
     form: {
       "accounts": [{

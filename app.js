@@ -38,6 +38,7 @@ async.waterfall([
     })
   },
   //attempt to get column definitions
+  //TODO this should be run by source, not here
   function(opfile, log, timer, cb) {
     colParser(opfile, function(err, columns) {
       if (err) return cb(err);

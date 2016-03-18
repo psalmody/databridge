@@ -27,7 +27,7 @@ module.exports = function(query, defaults, usedefaults, callback) {
 
   if (usedefaults) {
     //return formatted query
-    return callback(null, replaceBinds(sql, defaults));
+    return callback(null, replaceBinds(sql, defaults), defaults);
   }
 
 
@@ -54,6 +54,6 @@ module.exports = function(query, defaults, usedefaults, callback) {
 
   prompt.start();
   prompt.get(prompts, function(err, result) {
-    callback(null, replaceBinds(sql, result));
+    callback(null, replaceBinds(sql, result), result);
   });
 }

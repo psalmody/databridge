@@ -3,7 +3,7 @@ module.exports = function(args, callback) {
     async = require('async'),
     fs = require('fs'),
     table = args[3],
-    log = require('../log')(table),
+    log = require('../log')(args[2]+'.'+table),
     timer = require('../timer'),
     stringify = require('csv-stringify'),
     creds = require('../../creds/oracle'),
@@ -36,7 +36,8 @@ module.exports = function(args, callback) {
       function(data, cb) {
         log.group('Setup').log('Processing query ' + table);
         //TODO change to allow a usedefaults flag at command line
-        bindQuery(data, allBinds, false, function(err, sql) {
+        bindQuery(data, allBinds, false, function(err, sql, binds) {
+          log.group('Binds').log(JSON.stringify(binds));
           if (err) return cb(err);
           cb(null, sql);
         })
