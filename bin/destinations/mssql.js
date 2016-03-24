@@ -6,8 +6,7 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
 
 
   var db = args[2],
-    table = args[2]+'.'+args[5];
-  console.log(db);
+    table = args[3];
 
   function sqlTable() {
     var cols = [],
@@ -16,7 +15,7 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
       cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ');
       if (columns[i].index) ndxs.push(' INDEX ' + columns[i].name + ' (' + columns[i].name + ') ');
     }
-    var sql = 'CREATE TABLE ' + args[5] + ' ( ' + cols.join(', ');
+    var sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ');
     if (ndxs.length) sql += ', ' + ndxs.join(',');
     sql += ' )';
     return sql;
@@ -45,29 +44,47 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
     },
     //drop table if exists
     function(cb) {
-      new mssql.Request().query("IF OBJECT_ID('"+table+"', 'U') IS NOT NULL DROP TABLE "+table).then(function(recordset) {
+      new mssql.Request().query("USE " + db + "; IF OBJECT_ID('dbo." + table + "', 'U') IS NOT NULL DROP TABLE dbo." + table).then(function(recordset) {
         log.log('dropped table (if exists)');
         cb(null);
       }).catch(function(err) {
         cb(err);
       })
     },
+    //create table
     function(cb) {
       log.group('Table setup').log('creating table');
       var sql = sqlTable();
       log.log(sql);
-      new mssql.Request().query('USE '+db+';'+sql).then(function(recordset) {
+      new mssql.Request().query('USE ' + db + ';' + sql).then(function(recordset) {
         log.log('Created table');
         cb(null);
       }).catch(function(err) {
         cb(err);
       });
+    },
+    //load data infile
+    function(cb) {
+      new mssql.Request().query("BULK INSERT " + table + " FROM '" + opfile.filename + "' WITH (FIELDTERMINATOR='\t',ROWTERMINATOR='\n',FIRSTROW=2)").then(function(recordset) {
+        cb(null);
+      }).catch(function(err) {
+        cb(err);
+      })
+    },
+    //check table rows
+    function(cb) {
+      new mssql.Request().query('SELECT count(*) as rows FROM ' + table).then(function(recordset) {
+        log.log('imported ' + recordset[0].rows)
+        cb(null);
+      }).catch(function(err) {
+        cb(err);
+      })
     }
   ], function(err) {
     mssql.close();
     if (err) {
       return callback(err);
     }
-    callback();
+    callback(null, opfile);
   })
 }

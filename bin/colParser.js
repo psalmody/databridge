@@ -1,5 +1,4 @@
 module.exports = function(opfile, callback) {
-  //TODO this should run during source, not in main app
   var fs = require('fs'),
     columns = [];
 

@@ -16,7 +16,7 @@ module.exports = function(table) {
     if (err) return console.error(err);
   })
 
-  fs.writeFile(log.filename, process.argv.join(' ')+'\n', function(err) {
+  fs.writeFile(log.filename, process.argv.join(' ') + '\n', function(err) {
     if (err) return console.error(err);
   })
 

@@ -8,8 +8,6 @@ var tmr = require('./bin/timer'),
   colParser = require('./bin/colParser'),
   argvs = require('minimist')(process.argv.slice(2));
 
-console.dir(argvs)
-
 //make sure enough parameters were passed
 if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
 

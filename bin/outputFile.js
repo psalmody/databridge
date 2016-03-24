@@ -61,7 +61,14 @@ module.exports = function(opts, callback) {
           console.log(err);
           return callback(err);
         }
-        callback(null, FILE);
+        //close it now that it's created
+        fs.close(fd, function(err) {
+          if (err) {
+            console.log(err);
+            return callback(err);
+          }
+          callback(null, FILE);
+        })
       })
     })
   } else {

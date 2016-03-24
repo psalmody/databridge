@@ -18,7 +18,7 @@ oauth2.getOAuthAccessToken('', {
     url: 'https://api.campuslabs.com/accounts/import',
     headers: {
       'access_token': access_token,
-      'Authorization': 'Bearer ' + access_token
+      'Authorization': /*'Bearer ' + */ access_token
     },
     form: {
       "accounts": [{
