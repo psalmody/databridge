@@ -21,6 +21,10 @@ module.exports = function(table) {
   })
 
   log.error = function(err) {
+    if (first) {
+      fs.appendFile(log.filename, dt.toString() + '\n');
+      first = false;
+    }
     return fs.appendFile(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + "\n");
   };
 

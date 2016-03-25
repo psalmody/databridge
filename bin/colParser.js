@@ -3,10 +3,11 @@ module.exports = function(opfile, callback) {
     columns = [];
 
   function getType(c, o) {
-    if (c.indexOf('GPA') > -1) return 'DECIMAL(4,2)';
-    if (c.indexOf('DATE') > -1) return 'DATE';
-    if (typeof(o) == 'number') return 'INT';
-    return 'VARCHAR(255)';
+    if (c.toUpperCase().indexOf('GPA') > -1) return 'DECIMAL(4,2) NULL';
+    if (c.toUpperCase().indexOf('DATE') > -1) return 'DATE NULL';
+    if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE NULL';
+    if (typeof(o) == 'number') return 'INT NULL';
+    return 'VARCHAR(255) NULL';
   }
 
   opfile.twoLines(function(err, data) {
@@ -15,8 +16,8 @@ module.exports = function(opfile, callback) {
     var d = data[1].split('\t');
 
     for (var i = 0; i < c.length; i++) {
-      var name = c[i].replace('_IND', '').replace(/\ /g, '');
-      var ndex = c[i].indexOf('_IND') !== -1 ? true : false;
+      var name = c[i].replace(/_IND/gi, '').replace(/\ /g, '');
+      var ndex = c[i].toUpperCase().indexOf('_IND') !== -1 ? true : false;
       columns.push({
         name: name,
         type: getType(name, d[i]),

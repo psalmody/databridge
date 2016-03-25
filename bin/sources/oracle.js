@@ -61,8 +61,6 @@ module.exports = function(args, callback) {
             rowsProcessed = 0,
             columns = [];
 
-          console.log(results.metaData);
-
           for (var i = 0; i < columnDefs.length; i++) {
             columns.push(columnDefs[i].name);
           }

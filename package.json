@@ -17,8 +17,8 @@
     "client-oauth2": "^2.0.0",
     "colors": "^1.1.2",
     "csv-stringify": "^1.0.2",
-    "find-remove": "^0.2.10",
     "jquery": "^2.2.1",
+    "line-by-line": "^0.1.4",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "mssql": "^3.1.2",
@@ -28,6 +28,7 @@
     "prompt": "^1.0.0",
     "read": "^1.0.7",
     "request": "^2.69.0",
+    "rimraf": "^2.5.2",
     "simple-oauth2": "^0.5.1",
     "tmp": "0.0.28"
   },

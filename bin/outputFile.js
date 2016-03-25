@@ -1,11 +1,11 @@
-module.exports = function(opts, callback) {
-
-  if (typeof(opts) == 'undefined') return callback('No options specified.');
-
+module.exports = function(opts, moduleCallback) {
+  //options are required
+  if (typeof(opts) == 'undefined') return moduleCallback('No options specified.');
+  //if opts is a string, assume it's the table name
   var opts = typeof(opts) == 'string' ? {
     table: opts
   } : opts;
-
+  //setup and require
   var FILE = new Object(),
     fs = require('fs'),
     mkdirp = require('mkdirp'),
@@ -13,39 +13,47 @@ module.exports = function(opts, callback) {
     dirname = __dirname.replace(/\\/g, '/'),
     dir = dirname + '/../output/';
 
+  //filename stores the complete filename for writing to later
   FILE.filename = typeof(opts.filename) == 'undefined' ? dir + opts.table + '.' + Math.round(Date.now() / 1000) + '.csv' : opts.filename;
 
-  FILE.clean = function(cb) {
-    var cb = typeof(cb) == 'undefined' ? function() {
+  //cleanup (remove) output file
+  FILE.clean = function(callback) {
+    //define callback
+    var callback = typeof(callback) == 'undefined' ? function() {
       return;
-    } : cb;
+    } : callback;
     //don't cleanup csv files loaded by user
-    if (typeof(opts.filename) !== 'undefined') return cb();
+    if (typeof(opts.filename) !== 'undefined') return callback();
+    //delete file
     fs.unlink(FILE.filename, function(err) {
-      if (err) return cb(err);
-      cb(null, true);
+      if (err) return callback(err);
+      callback(null, true);
     })
   }
 
-  FILE.append = function(data, cb) {
-    var cb = typeof(cb) == 'undefined' ? function() {
+  //append function - append data to file
+  FILE.append = function(data, callback) {
+    var callback = typeof(callback) == 'undefined' ? function() {
       return;
-    } : cb;
-    if (typeof(opts.filename) !== 'undefined') return cb();
+    } : callback;
+    //don't accidentally append data to user loaded csv file
+    if (typeof(opts.filename) !== 'undefined') return callback('Won\'t append to pre-existing file.');
+    //append data and return callback
     fs.appendFile(FILE.filename, data, function(err) {
-      if (err) return cb(err);
-      cb(null);
+      if (err) return callback(err);
+      callback(null);
     })
   }
 
-  FILE.twoLines = function(cb) {
-    var cb = typeof(cb) == 'undefined' ? function() {
+  //get first two lines of data for column definitions
+  FILE.twoLines = function(callback) {
+    var callback = typeof(callback) == 'undefined' ? function() {
       return;
-    } : cb;
+    } : callback;
     fs.readFile(FILE.filename, 'utf-8', function(err, data) {
-      if (err) return cb(err);
+      if (err) return callback(err);
       var two = data.split('\n').slice(0, 2);
-      cb(null, two);
+      callback(null, two);
     })
   }
 
@@ -54,28 +62,25 @@ module.exports = function(opts, callback) {
     mkdirp(dir, function(err) {
       if (err) {
         console.log(err);
-        return callback(err);
+        return moduleCallback(err);
       }
+      //create file
       fs.open(FILE.filename, 'w', function(err, fd) {
         if (err) {
           console.log(err);
-          return callback(err);
+          return moduleCallback(err);
         }
         //close it now that it's created
         fs.close(fd, function(err) {
           if (err) {
             console.log(err);
-            return callback(err);
+            return moduleCallback(err);
           }
-          callback(null, FILE);
+          moduleCallback(null, FILE);
         })
       })
     })
   } else {
-    callback(null, FILE);
+    moduleCallback(null, FILE);
   }
-
-
-
-
 }
