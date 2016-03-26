@@ -1,69 +1,84 @@
-//setup timer and define shortcuts for log/error
-var tmr = require('./bin/timer'),
-  args = process.argv,
+var program = require('commander'),
   async = require('async'),
-  l = console.log,
-  error = console.error,
+  colors = require('colors'),
   fs = require('fs'),
-  colParser = require('./bin/colParser'),
-  argvs = require('minimist')(process.argv.slice(2)),
-  Spinner = require('cli-spinner').Spinner,
-  spinner = new Spinner('processing... %s');
+  bridge = require('./bin/bridge'),
+  pkg,
+  sources = [],
+  destinations = [];
 
-spinner.setSpinnerString(0);
-
-//make sure enough parameters were passed
-if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
-
-try {
-  var source = require('./bin/sources/' + argvs._[0]);
-} catch (e) {
-  error('"' + args[2] + '" is not a valid source.');
-  error(e.stack);
-  return;
-}
-
-try {
-  var destination = require('./bin/destinations/' + argvs._[3]);
-} catch (e) {
-  error('"' + args[5] + '" is not a valid destination.')
-  error(e.stack);
-  return;
+function requiredKeys(obj, arr) {
+  if (typeof(obj) !== 'object') return false;
+  if (typeof(arr) !== 'object' || !arr.length) return false;
+  var missing = [];
+  for (var i = 0; i < arr.length; i++) {
+    if (typeof(obj[arr[i]]) == 'undefined') missing.push(arr[i]);
+  }
+  return missing.length ? missing : true;
 }
 
 async.waterfall([
-  //moving to source - destination type
+  //get package.json
   function(cb) {
-    spinner.start();
-    source(args, spinner, function(err, opfile, log, timer) {
+    fs.readFile('package.json', 'utf-8', function(err, contents) {
       if (err) return cb(err);
-      cb(null, opfile, log, timer);
+      pkg = JSON.parse(contents);
+      cb(null);
     })
   },
-  //attempt to get column definitions
-  function(opfile, log, timer, cb) {
-    colParser(opfile, function(err, columns) {
+  //get valid sources
+  function(cb) {
+    fs.readdir('./bin/sources', function(err, files) {
       if (err) return cb(err);
-      cb(null, opfile, columns, log, timer);
+      for (var i = 0; i < files.length; i++) {
+        sources.push(files[i].replace('.js', ''));
+      }
+      cb(null);
     })
   },
-  function(opfile, columns, log, timer, cb) {
-    destination(args, opfile, columns, log, timer, function(err, opfile) {
+  //get valid destinations
+  function(cb) {
+    fs.readdir('./bin/destinations', function(err, files) {
       if (err) return cb(err);
-      cb(null, opfile);
+      for (var i = 0; i < files.length; i++) {
+        destinations.push(files[i].replace('.js', ''));
+      }
+      cb(null);
     })
+  },
+  //setup commander
+  function(cb) {
+    var newline = '\n                                 ';
+    program.version(PKG.version)
+      .usage('[options]')
+      .option('-s, --source [source]', 'Specify source from bin/sources/. ' + newline + 'Currently installed: ' + sources.join(', '))
+      .option('-t, --table [table]', 'Specify query or input file name (no file extension). ' + newline + 'Try --source <source> and --show for a list of inputs ' + newline + 'for that source.')
+      .option('-d, --destination [destination]', 'Specify destination from bin/destinations/. ' + newline + 'Current installed: ' + destinations.join(', '))
+      .option('-h, --show', '(With --source) shows valid --table inputs for that source.')
+      .option('-b, --binds', 'Use default binds from input/binds.js rather than prompting ' + newline + '(applies to some sources only).')
+      .option('--batch [batch]', 'Run json [batch] from batches/')
+      .parse(process.argv);
+    if (requiredKeys(program, ['source', 'show'])) {
+      //TODO add show source table options
+      return;
+    }
+    if (requiredKeys(program, ['batch'])) {
+      //TODO add batch file functionality
+      return;
+    }
+    //otherwise, run bridge once
+    var missing = requiredKeys(program, ['source', 'destination', 'table']);
+    if (missing.length) return cb('Missing ' + missing.join(', '));
+    cb(null);
   }
-], function(err, opfile) {
-  spinner.stop(true);
-  try {
-    opfile.clean();
-  } catch (e) {
-
-  }
+  //TODO add actual bridge call
+], function(err) {
   if (err) {
-    error(tmr.now.str());
-    return error(err);
+    console.error(colors.red(err));
+    program.help();
   }
-  l(tmr.now.str());
-  l('Completed');
 })
+
+var PKG = JSON.parse(fs.readFileSync('package.json', {
+  encoding: 'utf-8'
+}));

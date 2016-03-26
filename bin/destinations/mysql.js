@@ -1,10 +1,10 @@
-module.exports = function(args, opfile, columns, log, timer, callback) {
+module.exports = function(options, opfile, columns, log, timer, callback) {
 
   var mysql = require('mysql'),
     mySqlCreds = require('../../creds/mysql'),
     db = mysql.createConnection(mySqlCreds),
     async = require('async'),
-    table = args[2] + '.' + args[3];
+    table = options.source + '.' + options.table;
 
   function sqlTable() {
     var cols = [],
@@ -22,7 +22,7 @@ module.exports = function(args, opfile, columns, log, timer, callback) {
   async.waterfall([
     //create database if not existing
     function(cb) {
-      db.query('CREATE DATABASE IF NOT EXISTS ' + args[2], function(err) {
+      db.query('CREATE DATABASE IF NOT EXISTS ' + options.source, function(err) {
         if (err) return cb(err);
         cb(null);
       })

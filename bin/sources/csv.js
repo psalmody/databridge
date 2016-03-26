@@ -1,7 +1,7 @@
-module.exports = function(args, spinner, callback) {
+module.exports = function(options, spinner, callback) {
   var fs = require('fs'),
     async = require('async'),
-    file = args[3],
+    file = options.table,
     filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + file + '.csv',
     log = require('../log')(file),
     timer = require('../timer'),

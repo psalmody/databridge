@@ -1,13 +1,13 @@
-module.exports = function(args, spinner, callback) {
+module.exports = function(options, spinner, callback) {
   var oracledb = require('oracledb'),
     async = require('async'),
     fs = require('fs'),
-    table = args[3],
-    log = require('../log')(args[2] + '.' + table),
+    table = options.table,
+    log = require('../log')(options.source + '.' + table),
     timer = require('../timer'),
     stringify = require('csv-stringify'),
     creds = require('../../creds/oracle'),
-    allBinds = require('../../binds'),
+    allBinds = require('../../input/binds'),
     bindQuery = require('../bindQuery'),
     outputFile = require('../outputFile'),
     db,
@@ -36,7 +36,7 @@ module.exports = function(args, spinner, callback) {
       function(data, cb) {
         log.group('Setup').log('Processing query ' + table);
         //TODO change to allow a usedefaults flag at command line
-        var defs = (typeof(args[7]) !== 'undefined' && args[7] == 'default-binds') ? true : false;
+        var defs = (typeof(options.binds) !== 'undefined') ? true : false;
         bindQuery(data, allBinds, defs, spinner, function(err, sql, binds) {
           log.group('Binds').log(JSON.stringify(binds));
           if (err) return cb(err);

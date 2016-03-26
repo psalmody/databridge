@@ -1,4 +1,4 @@
-module.exports = function(args, opfile, columns, log, timer, moduleCallback) {
+module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
 
   var mssql = require('mssql'),
     creds = require('../../creds/mssql'),
@@ -7,8 +7,8 @@ module.exports = function(args, opfile, columns, log, timer, moduleCallback) {
     fs = require('fs');
 
 
-  var db = args[2],
-    table = args[3];
+  var db = options.source,
+    table = options.table;
 
   function sqlTable() {
     var cols = [],
