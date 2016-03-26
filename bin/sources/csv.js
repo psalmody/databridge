@@ -1,4 +1,4 @@
-module.exports = function(args, callback) {
+module.exports = function(args, spinner, callback) {
   var fs = require('fs'),
     async = require('async'),
     file = args[3],

@@ -1,4 +1,4 @@
-module.exports = function(args, callback) {
+module.exports = function(args, spinner, callback) {
   var oracledb = require('oracledb'),
     async = require('async'),
     fs = require('fs'),
@@ -36,7 +36,8 @@ module.exports = function(args, callback) {
       function(data, cb) {
         log.group('Setup').log('Processing query ' + table);
         //TODO change to allow a usedefaults flag at command line
-        bindQuery(data, allBinds, false, function(err, sql, binds) {
+        var defs = (typeof(args[7]) !== 'undefined' && args[7] == 'default-binds') ? true : false;
+        bindQuery(data, allBinds, defs, spinner, function(err, sql, binds) {
           log.group('Binds').log(JSON.stringify(binds));
           if (err) return cb(err);
           cb(null, sql);

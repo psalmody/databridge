@@ -6,7 +6,11 @@ var tmr = require('./bin/timer'),
   error = console.error,
   fs = require('fs'),
   colParser = require('./bin/colParser'),
-  argvs = require('minimist')(process.argv.slice(2));
+  argvs = require('minimist')(process.argv.slice(2)),
+  Spinner = require('cli-spinner').Spinner,
+  spinner = new Spinner('processing... %s');
+
+spinner.setSpinnerString(0);
 
 //make sure enough parameters were passed
 if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
@@ -30,13 +34,13 @@ try {
 async.waterfall([
   //moving to source - destination type
   function(cb) {
-    source(args, function(err, opfile, log, timer) {
+    spinner.start();
+    source(args, spinner, function(err, opfile, log, timer) {
       if (err) return cb(err);
       cb(null, opfile, log, timer);
     })
   },
   //attempt to get column definitions
-  //TODO this should be run by source, not here
   function(opfile, log, timer, cb) {
     colParser(opfile, function(err, columns) {
       if (err) return cb(err);
@@ -50,6 +54,7 @@ async.waterfall([
     })
   }
 ], function(err, opfile) {
+  spinner.stop(true);
   try {
     opfile.clean();
   } catch (e) {
@@ -59,7 +64,6 @@ async.waterfall([
     error(tmr.now.str());
     return error(err);
   }
-
   l(tmr.now.str());
   l('Completed');
 })

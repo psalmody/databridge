@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app",
-    "clean": "node cleanup",
+    "clean": "node bin/clean",
     "deploy": "git add . && git commit -m \"npm deploy\" && git push origin master",
     "pullinstall": "git pull && npm install"
   },
@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "^1.5.2",
+    "cli-spinner": "^0.2.4",
     "client-oauth2": "^2.0.0",
     "colors": "^1.1.2",
     "csv-stringify": "^1.0.2",

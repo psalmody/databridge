@@ -1,4 +1,4 @@
-module.exports = function(query, defaults, usedefaults, callback) {
+module.exports = function(query, defaults, usedefaults, spinner, callback) {
   //read query, check binds, prompt or use defaults
 
 
@@ -51,9 +51,11 @@ module.exports = function(query, defaults, usedefaults, callback) {
     }
   }
 
-
+  spinner.stop(true);
   prompt.start();
   prompt.get(prompts, function(err, result) {
+    if (err) return callback(err);
+    spinner.start();
     callback(null, replaceBinds(sql, result), result);
   });
 }
