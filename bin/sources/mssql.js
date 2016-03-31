@@ -1,11 +1,11 @@
 module.exports = function(options, spinner, moduleCallback) {
   var mssql = require('mssql'),
     async = require('async'),
-    mySqlCreds = require('../../creds/mssql'),
+    creds = require('../../creds/mssql'),
     fs = require('fs'),
     table = options.table.indexOf('.') > -1 ? options.table : 'dbo.' + options.table,
     schema = table.split('.')[0],
-    log = require('../log')(options.source + '.' + table),
+    log = require('../log')(options.source + '.' + table, options.batch),
     timer = require('../timer'),
     allBinds = require('../../input/binds'),
     bindQuery = require('../bindQuery'),
@@ -33,7 +33,7 @@ module.exports = function(options, spinner, moduleCallback) {
     //format query and bind variables
     function(data, cb) {
       log.group('Setup').log('Processing query ' + table);
-      var = (typeof(options.binds) !== 'undefined') ? true: false;
+      var defs = (typeof(options.binds) !== 'undefined') ? true : false;
       bindQuery(data, allBinds, defs, spinner, function(err, sql, binds) {
         log.group('Binds').log(JSON.stringify(binds));
         if (err) return cb(err);
@@ -51,28 +51,50 @@ module.exports = function(options, spinner, moduleCallback) {
     function(sql, opfile, cb) {
       log.group('mssql').log('Running query from MSSQL');
       var request = new mssql.Request();
+
+      var columns = '';
+
       request.stream = true;
       request.query(sql);
       request.on('recordset', function(columns) {
-        console.log(columns);
+        var str = '',
+          colnames = Object.keys(columns);
+        columns = colnames.join('\t') + '\n';
+        //opfile.append(colnames.join('\t') + '\n');
       })
-      request.on('row');
+      request.on('row', function(row) {
+
+        var vals = [];
+        for (key in row) {
+          vals.push(row[key]);
+        }
+        opfile.append(vals.join('\t') + '\n');
+      });
       request.on('error', function(err) {
         cb(err);
       });
       request.on('done', function(affected) {
+        //prepend columns
+        //TODO NOT INSERTING COLUMNS - need to use npm prepend-file
+        var stats = fs.statSync(opfile.filename);
+        var fd = fs.openSync(opfile.filename, 'a+');
+        var buf = new Buffer(columns);
+        fs.writeSync(fd, buf, 0, buf.length, stats.size);
+        fs.closeSync(fd);
+
         log.log('Rows: ' + affected);
         cb(null, opfile);
       })
     }
   ], function(err, opfile) {
+    try {
+      mssql.close();
+    } catch (e) {
+      log.error(e);
+    }
     if (err) {
       log.error(err);
-      try {
-        mssql.close();
-      } catch (e) {
-        log.error(e);
-      }
+
       return moduleCallback(err);
     }
     log.group('Finished').log(timer.now.str());

@@ -4,7 +4,7 @@ module.exports = function(options, spinner, callback) {
     async = require('async'),
     file = options.table,
     filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + file + '.csv',
-    log = require('../log')(file),
+    log = require('../log')(file, options.batch),
     timer = require('../timer'),
     outputFile = require('../outputFile');
 

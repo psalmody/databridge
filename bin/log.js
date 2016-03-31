@@ -4,23 +4,26 @@ var fs = require('fs'),
 
 if (process.env.NODE_ENV.trim() == 'development') return module.exports = require('./log.dev');
 
-module.exports = function(table) {
-
+module.exports = function(table, batch) {
+  var batch = typeof(batch) == 'undefined' ? '' : batch + '/';
   var log = new Object();
   log.g = '';
   var dt = new Date(),
     dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
   var first = true;
 
-  log.filename = 'logs/' + dir + '/' + table + '.' + Math.round(Date.now() / 1000) + '.log.txt';
+  log.filename = 'logs/' + dir + '/' + batch + table + '.' + Math.round(Date.now() / 1000) + '.log.txt';
 
-  mkdirp('logs/' + dir, function(err) {
+
+  mkdirp('logs/' + dir + '/' + batch, function(err) {
     if (err) return console.error(err);
   })
 
-  fs.writeFile(log.filename, process.argv.join(' ') + '\n', function(err) {
+
+  fs.appendFile(log.filename, process.argv.join(' ') + '\n', function(err) {
     if (err) return console.error(err);
   })
+
 
   log.error = function(err) {
     if (first) {

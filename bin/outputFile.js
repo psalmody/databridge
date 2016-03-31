@@ -14,7 +14,7 @@ module.exports = function(opts, moduleCallback) {
     dir = dirname + '/../output/';
 
   //filename stores the complete filename for writing to later
-  FILE.filename = typeof(opts.filename) == 'undefined' ? dir + opts.table + '.' + Math.round(Date.now() / 1000) + '.csv' : opts.filename;
+  FILE.filename = typeof(opts.filename) == 'undefined' ? dir + opts.table + '.' + Math.round(Date.now() / 1000) + '.dat' : opts.filename;
 
   //cleanup (remove) output file
   FILE.clean = function(callback) {

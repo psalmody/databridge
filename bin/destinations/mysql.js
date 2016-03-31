@@ -1,4 +1,4 @@
-module.exports = function(options, opfile, columns, log, timer, callback) {
+module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
 
   var mysql = require('mysql'),
     mySqlCreds = require('../../creds/mysql'),
@@ -71,9 +71,9 @@ module.exports = function(options, opfile, columns, log, timer, callback) {
     }
     if (err) {
       log.error(err);
-      return callback(err);
+      return moduleCallback(err);
     }
     log.group('Finished').log(timer.now.str());
-    callback(null, opfile);
+    moduleCallback(null, opfile);
   })
 };

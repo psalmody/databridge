@@ -130,6 +130,7 @@ async.waterfall([
             var b = batch[i];
             //set to task by default
             if (Object.keys(batch[i]).indexOf('task') === -1) batch[i].task = true;
+            batch[i].batch = program.batch;
             var fn = (function() {
               //console.log(b);
               var options = JSON.parse(JSON.stringify(b));
