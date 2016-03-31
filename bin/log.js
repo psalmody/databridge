@@ -2,6 +2,8 @@ var fs = require('fs'),
   mkdirp = require('mkdirp');
 
 
+if (process.env.NODE_ENV.trim() == 'development') return module.exports = require('./log.dev');
+
 module.exports = function(table) {
 
   var log = new Object();
@@ -25,7 +27,8 @@ module.exports = function(table) {
       fs.appendFile(log.filename, dt.toString() + '\n');
       first = false;
     }
-    return fs.appendFile(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + "\n");
+    fs.appendFile(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + "\n");
+    return log;
   };
 
   log.log = function(msg) {
@@ -33,7 +36,8 @@ module.exports = function(table) {
       fs.appendFile(log.filename, dt.toString() + '\n');
       first = false;
     }
-    return fs.appendFile(log.filename, log.g + ': ' + msg + "\n");
+    fs.appendFile(log.filename, log.g + ': ' + msg + "\n");
+    return log;
   };
 
   log.group = function(str) {

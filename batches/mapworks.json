@@ -1,0 +1,11 @@
+[{
+  "binds": true,
+  "source": "oracle",
+  "table": "mapworks.sex_birth",
+  "destination": "mssql"
+}, {
+  "binds": true,
+  "source": "oracle",
+  "table": "mapworks.race_int",
+  "destination": "mssql"
+}]

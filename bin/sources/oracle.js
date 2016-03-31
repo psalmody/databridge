@@ -1,4 +1,4 @@
-module.exports = function(options, spinner, callback) {
+module.exports = function(options, spinner, moduleCallback) {
   var oracledb = require('oracledb'),
     async = require('async'),
     fs = require('fs'),
@@ -12,8 +12,7 @@ module.exports = function(options, spinner, callback) {
     outputFile = require('../outputFile'),
     db,
     query = '',
-    binds = {},
-    colors = require('colors/safe');
+    binds = {};
 
   async.waterfall([
       //connect to oracle
@@ -35,7 +34,6 @@ module.exports = function(options, spinner, callback) {
       //format query and prompt for binds
       function(data, cb) {
         log.group('Setup').log('Processing query ' + table);
-        //TODO change to allow a usedefaults flag at command line
         var defs = (typeof(options.binds) !== 'undefined') ? true : false;
         bindQuery(data, allBinds, defs, spinner, function(err, sql, binds) {
           log.group('Binds').log(JSON.stringify(binds));
@@ -113,9 +111,9 @@ module.exports = function(options, spinner, callback) {
         } catch (e) {
           log.error(e);
         }
-        return callback(err);
+        return moduleCallback(err);
       }
       log.group('Finished').log(timer.now.str());
-      callback(null, opfile, log, timer);
+      moduleCallback(null, opfile, log, timer);
     })
 }

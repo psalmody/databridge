@@ -8,7 +8,9 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
 
 
   var db = options.source,
-    table = options.table;
+    //use default dbo unless schema in filename
+    table = options.table.indexOf('.') > -1 ? options.table : 'dbo.' + options.table,
+    schema = table.split('.')[0];
 
   function sqlTable() {
     var cols = [],
@@ -43,6 +45,15 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       }).catch(function(err) {
         cb(err);
       });
+    },
+    //create schema if necessary
+    function(cb) {
+      new mssql.Request().query("USE " + db + "; IF (SCHEMA_ID('" + schema + "') IS NULL ) BEGIN EXEC ('CREATE SCHEMA [" + schema + "] AUTHORIZATION [dbo]') END").then(function(recordset) {
+        log.log('created schema ' + schema + ' (if not exists)');
+        cb(null);
+      }).catch(function(err) {
+        cb(err);
+      })
     },
     //drop table if exists
     function(cb) {
@@ -166,6 +177,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     if (err) {
       return moduleCallback(err);
     }
+    log.group('Finished').log(timer.now.str());
     moduleCallback(null, opfile);
   })
 }

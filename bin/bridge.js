@@ -1,10 +1,14 @@
 /**
  * Bridging between source and destination
  */
-module.exports = function(opts, callback) {
+module.exports = function(opts, moduleCallback) {
+
+  //console.log(opts);
+
   //setup timer and define shortcuts for log/error
   var tmr = require('./timer'),
     async = require('async'),
+    missingKeys = require('./missingKeys'),
     l = console.log,
     error = console.error,
     fs = require('fs'),
@@ -12,9 +16,12 @@ module.exports = function(opts, callback) {
     Spinner = require('cli-spinner').Spinner,
     spinner = new Spinner('processing... %s');
 
+  //console.log(opts);
+  if (missingKeys(opts, ['source', 'destination', 'table']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
+
   spinner.setSpinnerString(0);
   //don't start if -k or --task (accomplished by overriding spinner.start())
-  if (opts.task) spinner.start = function() {
+  if (Object.keys(opts).indexOf('task') > -1) spinner.start = function() {
     return;
   };
 
@@ -69,10 +76,10 @@ module.exports = function(opts, callback) {
     if (err) {
       error(tmr.now.str());
       error(err);
-      return callback(err);
+      return moduleCallback(err);
     }
     l(tmr.now.str());
-    l('Completed');
-    callback();
+    l('Completed ' + JSON.stringify(opts));
+    moduleCallback();
   })
 }

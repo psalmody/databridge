@@ -6,7 +6,9 @@ module.exports = function(query, defaults, usedefaults, spinner, callback) {
     //remove comments
     sql = query.replace(/\/\*[.\s\S]*?\*\/|--.*?[\n\r]/g, ''),
     //find binds
-    bindPattern = /[:].[a-z_0-9]+/g;
+    //bindPattern = /[:].[a-z_0-9]+/g;
+    //now bind pattern ignores : inside quotes (date formats)
+    bindPattern = /[:].[a-z_0-9]+(?=([^']*'[^']*')*[^']*$)/g;
 
   while (result = bindPattern.exec(sql)) {
     var r = result[0].replace(':', '');

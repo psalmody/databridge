@@ -3,19 +3,13 @@ var program = require('commander'),
   colors = require('colors'),
   fs = require('fs'),
   bridge = require('./bin/bridge'),
+  missingKeys = require('./bin/missingKeys'),
   pkg,
   sources = [],
-  destinations = [];
+  destinations = [],
+  batches = [];
 
-function missingKeys(obj, arr) {
-  if (typeof(obj) !== 'object') return false;
-  if (typeof(arr) !== 'object' || !arr.length) return false;
-  var missing = [];
-  for (var i = 0; i < arr.length; i++) {
-    if (typeof(obj[arr[i]]) == 'undefined') missing.push(arr[i]);
-  }
-  return missing.length ? missing : false;
-}
+
 
 async.waterfall([
     //get package.json
@@ -45,6 +39,16 @@ async.waterfall([
         if (err) return cb(err);
         for (var i = 0; i < files.length; i++) {
           destinations.push(files[i].replace('.js', ''));
+        }
+        cb(null);
+      })
+    },
+    //get batches
+    function(cb) {
+      fs.readdir('./batches', function(err, files) {
+        if (err) return cb(err);
+        for (var i = 0; i < files.length; i++) {
+          batches.push(files[i].replace('.json', ''));
         }
         cb(null);
       })
@@ -96,46 +100,80 @@ async.waterfall([
         return;
       }
       //show valid sources
-      if (missingKeys(program, ['source', 'show']) == false) {
+      else if (missingKeys(program, ['source', 'show']) == false) {
         console.log('Valid sources:');
         console.log('  ' + sources.join(', '));
         process.exit();
       }
       //show valid destinations
-      if (missingKeys(program, ['destination', 'show']) == false) {
+      else if (missingKeys(program, ['destination', 'show']) == false) {
         console.log('Valid destinations:');
         console.log('  ' + destinations.join(', '));
+        process.exit();
+      }
+      //show valid batches
+      else if (missingKeys(program, ['batch', 'show']) == false) {
+        console.log('Valid batches:');
+        console.log('  ' + batches.join(', '));
         process.exit();
       }
       //define array of bridge functions to run
       var bridges = [];
       //run bridge batch
       if (missingKeys(program, ['batch']) == false) {
-        //TODO add batch file functionality
-        console.log('has required key batch');
-        return cb(null, []);
-      }
-      //otherwise, run bridge once\db
-      var missing = missingKeys(program, ['source', 'destination', 'table']);
-      if (missing.length) return cb('Wrong usage.');
-      //push program version
-      bridges.push(function(cb2) {
-        bridge({
-          source: program.source,
-          destination: program.destination,
-          binds: program.binds,
-          table: program.table,
-          task: program.task
-        }, function(err) {
-          if (err) return cb2(err);
-          cb2(null);
+        fs.readFile('./batches/' + program.batch + '.json', 'utf-8', function(err, json) {
+          if (err) return cb(err);
+          var batch = JSON.parse(json);
+
+          for (var i = 0; i < batch.length; i++) {
+            //console.log(batch[i]);
+            var b = batch[i];
+            //set to task by default
+            if (Object.keys(batch[i]).indexOf('task') === -1) batch[i].task = true;
+            var fn = (function() {
+              //console.log(b);
+              var options = JSON.parse(JSON.stringify(b));
+              return function(cb2) {
+                bridge(options, function(err) {
+                  if (err) return cb2(err);
+                  cb2(null);
+                })
+              }
+            })(b);
+            bridges.push(fn);
+            //console.log(bridges);
+          }
+          //console.log(bridges[0].toString());
+          //TODO add batch file functionality
+          //console.log('has required key batch');
+          cb(null, bridges);
         })
-      })
-      cb(null, bridges);
+
+
+      } else {
+        //otherwise, run bridge once\db
+        var missing = missingKeys(program, ['source', 'destination', 'table']);
+        if (missing.length) return cb('Wrong usage.');
+        //push program version
+        bridges.push(function(cb2) {
+          bridge({
+            source: program.source,
+            destination: program.destination,
+            binds: program.binds,
+            table: program.table,
+            task: program.task
+          }, function(err) {
+            if (err) return cb2(err);
+            cb2(null);
+          })
+        })
+        cb(null, bridges);
+      }
     },
     //run bridge functions async style
     function(bridges, cb) {
       if (!bridges.length) return cb('No bridges found or defined. Check usage or batch file.');
+      //process.exit();
       async.waterfall(bridges, function(err) {
         if (err) return cb(err);
         cb(null);

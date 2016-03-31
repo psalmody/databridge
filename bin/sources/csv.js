@@ -1,4 +1,5 @@
 module.exports = function(options, spinner, callback) {
+  //TODO change this to tab-delimited source and create real csv source
   var fs = require('fs'),
     async = require('async'),
     file = options.table,
