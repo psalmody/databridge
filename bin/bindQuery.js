@@ -1,40 +1,40 @@
-module.exports = function(query, defaults, usedefaults, spinner, callback) {
-  //read query, check binds, prompt or use defaults
+module.exports = function(query, defBinds, useDefaults, spinner, moduleCallback) {
+  //read query, check binds, prompt or use defBinds
 
 
-  var bds = [],
+  var qBinds = [],
     //remove comments
     sql = query.replace(/\/\*[.\s\S]*?\*\/|--.*?[\n\r]/g, ''),
     //find binds
     //bindPattern = /[:].[a-z_0-9]+/g;
     //now bind pattern ignores : inside quotes (date formats)
-    bindPattern = /[:].[a-z_0-9]+(?=([^']*'[^']*')*[^']*$)/g;
+    bindPattern = /[:].[A-Za-z_0-9]+(?=([^']*'[^']*')*[^']*$)/g;
 
   while (result = bindPattern.exec(sql)) {
     var r = result[0].replace(':', '');
-    if (bds.indexOf(r) == -1) bds.push(r);
+    if (qBinds.indexOf(r) == -1) qBinds.push(r);
   }
 
   function replaceBinds(query, binds) {
-    for (var i = 0; i < bds.length; i++) {
+    for (var i = 0; i < qBinds.length; i++) {
       try {
         //try replacing all binds with default
-        query = query.replace(new RegExp(':' + bds[i], "g"), binds[bds[i]]);
+        query = query.replace(new RegExp(':' + qBinds[i], "g"), binds[qBinds[i]]);
       } catch (e) {
-        return callback('Problem finding bind for "' + r + '"' + e);
+        return moduleCallback('Problem finding bind for "' + r + '"' + e);
       }
     }
     return query;
   }
 
-  if (usedefaults) {
+  if (useDefaults) {
     //return formatted query
-    return callback(null, replaceBinds(sql, defaults), defaults);
+    return moduleCallback(null, replaceBinds(sql, defBinds), defBinds);
   }
 
 
 
-  //if not using defaults, prompt
+  //if not using defBinds, prompt
 
   var prompt = require('prompt'),
     colors = require('colors'),
@@ -46,18 +46,18 @@ module.exports = function(query, defaults, usedefaults, spinner, callback) {
 
   prompt.message = colors.green('Enter bind variable');
 
-  for (var i = 0; i < bds.length; i++) {
-    prompts.properties[bds[i]] = {
-      default: defaults[bds[i]],
-      description: colors.green(bds[i])
+  for (var i = 0; i < qBinds.length; i++) {
+    prompts.properties[qBinds[i]] = {
+      default: defBinds[qBinds[i]],
+      description: colors.green(qBinds[i])
     }
   }
 
   spinner.stop(true);
   prompt.start();
   prompt.get(prompts, function(err, result) {
-    if (err) return callback(err);
+    if (err) return moduleCallback(err);
     spinner.start();
-    callback(null, replaceBinds(sql, result), result);
+    moduleCallback(null, replaceBinds(sql, result), result);
   });
 }
