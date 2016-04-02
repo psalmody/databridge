@@ -12,5 +12,5 @@
   "binds": true,
   "source": "mssql",
   "table": "campuslabs.demographics",
-  "destination": "csv"
+  "destination": "xlsx"
 }]

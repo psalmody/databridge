@@ -24,6 +24,10 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
   }
 
   worksheet.addRow(firstRow);
+  worksheet.getRow(1).font = {
+    bold: true
+  }
+
 
   async.waterfall([
     //mkdirp

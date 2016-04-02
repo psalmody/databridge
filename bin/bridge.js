@@ -69,7 +69,7 @@ module.exports = function(opts, moduleCallback) {
   ], function(err, opfile) {
     spinner.stop(true);
     try {
-      opfile.clean();
+      //opfile.clean();
     } catch (e) {
 
     }

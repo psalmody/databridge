@@ -12,7 +12,8 @@ module.exports = function(options, spinner, moduleCallback) {
     query = '',
     binds = {},
     outputFile = require('../outputFile'),
-    db = options.source;
+    db = options.source,
+    prependFile = require('prepend-file');
 
   async.waterfall([
     function(cb) {
@@ -56,14 +57,12 @@ module.exports = function(options, spinner, moduleCallback) {
 
       request.stream = true;
       request.query(sql);
-      request.on('recordset', function(columns) {
+      request.on('recordset', function(cols) {
         var str = '',
-          colnames = Object.keys(columns);
+          colnames = Object.keys(cols);
         columns = colnames.join('\t') + '\n';
-        //opfile.append(colnames.join('\t') + '\n');
       })
       request.on('row', function(row) {
-
         var vals = [];
         for (key in row) {
           vals.push(row[key]);
@@ -74,15 +73,15 @@ module.exports = function(options, spinner, moduleCallback) {
         cb(err);
       });
       request.on('done', function(affected) {
-        //prepend columns
-        //TODO NOT INSERTING COLUMNS - need to use npm prepend-file
-        var stats = fs.statSync(opfile.filename);
-        var fd = fs.openSync(opfile.filename, 'a+');
-        var buf = new Buffer(columns);
-        fs.writeSync(fd, buf, 0, buf.length, stats.size);
-        fs.closeSync(fd);
-
         log.log('Rows: ' + affected);
+        cb(null, columns, opfile);
+      })
+    },
+    //prepend columns
+    function(columns, opfile, cb) {
+      prependFile(opfile.filename, columns, function(err) {
+        if (err) return cb(err);
+        log.log('prependFile columns');
         cb(null, opfile);
       })
     }
