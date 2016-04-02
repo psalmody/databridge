@@ -9,7 +9,7 @@ var program = require('commander'),
   destinations = [],
   batches = [];
 
-
+process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? 'development' : process.env.NODE_ENV;
 
 async.waterfall([
     //get package.json

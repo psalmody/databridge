@@ -1,7 +1,6 @@
 var fs = require('fs'),
   mkdirp = require('mkdirp');
 
-
 if (process.env.NODE_ENV.trim() == 'development') return module.exports = require('./log.dev');
 
 module.exports = function(table, batch) {
