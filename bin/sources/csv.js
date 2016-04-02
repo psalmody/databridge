@@ -27,7 +27,7 @@ module.exports = function(options, spinner, moduleCallback) {
     function(opfile, cb) {
       fs.readFile(filename, 'utf-8', function(err, data) {
         if (err) return cb(err);
-        cb(null, opfile, data.replace(/,/g,'\t'));
+        cb(null, opfile, data.replace(/,/g, '\t'));
       })
     },
     //write data to opfile
