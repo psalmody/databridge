@@ -1,3 +1,7 @@
+/**
+ * handles the output file created for data between
+ * source and destination 
+ */
 module.exports = function(opts, moduleCallback) {
   //options are required
   if (typeof(opts) == 'undefined') return moduleCallback('No options specified.');

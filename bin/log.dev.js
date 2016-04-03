@@ -1,5 +1,8 @@
+//development environment log - just log to console
+//rather than a log file - see bin/log for more details
+//about this module's setup
 module.exports = function(table) {
-  console.log('Development log in use.')
+  console.log('Development log in use.');
   var log = new Object();
   var colors = require('colors');
   log.g = '';

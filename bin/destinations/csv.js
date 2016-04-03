@@ -1,9 +1,13 @@
+/**
+ * Output as CSV to /output/csv/
+ * Removes any existing commas before converting
+ * output file to csv.
+ */
 module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
   var table = options.source + '.' + options.table,
     fs = require('fs');
 
   log.group('CSV Output').log('Copying file from opfile tmp to output/csv/' + table + '.csv');
-  //fs.createReadStream(opfile.filename).pipe(fs.createWriteStream('./output/csv/' + table + '.csv'));
 
   fs.readFile(opfile.filename, 'utf-8', function(err, data) {
     if (err) return moduleCallback(err);
@@ -16,5 +20,4 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
 
   })
 
-  //moduleCallback(null, opfile);
 }

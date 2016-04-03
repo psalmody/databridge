@@ -76,18 +76,11 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         cb(err);
       });
     },
-    // bulk insert
-    /*function(cb) {
-      new mssql.Request().query("BULK INSERT " + table + " FROM '" + opfile.filename + "' WITH (FIELDTERMINATOR='\t',ROWTERMINATOR='\n',FIRSTROW=2)").then(function(recordset) {
-        cb(null);
-      }).catch(function(err) {
-        cb(err);
-      })
-    },*/
+    //insert data
     function(cb) {
       LineByLine = require('line-by-line'),
         rl = new LineByLine(opfile.filename);
-      //every 100 lines, run query
+      //every 100 lines of data, run insert query
       var hundred = [],
         first = true,
         rowsProcessed = 0,
@@ -155,6 +148,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         }
       });
       rl.on('end', function() {
+        //at end, insert any remaining lines in the hundred array
         insertLines(hundred, function(rows) {
           rowsProcessed += rows;
           log.log('Rows processed: ' + rowsProcessed);
@@ -162,7 +156,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         })
       })
     },
-    //check table rows
+    //check number of inserted rows
     function(cb) {
       new mssql.Request().query('SELECT count(*) as rows FROM ' + table).then(function(recordset) {
         log.log('imported ' + recordset[0].rows)

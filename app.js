@@ -1,3 +1,8 @@
+/**
+ * This is the command-line wrapper for the bridging
+ * tool prividing all the command line options.
+ */
+
 var program = require('commander'),
   async = require('async'),
   colors = require('colors'),
@@ -9,10 +14,11 @@ var program = require('commander'),
   destinations = [],
   batches = [];
 
+//assume we're in development
 process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? 'development' : process.env.NODE_ENV;
 
 async.waterfall([
-    //get package.json
+    //get package.json (for version exposure)
     function(cb) {
       //console.log('read package.json');
       fs.readFile('package.json', 'utf-8', function(err, contents) {
@@ -23,9 +29,9 @@ async.waterfall([
     },
     //get valid sources
     function(cb) {
-      //console.log('readdir bin/sources/');
       fs.readdir('./bin/sources', function(err, files) {
         if (err) return cb(err);
+        //sources exclude .js extensions
         for (var i = 0; i < files.length; i++) {
           sources.push(files[i].replace('.js', ''));
         }
@@ -34,9 +40,9 @@ async.waterfall([
     },
     //get valid destinations
     function(cb) {
-      //console.log('readdir bin/destinations/');
       fs.readdir('./bin/destinations', function(err, files) {
         if (err) return cb(err);
+        //again - exclude .js extension
         for (var i = 0; i < files.length; i++) {
           destinations.push(files[i].replace('.js', ''));
         }
@@ -55,7 +61,6 @@ async.waterfall([
     },
     //setup commander
     function(cb) {
-      //console.log('setup commander');
       var newline = '\n                                 ';
       program.version(pkg.version)
         .usage('[options]')
@@ -85,7 +90,7 @@ async.waterfall([
           console.log('    > node app -s <source> -ht');
         })
         .parse(process.argv);
-
+      //parse command options for
       //show valid source table options
       if (missingKeys(program, ['source', 'table', 'show']) == false) {
         fs.readdir('./input/' + program.source, function(err, files) {
@@ -126,13 +131,11 @@ async.waterfall([
           var batch = JSON.parse(json);
 
           for (var i = 0; i < batch.length; i++) {
-            //console.log(batch[i]);
             var b = batch[i];
             //set to task by default
             if (Object.keys(batch[i]).indexOf('task') === -1) batch[i].task = true;
             batch[i].batch = program.batch;
             var fn = (function() {
-              //console.log(b);
               var options = JSON.parse(JSON.stringify(b));
               return function(cb2) {
                 bridge(options, function(err) {
@@ -142,17 +145,13 @@ async.waterfall([
               }
             })(b);
             bridges.push(fn);
-            //console.log(bridges);
           }
-          //console.log(bridges[0].toString());
-          //TODO add batch file functionality
-          //console.log('has required key batch');
           cb(null, bridges);
         })
 
 
       } else {
-        //otherwise, run bridge once\db
+        //otherwise, run bridge once
         var missing = missingKeys(program, ['source', 'destination', 'table']);
         if (missing.length) return cb('Wrong usage.');
         //push program version
@@ -174,7 +173,8 @@ async.waterfall([
     //run bridge functions async style
     function(bridges, cb) {
       if (!bridges.length) return cb('No bridges found or defined. Check usage or batch file.');
-      //process.exit();
+      //taking all bridge functions created and Running
+      //them one at a time
       async.waterfall(bridges, function(err) {
         if (err) return cb(err);
         cb(null);

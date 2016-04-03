@@ -3,8 +3,6 @@
  */
 module.exports = function(opts, moduleCallback) {
 
-  //console.log(opts);
-
   //setup timer and define shortcuts for log/error
   var tmr = require('./timer'),
     async = require('async'),
@@ -63,15 +61,15 @@ module.exports = function(opts, moduleCallback) {
     function(opfile, columns, log, timer, cb) {
       destination(opts, opfile, columns, log, timer, function(err, opfile) {
         if (err) return cb(err);
-        cb(null, opfile);
+        cb(null, opfile, log);
       })
     }
-  ], function(err, opfile) {
+  ], function(err, opfile, log) {
     spinner.stop(true);
     try {
-      //opfile.clean();
+      opfile.clean();
     } catch (e) {
-
+      log.error(e);
     }
     if (err) {
       error(tmr.now.str());
