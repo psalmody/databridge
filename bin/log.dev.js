@@ -8,7 +8,7 @@ module.exports = function(table) {
   log.g = '';
   log.filename = false;
   log.error = function(err) {
-    console.error(colors.red(err));
+    console.log(colors.red(err));
     return log;
   }
   log.log = function(msg) {

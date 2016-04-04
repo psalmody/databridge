@@ -14,6 +14,8 @@ module.exports = function(opfile, callback) {
     if (c.toUpperCase().indexOf('DATE') > -1) return 'DATE NULL';
     //if TIMESTAMP in column title - assume date
     if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE NULL';
+    //if _DEC assume decimal
+    if (c.toUpperCase().indexOf('_DEC') > -1) return 'DECIMAL(4,2) NULL';
     //if number - return as INT
     if (typeof(o) == 'number') return 'INT NULL';
     //default is a 255 length VARCHAR
@@ -29,7 +31,7 @@ module.exports = function(opfile, callback) {
 
     for (var i = 0; i < c.length; i++) {
       //remove _IND from name
-      var name = c[i].replace(/_IND/gi, '').replace(/\ /g, '');
+      var name = c[i].replace(/_IND/gi, '').replace(/\ /g, '').replace(/_DEC/gi, '');
       //if _IND in name, index it
       var ndex = c[i].toUpperCase().indexOf('_IND') !== -1 ? true : false;
       columns.push({

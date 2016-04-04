@@ -81,7 +81,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       LineByLine = require('line-by-line'),
         rl = new LineByLine(opfile.filename);
       //every 100 lines of data, run insert query
-      var hundred = [],
+      var thousand = [],
         first = true,
         rowsProcessed = 0,
         request = new mssql.Request();
@@ -124,7 +124,11 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
           log.error(rowsProcessed);
           log.error(arr);
           log.error(err);
-          console.log(request, rowsProcessed, "Error in  insertLines()", arr, err);
+          console.log(sql);
+          console.log(request);
+          console.log(rowsProcessed);
+          console.log("Error in  insertLines()");
+          console.log(JSON.stringify(arr, null, 2));
           process.exit();
         })
       }
@@ -134,31 +138,31 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         if (first) {
           first = false; //skip first line
           rl.resume();
-        } else if (hundred.length < 99) {
-          hundred.push(line); //if less than 99, push line to array and continue
+        } else if (thousand.length < 999) {
+          thousand.push(line); //if less than 99, push line to array and continue
           rl.resume();
         } else {
-          hundred.push(line); //don't forget row 100
+          thousand.push(line); //don't forget row 100
           //if 10 rows, run an insert
-          insertLines(hundred, function(rows) {
+          insertLines(thousand, function(rows) {
             rowsProcessed += rows;
-            hundred.length = 0;
+            thousand.length = 0;
             rl.resume();
           });
         }
       });
       rl.on('end', function() {
-        //at end, insert any remaining lines in the hundred array
-        insertLines(hundred, function(rows) {
+        //at end, insert any remaining lines in the thousand array
+        insertLines(thousand, function(rows) {
           rowsProcessed += rows;
-          log.log('Rows processed: ' + rowsProcessed);
+          log.group('Finish').log('Rows processed: ' + rowsProcessed);
           cb(null);
         })
       })
     },
     //check number of inserted rows
     function(cb) {
-      new mssql.Request().query('SELECT count(*) as rows FROM ' + table).then(function(recordset) {
+      new mssql.Request().query('USE ' + db + '; SELECT count(*) as rows FROM ' + table).then(function(recordset) {
         log.log('imported ' + recordset[0].rows)
         cb(null);
       }).catch(function(err) {

@@ -62,10 +62,10 @@ SELECT SPRIDEN.SPRIDEN_PIDM AS PIDM_IND,
           ON     SPRIDEN.SPRIDEN_ID = ENROLLED_STUDENTS_BY_TERM.STUDENT_ID
              AND SPRIDEN.SPRIDEN_CHANGE_IND IS NULL
        LEFT JOIN DSDMGR.DSD_STUDENT_DEMOG_OPEN DSD_STUDENT_DEMOG_OPEN
-          ON     DSD_STUDENT_DEMOG_OPEN.TERM_CODE = :term_code
+          ON     DSD_STUDENT_DEMOG_OPEN.TERM_CODE = :current_term
              AND DSD_STUDENT_DEMOG_OPEN.STUDENT_PIDM = spriden.SPRIDEN_PIDM
  WHERE     1 = 1
-       AND ENROLLED_STUDENTS_BY_TERM.TERM_CODE = :term_code
+       AND ENROLLED_STUDENTS_BY_TERM.TERM_CODE = :current_term
        AND enrolled_students_by_term.CLASS_STANDING IN ('FR',
                                                         'JR',
                                                         'ND',

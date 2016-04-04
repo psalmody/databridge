@@ -69,7 +69,7 @@ module.exports = function(opts, moduleCallback) {
     try {
       opfile.clean();
     } catch (e) {
-      log.error(e);
+      error(e);
     }
     if (err) {
       error(tmr.now.str());
