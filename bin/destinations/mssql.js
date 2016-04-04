@@ -139,10 +139,10 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
           first = false; //skip first line
           rl.resume();
         } else if (thousand.length < 999) {
-          thousand.push(line); //if less than 99, push line to array and continue
+          thousand.push(line); //if less than 999, push line to array and continue
           rl.resume();
         } else {
-          thousand.push(line); //don't forget row 100
+          thousand.push(line); //don't forget row 1000
           //if 10 rows, run an insert
           insertLines(thousand, function(rows) {
             rowsProcessed += rows;

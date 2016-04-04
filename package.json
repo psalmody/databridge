@@ -16,6 +16,7 @@
     "async": "^1.5.2",
     "cli-spinner": "^0.2.4",
     "colors": "^1.1.2",
+    "commander": "^2.9.0",
     "csv-stringify": "^1.0.2",
     "exceljs": "^0.2.6",
     "line-by-line": "^0.1.4",
