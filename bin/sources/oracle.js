@@ -1,7 +1,7 @@
 module.exports = function(options, spinner, moduleCallback) {
   var oracledb = require('oracledb'),
     async = require('async'),
-    fs = require('fs'),
+    fs = require('graceful-fs'),
     table = options.table,
     log = require('../log')(options.source + '.' + table, options.batch),
     timer = require('../timer'),
