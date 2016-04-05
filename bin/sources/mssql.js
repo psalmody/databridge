@@ -17,6 +17,7 @@ module.exports = function(options, spinner, moduleCallback) {
 
   //request timeout for mssql database
   creds.requestTimeout = 60000;
+  creds.connectionTimeout = 60000;
 
   async.waterfall([
     function(cb) {
