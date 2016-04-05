@@ -5,12 +5,12 @@
   "destination": "mysql"
 }, {
   "binds": true,
-  "source": "oracle",
+  "source": "rptp",
   "table": "sex_birth",
   "destination": "mysql"
 }, {
   "binds": true,
-  "source": "oracle",
+  "source": "rptp",
   "table": "FirstYearOnVOffCampusStudents",
   "destination": "mysql"
 }]

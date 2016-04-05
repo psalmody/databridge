@@ -102,7 +102,7 @@ SELECT DISTINCT
           AS "FirstGenStudent",
        CASE
           WHEN (SELECT DISTINCT vet_benefits.pidm
-                  FROM oracle.mapworks.vet_benefits vet_benefits
+                  FROM rptp.mapworks.vet_benefits vet_benefits
                  WHERE enrolled.PIDM = vet_benefits.pidm)
                   IS NOT NULL
           THEN
@@ -115,53 +115,53 @@ SELECT DISTINCT
        high_school.HighSchoolPercentile,
        high_school.HighSchoolGradYear,
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'EACO')
           AS "ACTComposite",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'EAEN')
           AS "ACTEnglish",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'EAMA')
           AS "ACTMath",
        NULL AS "ACTWriting",                -- we don't have one (Peggy Byers)
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'EASR')
           AS "ACTScience",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'EARE')
           AS "ACTReading",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'SATM')
           AS "SATMath",
        NULL AS "SATComposite",              -- we don't have one (Peggy Byers)
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'SATW')
           AS "SATWriting",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'SATC')
           AS "SATCriticalRead",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'AASS')
           AS "ACCUPLACERSentence",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'AAAR')
           AS "ACCUPLACERArithmetic",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'AAEA')
           AS "ACCUPLACERAlgebra",
        (SELECT LTS_SCORE
-          FROM oracle.mapworks.test_scores test_scores
+          FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'AARC')
           AS "ACCUPLACERReading",
        adm_latest.APPLICATION_DATE AS "ApplicationDate",
@@ -202,7 +202,7 @@ SELECT DISTINCT
        enrolled.STVMAJR_CIPC_CODE AS "MajorCIP",
        CASE
           WHEN (SELECT honors.PIDM
-                  FROM oracle.mapworks.honors honors
+                  FROM rptp.mapworks.honors honors
                  WHERE enrolled.PIDM = honors.PIDM)
                   IS NOT NULL
           THEN
@@ -229,7 +229,7 @@ SELECT DISTINCT
           THEN
              CASE
                 WHEN (SELECT prev_fall.PIDM
-                        FROM oracle.mapworks.prev_fall prev_fall
+                        FROM rptp.mapworks.prev_fall prev_fall
                        WHERE prev_fall.PIDM = enrolled.PIDM)
                         IS NOT NULL
                 THEN
@@ -243,7 +243,7 @@ SELECT DISTINCT
           AS "PersistMidYear",
        CASE
           WHEN (SELECT prev_ay.PIDM
-                  FROM oracle.mapworks.prev_ay prev_ay
+                  FROM rptp.mapworks.prev_ay prev_ay
                  WHERE prev_ay.PIDM = enrolled.PIDM)
                   IS NOT NULL
           THEN
@@ -254,7 +254,7 @@ SELECT DISTINCT
           AS "RetainYear2",
        CASE
           WHEN (SELECT prev_2ay.PIDM
-                  FROM oracle.mapworks.prev_2ay prev_2ay
+                  FROM rptp.mapworks.prev_2ay prev_2ay
                  WHERE prev_2ay.PIDM = enrolled.PIDM)
                   IS NOT NULL
           THEN
@@ -311,41 +311,41 @@ SELECT DISTINCT
        END
           AS "PrimaryCollegeISP4",
        enrolled.CLASS_STANDING AS "ClassStandingISP5"
-  FROM oracle.mapworks.enrolled enrolled
-       LEFT JOIN oracle.mapworks.username username
+  FROM rptp.mapworks.enrolled enrolled
+       LEFT JOIN rptp.mapworks.username username
           ON enrolled.PIDM = username.PIDM
-       LEFT JOIN oracle.mapworks.addr_current addr_current
+       LEFT JOIN rptp.mapworks.addr_current addr_current
           ON enrolled.PIDM = addr_current.PIDM
-       LEFT JOIN oracle.mapworks.addr_oe addr_oe
+       LEFT JOIN rptp.mapworks.addr_oe addr_oe
           ON enrolled.PIDM = addr_oe.PIDM
-       LEFT JOIN oracle.mapworks.tele tele ON enrolled.PIDM = tele.PIDM
-       LEFT JOIN oracle.mapworks.email email ON enrolled.PIDM = email.PIDM
-       LEFT JOIN oracle.mapworks.sex_birth sex_birth
+       LEFT JOIN rptp.mapworks.tele tele ON enrolled.PIDM = tele.PIDM
+       LEFT JOIN rptp.mapworks.email email ON enrolled.PIDM = email.PIDM
+       LEFT JOIN rptp.mapworks.sex_birth sex_birth
           ON enrolled.PIDM = sex_birth.PIDM
-       LEFT JOIN oracle.mapworks.race_int race_int
+       LEFT JOIN rptp.mapworks.race_int race_int
           ON enrolled.PIDM = race_int.PIDM
-       LEFT JOIN oracle.mapworks.finaid finaid ON enrolled.PIDM = finaid.PIDM
-       LEFT JOIN oracle.mapworks.high_school high_school
+       LEFT JOIN rptp.mapworks.finaid finaid ON enrolled.PIDM = finaid.PIDM
+       LEFT JOIN rptp.mapworks.high_school high_school
           ON enrolled.PIDM = high_school.PIDM
-       LEFT JOIN oracle.mapworks.adm_latest adm_latest
+       LEFT JOIN rptp.mapworks.adm_latest adm_latest
           ON adm_latest.STUDENT_PIDM = enrolled.PIDM
-       LEFT JOIN oracle.mapworks.prev_ay_gpa prev_ay_gpa
+       LEFT JOIN rptp.mapworks.prev_ay_gpa prev_ay_gpa
           ON prev_ay_gpa.PIDM = enrolled.PIDM
-       LEFT JOIN oracle.mapworks.ftpt ftpt ON ftpt.PIDM = Enrolled.pidm
-       LEFT JOIN oracle.mapworks.athletes athletes
+       LEFT JOIN rptp.mapworks.ftpt ftpt ON ftpt.PIDM = Enrolled.pidm
+       LEFT JOIN rptp.mapworks.athletes athletes
           ON enrolled.PIDM = athletes.PIDM
-       LEFT JOIN oracle.mapworks.cred_cum_preyear_acad cred_cum_preyear_acad
+       LEFT JOIN rptp.mapworks.cred_cum_preyear_acad cred_cum_preyear_acad
           ON enrolled.PIDM = cred_cum_preyear_acad.PIDM
-       LEFT JOIN oracle.mapworks.cred_cum_preyear_rem cred_cum_preyear_rem
+       LEFT JOIN rptp.mapworks.cred_cum_preyear_rem cred_cum_preyear_rem
           ON enrolled.PIDM = cred_cum_preyear_rem.PIDM
-       LEFT JOIN oracle.mapworks.cred_preterm_acad cred_preterm_acad
+       LEFT JOIN rptp.mapworks.cred_preterm_acad cred_preterm_acad
           ON cred_preterm_acad.PIDM = enrolled.PIDM
-       LEFT JOIN oracle.mapworks.cred_preterm_rem cred_preterm_rem
+       LEFT JOIN rptp.mapworks.cred_preterm_rem cred_preterm_rem
           ON cred_preterm_rem.PIDM = enrolled.PIDM
-       LEFT JOIN oracle.mapworks.end_term end_term
+       LEFT JOIN rptp.mapworks.end_term end_term
           ON end_term.PIDM = enrolled.PIDM
-       LEFT JOIN oracle.mapworks.not_sap not_sap
+       LEFT JOIN rptp.mapworks.not_sap not_sap
           ON not_sap.PIDM = enrolled.PIDM
-       LEFT JOIN oracle.mapworks.fed_aid_awarded fed_aid_awarded
+       LEFT JOIN rptp.mapworks.fed_aid_awarded fed_aid_awarded
           ON fed_aid_awarded.PIDM = enrolled.PIDM/* -- end -- */
                                                  ;

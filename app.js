@@ -74,8 +74,8 @@ async.waterfall([
         .on('--help', function() {
           console.log('  Examples: ');
           console.log('');
-          console.log('    Run dbutil for oracle query employees into mysql:');
-          console.log('    > node app -s <source> -t employees -d mysql');
+          console.log('    Run dbutil for rptp query employees into mysql:');
+          console.log('    > node app -s rptp -t employees -d mysql');
           console.log('');
           console.log('    Show all valid sources:');
           console.log('    > node app -hs');

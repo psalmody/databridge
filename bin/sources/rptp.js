@@ -1,12 +1,12 @@
 module.exports = function(options, spinner, moduleCallback) {
-  var oracledb = require('oracledb'),
+  var rptp = require('oracledb'),
     async = require('async'),
     fs = require('fs'),
     table = options.table,
     log = require('../log')(options.source + '.' + table, options.batch),
     timer = require('../timer'),
     stringify = require('csv-stringify'),
-    creds = require('../../creds/oracle'),
+    creds = require('../../creds/rptp'),
     allBinds = require('../../input/binds'),
     bindQuery = require('../bindQuery'),
     outputFile = require('../outputFile'),
@@ -15,18 +15,18 @@ module.exports = function(options, spinner, moduleCallback) {
     binds = {};
 
   async.waterfall([
-      //connect to oracle
+      //connect to rptp
       function(cb) {
-        oracledb.getConnection(creds, function(err, conn) {
+        rptp.getConnection(creds, function(err, conn) {
           db = conn;
-          if (err) return cb("OracleDB connection error: " + err);
+          if (err) return cb("RPTP connection error: " + err);
           cb(null);
         })
       },
       //read query
       function(cb) {
         log.group('readquery');
-        fs.readFile('input/oracle/' + table + '.sql', 'utf-8', function(err, data) {
+        fs.readFile('input/rptp/' + table + '.sql', 'utf-8', function(err, data) {
           if (err) return cb("fs readFile error on input query: " + err);
           cb(null, data);
         })
@@ -50,12 +50,12 @@ module.exports = function(options, spinner, moduleCallback) {
       },
       //run query
       function(sql, opfile, cb) {
-        log.group('oracle').log('Selecting data from OracleDB');
+        log.group('rptp').log('Selecting data from RPTP');
         db.execute(sql, [], {
           resultSet: true,
           prefetchRows: 10000
         }, function(err, results) {
-          if (err) return cb("Oracle SELECT query error: " + err);
+          if (err) return cb("RPTP SELECT query error: " + err);
           var columnDefs = results.metaData,
             rowsProcessed = 0,
             columns = [];
@@ -72,7 +72,7 @@ module.exports = function(options, spinner, moduleCallback) {
 
           function processResultSet() {
             results.resultSet.getRows(500, function(err, rows) {
-              if (err) return cb("Oracle resultSet.getRows() error: " + err);
+              if (err) return cb("RPTP resultSet.getRows() error: " + err);
               if (rows.length) {
                 rowsProcessed += rows.length;
                 stringify(rows, {
