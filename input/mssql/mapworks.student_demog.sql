@@ -12,12 +12,12 @@ SELECT DISTINCT
           CASE
              WHEN :current_term LIKE '%01'
              THEN
-                CONCAT (SUBSTRING (:current_term, 3, 2) - 1,
-                        SUBSTRING (:current_term, 3, 2))
+                CONCAT (SUBSTRING (CAST(:current_term AS VARCHAR(10)), 3, 2) - 1,
+                        SUBSTRING (CAST(:current_term AS VARCHAR(10)), 3, 2))
              WHEN :current_term LIKE '%03'
              THEN
-                CONCAT (SUBSTRING (:current_term, 3, 2),
-                        SUBSTRING (:current_term, 3, 2) + 1)
+                CONCAT (SUBSTRING (CAST(:current_term AS VARCHAR(10)), 3, 2),
+                        SUBSTRING (CAST(:current_term AS VARCHAR(10)), 3, 2) + 1)
              ELSE
                 NULL
           END)
