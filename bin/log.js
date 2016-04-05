@@ -2,7 +2,7 @@
  * Logger - piped between source and destination so there
  *   is only one log per bridge run.
  */
-var fs = require('graceful-fs'),
+var fs = require('fs'),
   mkdirp = require('mkdirp');
 
 //if development environment, use development log instead

@@ -1,6 +1,6 @@
 module.exports = function(options, spinner, moduleCallback) {
 
-  var fs = require('graceful-fs'),
+  var fs = require('fs'),
     async = require('async'),
     file = options.table,
     filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + file + '.csv',

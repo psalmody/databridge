@@ -1,7 +1,7 @@
 /**
  * Cleanup logs and output folder - prompt user for number of days
  */
-var fs = require('graceful-fs'),
+var fs = require('fs'),
   async = require('async'),
   colors = require('colors/safe'),
   rimraf = require('rimraf'),

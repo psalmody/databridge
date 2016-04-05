@@ -3,7 +3,7 @@
  * output file and return them as column definitions.
  */
 module.exports = function(opfile, callback) {
-  var fs = require('graceful-fs'),
+  var fs = require('fs'),
     columns = [];
 
   //try and parse SQL data type from javascript data type

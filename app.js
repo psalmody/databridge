@@ -6,7 +6,7 @@
 var program = require('commander'),
   async = require('async'),
   colors = require('colors'),
-  fs = require('graceful-fs'),
+  fs = require('fs'),
   bridge = require('./bin/bridge'),
   missingKeys = require('./bin/missingKeys'),
   pkg,

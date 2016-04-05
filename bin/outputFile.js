@@ -11,7 +11,7 @@ module.exports = function(opts, moduleCallback) {
   } : opts;
   //setup and require
   var FILE = new Object(),
-    fs = require('graceful-fs'),
+    fs = require('fs'),
     mkdirp = require('mkdirp'),
     dt = new Date(),
     dirname = __dirname.replace(/\\/g, '/'),

@@ -3,7 +3,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
   var mssql = require('mssql'),
     creds = require('../../creds/mssql'),
     async = require('async'),
-    fs = require('graceful-fs');
+    fs = require('fs');
 
 
   var db = options.source,

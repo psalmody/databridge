@@ -5,7 +5,7 @@
  */
 module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
   var table = options.source + '.' + options.table,
-    fs = require('graceful-fs'),
+    fs = require('fs'),
     mkdirp = require('mkdirp'),
     async = require('async');
 

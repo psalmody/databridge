@@ -2,7 +2,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
 
 
   var request = require('request'),
-    fs = require('graceful-fs'),
+    fs = require('fs'),
     async = require('async'),
     clcreds = require('../../creds/campuslabs.js'),
     accounts = [];
