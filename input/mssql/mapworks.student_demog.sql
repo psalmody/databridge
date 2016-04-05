@@ -277,7 +277,7 @@ SELECT DISTINCT
                        StudentNumber
                   FROM csv.dbo.housing housing
                  WHERE     housing.StudentNumber = enrolled.STUDENT_ID
-                       AND housing.Term_Code = enrolled.TERM_CODE)
+                       AND housing.TermNumericCode = enrolled.TERM_CODE)
                   IS NOT NULL
           THEN
              1
