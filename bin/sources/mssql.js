@@ -15,15 +15,8 @@ module.exports = function(options, spinner, moduleCallback) {
     db = options.source,
     prependFile = require('prepend-file');
 
-  //request timeout for mssql database
-  /*creds.options = {
-    requestTimeout: -1
-  };
-  creds.requestTimeout = -1;*/
-
   async.waterfall([
     function(cb) {
-      console.log(creds);
       mssql.connect(creds).then(function() {
         log.group('mssql').log('connected to mssql');
         cb(null);
