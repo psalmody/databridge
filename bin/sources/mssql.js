@@ -2,6 +2,7 @@ module.exports = function(options, spinner, moduleCallback) {
   var mssql = require('mssql'),
     async = require('async'),
     creds = require('../../creds/mssql'),
+    creds.requestTimeout = 60000,
     fs = require('fs'),
     table = options.table.indexOf('.') > -1 ? options.table : 'dbo.' + options.table,
     schema = table.split('.')[0],
