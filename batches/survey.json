@@ -1,0 +1,16 @@
+[{
+  "binds": true,
+  "source": "csv",
+  "table": "housing",
+  "destination": "mssql"
+}, {
+  "binds": true,
+  "source": "rptp",
+  "table": "surveys.population_open",
+  "destination": "mssql"
+}, {
+  "binds": true,
+  "source": "mssql",
+  "table": "surveys.population_open",
+  "destination": "xlsx"
+}]
