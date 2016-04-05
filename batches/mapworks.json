@@ -158,4 +158,9 @@
   "source": "mssql",
   "table": "mapworks.student_demog",
   "destination": "csv"
+}, {
+  "binds": true,
+  "source": "oracle",
+  "table": "mapworks.active_faculty",
+  "destination": "csv"
 }]

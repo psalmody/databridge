@@ -1,0 +1,16 @@
+[{
+  "binds": true,
+  "source": "csv",
+  "table": "housing_fall_2015",
+  "destination": "mysql"
+}, {
+  "binds": true,
+  "source": "oracle",
+  "table": "sex_birth",
+  "destination": "mysql"
+}, {
+  "binds": true,
+  "source": "oracle",
+  "table": "FirstYearOnVOffCampusStudents",
+  "destination": "mysql"
+}]
