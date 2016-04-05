@@ -16,8 +16,9 @@ module.exports = function(options, spinner, moduleCallback) {
     prependFile = require('prepend-file');
 
   //request timeout for mssql database
-  creds.options.requestTimeout = 60000;
-  creds.options.connectionTimeout = 60000;
+  creds.options = {
+    requestTimeout: 60000
+  };
 
   async.waterfall([
     function(cb) {
