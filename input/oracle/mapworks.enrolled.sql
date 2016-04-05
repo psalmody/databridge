@@ -30,13 +30,13 @@ SELECT DISTINCT
                 ENROLLED_STUDENTS_BY_TERM.PRIMARY_DEGREE_COLLEGE
        INNER JOIN CLASS_LIST
           ON     ENROLLED_STUDENTS_BY_TERM.STUDENT_ID = CLASS_LIST.STUDENT_ID
-             AND class_list.current_term = :current_term
+             AND CLASS_LIST.TERM_CODE = :current_term
              AND CLASS_LIST.COURSE_CAMPUS = 'A'
              AND CLASS_LIST.COURSE_SECTION NOT LIKE '2%'
              AND CLASS_LIST.COURSE_SECTION NOT LIKE '5%'
              AND CLASS_LIST.COURSE_SECTION NOT LIKE '8%'
-             AND class_list.registration_status_code NOT IN ('AU', 'FW')
-             AND class_list.registration_status_code NOT LIKE 'W%'
+             AND CLASS_LIST.registration_status_code NOT IN ('AU', 'FW')
+             AND CLASS_LIST.registration_status_code NOT LIKE 'W%'
  WHERE     1 = 1
        AND ENROLLED_STUDENTS_BY_TERM.TERM_CODE = :current_term
        AND enrolled_students_by_term.CLASS_STANDING IN ('FR',
