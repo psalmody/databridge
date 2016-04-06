@@ -31,7 +31,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         cb(null);
       });*/
       fs.writeFileSync('./output/csv/' + table + '.csv', data.replace(/,/g, '').replace(/\t/g, ','));
-      log.log('Copied file, removed all commas and replaces tabs with commas.');
+      //log.log('Copied file, removed all commas and replaces tabs with commas.');
       cb(null);
     }
   ], function(err) {
