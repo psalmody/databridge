@@ -85,4 +85,11 @@ SELECT DISTINCT
           ON     GOREMAL.GOREMAL_PREFERRED_IND = 'Y'
              AND GOREMAL.GOREMAL_STATUS_IND = 'A'
              AND DEMOG.STUDENT_PIDM = GOREMAL.GOREMAL_PIDM
- WHERE DEMOG.TERM_CODE = :current_term
+ WHERE     DEMOG.TERM_CODE = :current_term
+       AND STATS.HOME_CAMPUS IN ('A',
+                                 'I',
+                                 'D',
+                                 'P',
+                                 'V',
+                                 'B',
+                                 'R')

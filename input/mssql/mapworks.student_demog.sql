@@ -76,7 +76,7 @@ SELECT DISTINCT
        finaid.PELL_PGI AS "EFC",
        CASE
           WHEN cast (finaid.UNMET_NEED AS DECIMAL (18, 2)) < 0 THEN 0
-          ELSE ROUND (cast (finaid.UNMET_NEED AS DECIMAL (18, 2)), 2)
+          ELSE FLOOR (cast (finaid.UNMET_NEED AS DECIMAL (18, 2)))
        END
           AS "UnmetNeed",
        CASE WHEN fed_aid_awarded.PIDM IS NOT NULL THEN 1 ELSE 0 END
@@ -164,8 +164,8 @@ SELECT DISTINCT
           FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'AARC')
           AS "ACCUPLACERReading",
-       adm_latest.APPLICATION_DATE AS "ApplicationDate",
-       adm_latest.DECISION_DATE AS "AdmissionDate",
+       FORMAT(adm_latest.APPLICATION_DATE, 'MM/dd/yyyy', 'en-US') AS "ApplicationDate",
+       FORMAT(adm_latest.DECISION_DATE, 'MM/dd/yyyy','en-US') AS "AdmissionDate",
        SUBSTRING (adm_latest.APPLICATION_TERM, 1, 4) AS "EnrollYear",
        adm_latest.APPLICATION_TERM AS "EnrollTerm",
        CASE
