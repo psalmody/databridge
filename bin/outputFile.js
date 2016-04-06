@@ -1,6 +1,6 @@
 /**
  * handles the output file created for data between
- * source and destination 
+ * source and destination
  */
 module.exports = function(opts, moduleCallback) {
   //options are required
@@ -11,7 +11,7 @@ module.exports = function(opts, moduleCallback) {
   } : opts;
   //setup and require
   var FILE = new Object(),
-    fs = require('fs'),
+    fs = require('graceful-fs'),
     mkdirp = require('mkdirp'),
     dt = new Date(),
     dirname = __dirname.replace(/\\/g, '/'),
