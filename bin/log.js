@@ -2,7 +2,7 @@
  * Logger - piped between source and destination so there
  *   is only one log per bridge run.
  */
-var fs = require('graceful-fs'),
+var fs = require('fs'),
   mkdirp = require('mkdirp');
 
 //if development environment, use development log instead
@@ -29,27 +29,25 @@ module.exports = function(table, batch) {
   })
 
   //log command line call
-  fs.appendFile(log.filename, process.argv.join(' ') + '\n', function(err) {
-    if (err) return console.error(err);
-  })
+  fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');
 
   //log.error - includes Error! at beginning
   log.error = function(err) {
     if (first) {
-      fs.appendFile(log.filename, dt.toString() + '\n');
+      fs.appendFileSync(log.filename, dt.toString() + '\n');
       first = false;
     }
-    fs.appendFile(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + "\n");
+    fs.appendFileSync(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + "\n");
     return log;
   };
 
   //log.log - regular loggin function
   log.log = function(msg) {
     if (first) {
-      fs.appendFile(log.filename, dt.toString() + '\n');
+      fs.appendFileSync(log.filename, dt.toString() + '\n');
       first = false;
     }
-    fs.appendFile(log.filename, log.g + ': ' + msg + "\n");
+    fs.appendFileSync(log.filename, log.g + ': ' + msg + "\n");
     return log;
   };
 
