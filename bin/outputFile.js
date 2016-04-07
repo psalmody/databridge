@@ -61,6 +61,14 @@ module.exports = function(opts, moduleCallback) {
     })
   }
 
+  //stream options
+  FILE.createWriteStream = function() {
+    return fs.createWriteStream(FILE.filename);
+  }
+  FILE.createReadStream = function() {
+    return fs.createReadStream(FILE.filename);
+  }
+
   //if filename isn't specified, then create file/directory
   if (typeof(opts.filename) == 'undefined') {
     mkdirp(dir, function(err) {

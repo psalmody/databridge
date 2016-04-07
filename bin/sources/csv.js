@@ -6,7 +6,8 @@ module.exports = function(options, spinner, moduleCallback) {
     filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + file + '.csv',
     log = require('../log')(file, options.batch),
     timer = require('../timer'),
-    outputFile = require('../outputFile');
+    outputFile = require('../outputFile'),
+    Stream = require('stream');
 
   async.waterfall([
     function(cb) {
@@ -25,17 +26,24 @@ module.exports = function(options, spinner, moduleCallback) {
     },
     //read data and change to tab-delimited
     function(opfile, cb) {
-      fs.readFile(filename, 'utf-8', function(err, data) {
-        if (err) return cb(err);
-        cb(null, opfile, data.replace(/,/g, '\t'));
+      //creating through stream to format data
+      var comma2TabStream = new Stream.Transform();
+      comma2TabStream._transform = function(chunk, encoding, done) {
+        var data = chunk.toString().replace(/,/g,'\t');
+        this.push(data);
+        done();
+      }
+      //pipe data from csv to output file
+      var opfileWStream = opfile.createWriteStream();
+      var readCSVStream = fs.createReadStream(filename);
+
+      opfileWStream.on('error',function(err) {
+        cb(err);
       })
-    },
-    //write data to opfile
-    function(opfile, data, cb) {
-      opfile.append(data, function(err) {
-        if (err) return cb(err);
+      opfileWStream.on('finish', function() {
         cb(null, opfile);
       })
+      readCSVStream.pipe(comma2TabStream).pipe(opfileWStream);
     }
   ], function(err, opfile) {
     if (err) {

@@ -67,7 +67,7 @@ module.exports = function(opts, moduleCallback) {
   ], function(err, opfile, log) {
     spinner.stop(true);
     try {
-      opfile.clean();
+      if (process.NODE_ENV !== 'development') opfile.clean();
     } catch (e) {
       error(e);
     }
