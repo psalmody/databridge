@@ -1,9 +1,13 @@
 module.exports = function(options, spinner, moduleCallback) {
 
+  var dt = new Date(),
+    dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
+
+
   var fs = require('fs'),
     async = require('async'),
     file = options.table,
-    filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + file + '.csv',
+    filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + dir + '/' + file + '.csv',
     log = require('../log')(file, options.batch),
     timer = require('../timer'),
     outputFile = require('../outputFile'),
@@ -29,15 +33,15 @@ module.exports = function(options, spinner, moduleCallback) {
       //creating through stream to format data
       var comma2TabStream = new Stream.Transform();
       comma2TabStream._transform = function(chunk, encoding, done) {
-        var data = chunk.toString().replace(/,/g,'\t');
-        this.push(data);
-        done();
-      }
-      //pipe data from csv to output file
+          var data = chunk.toString().replace(/,/g, '\t');
+          this.push(data);
+          done();
+        }
+        //pipe data from csv to output file
       var opfileWStream = opfile.createWriteStream();
       var readCSVStream = fs.createReadStream(filename);
 
-      opfileWStream.on('error',function(err) {
+      opfileWStream.on('error', function(err) {
         cb(err);
       })
       opfileWStream.on('finish', function() {

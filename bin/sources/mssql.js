@@ -71,8 +71,8 @@ module.exports = function(options, spinner, moduleCallback) {
         for (key in row) {
           vals.push(row[key]);
         }
-        rowsProcessed ++;
-        opfileWStream.write(vals.join('\t')+'\n');
+        rowsProcessed++;
+        opfileWStream.write(vals.join('\t') + '\n');
 
       });
       request.on('error', function(err) {
@@ -101,7 +101,6 @@ module.exports = function(options, spinner, moduleCallback) {
     }
     if (err) {
       log.error(err);
-
       return moduleCallback(err);
     }
     log.group('Finished').log(timer.now.str());
