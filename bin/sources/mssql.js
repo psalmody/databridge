@@ -103,7 +103,7 @@ module.exports = function(options, spinner, moduleCallback) {
       log.error(err);
       return moduleCallback(err);
     }
-    log.group('Finished').log(timer.now.str());
+    log.group('Finished source').log(timer.now.str());
     moduleCallback(null, opfile, log, timer);
   })
 }

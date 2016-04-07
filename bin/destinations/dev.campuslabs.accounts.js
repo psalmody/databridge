@@ -76,7 +76,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     ],
     function(err) {
       if (err) return moduleCallback(err);
-      log.group('Finished').log(timer.now.str());
+      log.group('Finished destination').log(timer.now.str());
       moduleCallback(null, opfile);
     })
 }
