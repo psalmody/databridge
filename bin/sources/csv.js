@@ -1,13 +1,12 @@
 module.exports = function(options, spinner, moduleCallback) {
 
-  var dt = new Date(),
-    dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
+
 
 
   var fs = require('fs'),
     async = require('async'),
     file = options.table,
-    filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + dir + '/' + file + '.csv',
+    filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + file + '.csv',
     log = require('../log')(file, options.batch),
     timer = require('../timer'),
     outputFile = require('../outputFile'),

@@ -4,28 +4,32 @@
  * output file to csv.
  */
 module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
+
+  var dt = new Date(),
+    dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
+
   var table = options.source + '.' + options.table,
     fs = require('graceful-fs'),
     mkdirp = require('mkdirp'),
     async = require('async'),
     Stream = require('stream');
 
-  log.group('CSV Output').log('Copying file from opfile tmp to output/csv/' + table + '.csv');
+  log.group('CSV Output').log('Copying file from opfile tmp to output/csv/' + dir + '/' + table + '.csv');
 
   async.waterfall([
     function(cb) {
-      mkdirp('./output/csv/', function(err) {
+      mkdirp('./output/csv/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
       })
     },
-    function(cb) {
+    /*function(cb) {
       fs.readFile(opfile.filename, 'utf-8', function(err, data) {
         if (err) return cb(err);
         cb(null, data);
       })
-    },
-    function(data, cb) {
+    },*/
+    function( /*data,*/ cb) {
       //streaming data from outputFile to CSV
       var tab2CommaStream = new Stream.Transform();
       tab2CommaStream._transform = function(chunk, encoding, done) {
@@ -35,7 +39,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         }
         //pipe data
       var opfileRStream = opfile.createReadStream();
-      var outputCSVStream = fs.createWriteStream('./output/csv/' + table + '.csv');
+      var outputCSVStream = fs.createWriteStream('./output/csv/' + dir + '/' + table + '.csv');
       outputCSVStream.on('error', function(err) {
         cb(err);
       })
