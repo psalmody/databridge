@@ -42,13 +42,11 @@ module.exports = function(opts, moduleCallback) {
     } : callback;
     //don't accidentally append data to user loaded csv file
     if (typeof(opts.filename) !== 'undefined') return callback('Won\'t append to pre-existing file.');
-    /*//append data and return callback
+    //append data and return callback
     fs.appendFile(FILE.filename, data, function(err) {
       if (err) return callback(err);
       callback(null);
-    })*/
-    fs.appendFileSync(FILE.filename, data);
-    callback(null);
+    })
   }
 
   //get first two lines of data for column definitions

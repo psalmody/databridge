@@ -54,6 +54,7 @@ module.exports = function(options, spinner, moduleCallback) {
       var request = new mssql.Request();
 
       var columns = '';
+      var thousand = [];
 
       request.stream = true;
       request.query(sql);
@@ -67,12 +68,20 @@ module.exports = function(options, spinner, moduleCallback) {
         for (key in row) {
           vals.push(row[key]);
         }
-        opfile.append(vals.join('\t') + '\n');
+        if (thousand.length < 999) {
+          thousand.push(vals.join('\t'))
+        } else {
+          thousand.push(vals.join('\t'))
+          opfile.append(thousand.join('\n'));
+          thousand.length = 0;
+        }
       });
       request.on('error', function(err) {
         cb(err);
       });
       request.on('done', function(affected) {
+        //don't forget any leftover rows
+        if (thousand.length) opfile.append(thousand.join('\n'));
         log.log('Rows: ' + affected);
         cb(null, columns, opfile);
       })

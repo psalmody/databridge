@@ -23,13 +23,7 @@ SELECT DISTINCT
           END)
           AS "YearId",
        :current_term AS "TermId",
-       CASE
-          WHEN ENROLLED.CLASS_STANDING IN ('JR', 'SR') THEN 3
-          WHEN ENROLLED.CLASS_STANDING = 'FR' THEN 1
-          WHEN ENROLLED.CLASS_STANDING = 'SO' THEN 2
-          ELSE NULL
-       END
-          AS "RiskGroupId",
+       NULL AS "RiskGroupId",
        LTRIM (RTRIM (addr_current.Address1)) AS "Address1",
        LTRIM (RTRIM (addr_current.Address2)) AS "Address2",
        LTRIM (RTRIM (addr_current.City)) AS "City",
