@@ -23,12 +23,6 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         cb(null);
       })
     },
-    /*function(cb) {
-      fs.readFile(opfile.filename, 'utf-8', function(err, data) {
-        if (err) return cb(err);
-        cb(null, data);
-      })
-    },*/
     function( /*data,*/ cb) {
       //streaming data from outputFile to CSV
       var tab2CommaStream = new Stream.Transform();
@@ -47,14 +41,6 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         cb(null);
       })
       opfileRStream.pipe(tab2CommaStream).pipe(outputCSVStream);
-      /*fs.writeFile('./output/csv/' + table + '.csv', data.replace(/,/g, '').replace(/\t/g, ','), 'utf-8', function(err) {
-        if (err) return cb(err);
-        log.log('Copied file, removed all , and then replaced tabs with commas.');
-        cb(null);
-      });*/
-      //fs.writeFileSync('./output/csv/' + table + '.csv', data.replace(/,/g, '').replace(/\t/g, ','));
-      //log.log('Copied file, removed all commas and replaces tabs with commas.');
-      //cb(null);
     }
   ], function(err) {
     if (err) return moduleCallback(err);

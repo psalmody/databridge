@@ -29,6 +29,10 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     },
     //drop existing table
     function(cb) {
+      if (options.update) {
+        log.log('Insert only - not dropping table.');
+        return cb(null); //don't drop table if update option
+      }
       db.query('DROP TABLE IF EXISTS ' + table, function(err) {
         if (err) return cb(err);
         cb(null);
@@ -36,6 +40,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     },
     //create new table
     function(cb) {
+      if (options.update) return cb(null); //don't drop table if update option
       log.group('Table setup').log('Dropped table, setting new.');
       var sql = sqlTable();
       log.log(sql);

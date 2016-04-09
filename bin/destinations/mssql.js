@@ -56,6 +56,10 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     },
     //drop table if exists
     function(cb) {
+      if (options.update) {
+        log.log('Insert only - not dropping table.');
+        return cb(null); //don't drop table if update option
+      }
       var sql = "USE " + db + "; IF OBJECT_ID('" + table + "') IS NOT NULL DROP TABLE " + table;
       new mssql.Request().query(sql).then(function() {
         log.log('dropped table (if exists)');
@@ -66,6 +70,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     },
     //create table
     function(cb) {
+      if (options.update) return cb(null); //don't drop table if update option
       log.group('Table setup').log('creating table');
       var sql = sqlTable();
       log.log(sql);
@@ -171,9 +176,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     }
   ], function(err) {
     mssql.close();
-    if (err) {
-      return moduleCallback(err);
-    }
+    if (err) return moduleCallback(err);
     log.group('Finished destination').log(timer.now.str());
     moduleCallback(null, opfile);
   })

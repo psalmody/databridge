@@ -71,6 +71,7 @@ async.waterfall([
         .option('-b, --binds', 'Use default binds from input/binds.js rather than prompting ' + newline + '(applies to some sources only).')
         .option('-k, --task', 'This command is a schedule task or piping to output file.' + newline + 'Don\'t generate processing spinner.')
         .option('--batch [batch]', 'Run json [batch] from batches/')
+        .option('-u, --update', 'Update table (insert data only) don\'t overwrite ' + newline + 'existing table or update table structure (for database destinations).')
         .on('--help', function() {
           console.log('  Examples: ');
           console.log('');
@@ -161,7 +162,8 @@ async.waterfall([
             destination: program.destination,
             binds: program.binds,
             table: program.table,
-            task: program.task
+            task: program.task,
+            update: program.update
           }, function(err) {
             if (err) return cb2(err);
             cb2(null);
