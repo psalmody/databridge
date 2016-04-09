@@ -26,10 +26,11 @@ module.exports = function(table, batch) {
   //use mkdirp to make log folders recursively if not existing
   mkdirp('logs/' + dir + '/' + batch, function(err) {
     if (err) return console.error(err);
+    //log command line call
+    fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');
   })
 
-  //log command line call
-  fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');
+
 
   //log.error - includes Error! at beginning
   log.error = function(err) {
