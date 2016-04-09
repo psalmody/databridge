@@ -8,8 +8,8 @@ module.exports = function(options, spinner, moduleCallback) {
     stringify = require('csv-stringify'),
     creds = require('../../creds/rptp'),
     allBinds = require('../../input/binds'),
-    bindQuery = require('../bindQuery'),
-    outputFile = require('../outputFile'),
+    bindQuery = require('../bind-query'),
+    outputFile = require('../output-file'),
     db,
     query = '',
     binds = {};

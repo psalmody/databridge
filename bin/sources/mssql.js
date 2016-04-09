@@ -8,10 +8,10 @@ module.exports = function(options, spinner, moduleCallback) {
     log = require('../log')(options.source + '.' + table, options.batch),
     timer = require('../timer'),
     allBinds = require('../../input/binds'),
-    bindQuery = require('../bindQuery'),
+    bindQuery = require('../bind-query'),
     query = '',
     binds = {},
-    outputFile = require('../outputFile'),
+    outputFile = require('../output-file'),
     db = options.source,
     prependFile = require('prepend-file');
 

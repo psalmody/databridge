@@ -9,7 +9,7 @@ module.exports = function(options, spinner, moduleCallback) {
     filename = __dirname.replace(/\\/g, '/') + '/../../input/csv/' + file + '.csv',
     log = require('../log')(file, options.batch),
     timer = require('../timer'),
-    outputFile = require('../outputFile'),
+    outputFile = require('../output-file'),
     Stream = require('stream');
 
   async.waterfall([

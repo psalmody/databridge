@@ -6,11 +6,11 @@ module.exports = function(opts, moduleCallback) {
   //setup timer and define shortcuts for log/error
   var tmr = require('./timer'),
     async = require('async'),
-    missingKeys = require('./missingKeys'),
+    missingKeys = require('./missing-keys'),
     l = console.log,
     error = console.error,
     fs = require('fs'),
-    colParser = require('./colParser'),
+    colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
     spinner = new Spinner('processing... %s');
 
