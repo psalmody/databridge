@@ -30,6 +30,7 @@
     "prompt": "^1.0.0",
     "request": "^2.69.0",
     "rimraf": "^2.5.2",
+    "split": "^1.0.0",
     "stream": "0.0.2"
   },
   "devDependencies": {

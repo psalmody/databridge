@@ -5,8 +5,6 @@
  */
 module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
 
-  var dt = new Date(),
-    dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
 
   var table = options.source + '.' + options.table,
     fs = require('graceful-fs'),
@@ -23,7 +21,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         cb(null);
       })
     },
-    function( /*data,*/ cb) {
+    function(cb) {
       //streaming data from outputFile to CSV
       var tab2CommaStream = new Stream.Transform();
       tab2CommaStream._transform = function(chunk, encoding, done) {

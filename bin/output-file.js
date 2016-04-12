@@ -49,6 +49,9 @@ module.exports = function(opts, moduleCallback) {
     })
   }
 
+  //get first line for column titles
+
+
   //get first two lines of data for column definitions
   FILE.twoLines = function(callback) {
     var callback = typeof(callback) == 'undefined' ? function() {
