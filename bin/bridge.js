@@ -19,7 +19,7 @@ module.exports = function(opts, moduleCallback) {
 
   spinner.setSpinnerString(0);
   //don't start if -k or --task (accomplished by overriding spinner.start())
-  if (Object.keys(opts).indexOf('task') > -1) spinner.start = function() {
+  if (opts.task) spinner.start = function() {
     return;
   };
 
