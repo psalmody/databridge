@@ -4,9 +4,6 @@ SELECT DISTINCT
        REPLACE (enrolled.STUDENT_NAME_FIRST, ',', '') AS "Firstname",
        REPLACE (enrolled.STUDENT_NAME_LAST, ',', '') AS "Lastname",
        1 AS "IsActive",
-       NULL AS "SurveyCohort",
-       CASE WHEN ENROLLED.CLASS_STANDING IN ('FR', 'SO') THEN 1 ELSE 0 END
-          AS "ReceiveSurvey",
        CONCAT (
           '20',
           CASE
