@@ -32,6 +32,8 @@ module.exports = function(options, spinner, moduleCallback) {
       //creating through stream to format data
       var comma2TabStream = new Stream.Transform();
       comma2TabStream._transform = function(chunk, encoding, done) {
+          //TODO change to line by line and only replace , outside "" using some kind
+          // of regex like /(,)(?=(?:[^"]|"[^"]*")*$)/g
           var data = chunk.toString().replace(/,/g, '\t');
           this.push(data);
           done();

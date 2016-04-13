@@ -101,20 +101,20 @@ async.waterfall([
             if (files[i].indexOf('.') !== 0) valid.push(files[i].replace(/.sql|.js|.csv|.txt/g, ''));
           }
           console.log('Valid tables for ' + program.source + ':');
-          console.log('  ' + valid.join(', '));
+          console.log('  ' + valid.join('\n  '));
         })
         return;
       }
       //show valid sources
       else if (missingKeys(program, ['source', 'show']) == false) {
         console.log('Valid sources:');
-        console.log('  ' + sources.join(', '));
+        console.log('  ' + sources.join('\n  '));
         process.exit();
       }
       //show valid destinations
       else if (missingKeys(program, ['destination', 'show']) == false) {
         console.log('Valid destinations:');
-        console.log('  ' + destinations.join(', '));
+        console.log('  ' + destinations.join('\n  '));
         process.exit();
       }
       //show valid batches

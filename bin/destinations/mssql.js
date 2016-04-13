@@ -102,6 +102,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
           //escape any ' in the data
           var s = arr[i].replace(/'/g, "''").split('\t');
           //if missing columns, push null values
+
           while (s.length < columns.length) {
             s.push('null');
           }
@@ -124,16 +125,10 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
           callback(rP);
         }).catch(function(err) {
           //if error, kill the entire script
-          log.error('Error in insertLines()');
-          log.error(request);
+          log.error('Error in insertLines(). This may be caused by extra commas in your data.');
           log.error(rowsProcessed);
           log.error(arr);
           log.error(err);
-          console.log(sql);
-          console.log(request);
-          console.log(rowsProcessed);
-          console.log("Error in  insertLines()");
-          console.log(JSON.stringify(arr, null, 2));
           process.exit();
         })
       }
