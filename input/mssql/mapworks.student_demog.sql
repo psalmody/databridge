@@ -20,7 +20,6 @@ SELECT DISTINCT
           END)
           AS "YearId",
        :current_term AS "TermId",
-       NULL AS "RiskGroupId",
        LTRIM (RTRIM (addr_current.Address1)) AS "Address1",
        LTRIM (RTRIM (addr_current.Address2)) AS "Address2",
        LTRIM (RTRIM (addr_current.City)) AS "City",
@@ -117,7 +116,6 @@ SELECT DISTINCT
           FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'EAMA')
           AS "ACTMath",
-       NULL AS "ACTWriting",                -- we don't have one (Peggy Byers)
        (SELECT LTS_SCORE
           FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'EASR')
@@ -130,7 +128,6 @@ SELECT DISTINCT
           FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'SATM')
           AS "SATMath",
-       NULL AS "SATComposite",              -- we don't have one (Peggy Byers)
        (SELECT LTS_SCORE
           FROM rptp.mapworks.test_scores test_scores
          WHERE LTS_PIDM = ENROLLED.PIDM AND LTS_CODE = 'SATW')
