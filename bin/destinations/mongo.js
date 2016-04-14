@@ -35,6 +35,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       })
     },
     function(cb) {
+      //sometimes only insert, don't delete data
       if (options.update) {
         log.log('Insert only - not dropping existing data.');
         return cb(null);
