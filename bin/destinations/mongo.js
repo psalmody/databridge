@@ -11,7 +11,6 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     Stream = require('stream'),
     split = require('split');
 
-
   const table = options.table.indexOf('.') > -1 ? options.table : 'dbutil.' + options.table;
   const databaseName = table.split('.')[0];
   const collectionName = table.split('.')[1];
