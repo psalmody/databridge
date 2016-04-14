@@ -17,6 +17,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
 
   async.waterfall([
     function(cb) {
+      //connect to mongo
       client.connect(creds + databaseName, function(err, database) {
         if (err) return cb(err);
         db = database;
@@ -25,6 +26,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       })
     },
     function(cb) {
+      //create colleciton (if not already existing)
       db.createCollection(collectionName, function(err, coll) {
         if (err) return cb(err);
         collection = coll;
