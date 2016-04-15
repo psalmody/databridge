@@ -1,0 +1,16 @@
+[{
+  "binds": true,
+  "source": "rptp",
+  "table": "employees.ferpa_certified",
+  "destination": "mssql"
+}, {
+  "binds": true,
+  "source": "rptp",
+  "table": "employees.student_affairs",
+  "destination": "mssql"
+}, {
+  "binds": true,
+  "source": "mssql",
+  "table": "campuslabs.accounts",
+  "destination": "dev.campuslabs.accounts"
+}]
