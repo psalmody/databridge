@@ -3,6 +3,9 @@
  * tool prividing all the command line options.
  */
 
+//assume we're in development
+process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? 'development' : process.env.NODE_ENV;
+
 var program = require('commander'),
   async = require('async'),
   colors = require('colors'),
@@ -12,10 +15,10 @@ var program = require('commander'),
   pkg,
   sources = [],
   destinations = [],
-  batches = [];
+  batches = [],
+  config = require('./config/' + process.env.NODE_ENV);
 
-//assume we're in development
-process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? 'development' : process.env.NODE_ENV;
+console.log(config);
 
 async.waterfall([
     //get package.json (for version exposure)
