@@ -8,7 +8,8 @@
     "start": "node app",
     "clean": "node bin/clean",
     "deploy": "git add . && git commit -m \"npm deploy\" && git push origin master",
-    "pullinstall": "git pull && npm install"
+    "pullinstall": "git pull && npm install",
+    "test_temp": "node app -s rptp -t employees.ferpa_certified -d mssql"
   },
   "author": "Michael A Smith msmith104@uaa.alaska.edu @psalmody psalmody@gmail.com",
   "dependencies": {
@@ -34,7 +35,7 @@
     "stream": "0.0.2"
   },
   "devDependencies": {
-    "assert": "^1.3.0",
+    "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-jsbeautifier": "^0.2.12",
