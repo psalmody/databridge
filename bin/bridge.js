@@ -15,7 +15,7 @@ module.exports = function(opts, moduleCallback) {
     spinner = new Spinner('processing... %s');
 
   //console.log(opts);
-  if (missingKeys(opts, ['source', 'destination', 'table']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
+  if (missingKeys(opts, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
 
   spinner.setSpinnerString(0);
   //don't start if -k or --task (accomplished by overriding spinner.start())
@@ -69,11 +69,11 @@ module.exports = function(opts, moduleCallback) {
     try {
       if (process.NODE_ENV !== 'development') opfile.clean();
     } catch (e) {
-      error(e);
+      if (typeof(opfile) !== 'undefined') error(e);
     }
     if (err) {
       error(tmr.now.str());
-      error(err);
+      //error(err);
       return moduleCallback(err);
     }
     l(tmr.now.str());

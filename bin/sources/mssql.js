@@ -1,4 +1,5 @@
 module.exports = function(options, spinner, moduleCallback) {
+  if (typeof(options.table) == 'undefined') return moduleCallback('Table required for ' + options.source);
   var mssql = require('mssql'),
     async = require('async'),
     creds = require('../../creds/mssql'),

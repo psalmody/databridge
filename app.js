@@ -153,7 +153,9 @@ async.waterfall([
 
       } else {
         //otherwise, run bridge once
-        var missing = missingKeys(program, ['source', 'destination', 'table']);
+        //only source / destination are required - each source module should throw
+        //an error if table is necessary
+        var missing = missingKeys(program, ['source', 'destination']);
         if (missing.length) return cb('Wrong usage.');
         //push program version
         bridges.push(function(cb2) {
