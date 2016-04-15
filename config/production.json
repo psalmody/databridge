@@ -1,0 +1,11 @@
+{
+  "dirs": {
+    "batches": "c:/www/dbutil/local/",
+    "connections": "c:/www/dbutil/connections/",
+    "destinations": "c:/www/dbutil/destinations/",
+    "input": "c:/www/dbutil/input/",
+    "logs": "c:/www/dbutil/logs/",
+    "output": "c:/www/dbutil/output/",
+    "sources": "c:/www/dbutil/sources/"
+  }
+}
