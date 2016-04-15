@@ -1,4 +1,4 @@
-SELECT AA.EMPLOYEE_ID AS "ExternalId",
+SELECT AA.EMPLOYEE_ID AS "ExternalId_IND",
        GOBTPAC.GOBTPAC_EXTERNAL_USER AS "AuthUsername",
        AA.NAME_FIRST AS "Firstname",
        AA.EMP_NAME_LAST AS "Lastname",

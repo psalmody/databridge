@@ -27,7 +27,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       //streaming data from outputFile to CSV
       var tab2CommaStream = new Stream.Transform();
       tab2CommaStream._transform = function(chunk, encoding, done) {
-          var data = chunk.toString().replace(/,/g, '').replace(/\t/g, ',');
+          var data = chunk.toString().replace(/,|_IND/g, '').replace(/\t/g, ',');
           this.push(data);
           done();
         }

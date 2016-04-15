@@ -52,24 +52,29 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       var first = true;
       var mongoWriteStream = new Stream.Writable();
       var rowCount = 0;
+      var indexes = [];
       mongoWriteStream._write = function(chunk, encoding, callback) {
         //write every line
         var data = chunk.toString().split('\t');
         var doc = {};
         //parse types
         for (var i = 0; i < columns.length; i++) {
+          //generate key and save for indexes
+          var name = columns[i].name.replace(/_IND/ig,'');
+          if (columns[i].name.toUpperCase().indexOf('_IND') !== -1) indexes.push(name);
+          //parse data types
           if (!isNaN(Number(data[i]))) {
-            doc[columns[i].name] = Number(data[i]);
+            doc[name] = Number(data[i]);
           } else if (data[i] === 'true') {
-            doc[columns[i].name] = true;
+            doc[name] = true;
           } else if (data[i] === 'false') {
-            doc[columns[i].name] = false;
+            doc[name] = false;
           } else if (
-            columns[i].name.toUpperCase().indexOf('DATE') !== -1 || columns[i].name.toUpperCase().indexOf('TIMESTAMP') !== -1 || columns[i].name.toUpperCase().indexOf('DATETIME') !== -1
+            name.toUpperCase().indexOf('DATE') !== -1 || name.toUpperCase().indexOf('TIMESTAMP') !== -1 || name.toUpperCase().indexOf('DATETIME') !== -1
           ) {
-            doc[columns[i].name] = new Date(data[i]);
+            doc[name] = new Date(data[i]);
           } else {
-            doc[columns[i].name] = data[i];
+            doc[name] = data[i];
           }
         }
         if (data.length !== columns.length) return callback();
@@ -85,10 +90,26 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         cb(err);
       });
       mongoWriteStream.on('finish', function() {
-        cb(null, rowCount);
+        cb(null, rowCount, indexes);
       })
       var opfileRStream = opfile.createReadStream();
       opfileRStream.pipe(split()).pipe(mongoWriteStream);
+    },
+    function(rowCount, indexes, cb) {
+      //create indexes
+      function makeIndex(i, callback) {
+        var ndex = {};
+        ndex[i] = 1;
+        collection.createIndex(ndex, null, function(err, results) {
+          if (err) return callback(err);
+          callback(null);
+        })
+      }
+      //TODO not making indexes?? WHY??
+      async.map(indexes, makeIndex, function(err, results) {
+        if (err) return cb(err);
+        cb(null, rowCount);
+      })
     },
     function(rowCount, cb) {
       collection.count(function(err, count) {
