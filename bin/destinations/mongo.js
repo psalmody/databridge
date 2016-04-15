@@ -32,15 +32,18 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
           return cb(null);
         }
         //delete old data
-        db.collectionNames(function(err, collections) {
+        db.listCollections({
+          name: collectionName
+        }).toArray(function(err, collections) {
           if (err) return cb(err);
-          console.log(collections);
-          if (collections) {
+          if (collections.length) {
             db.collection(collectionName).drop(function(err, results) {
               if (err) return cb(err);
               log.log('Deleted old collection.');
               cb(null);
             })
+          } else {
+            cb(null)
           }
         })
       },
