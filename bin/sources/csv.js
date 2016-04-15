@@ -1,9 +1,6 @@
 module.exports = function(options, spinner, moduleCallback) {
   if (typeof(options.table) == 'undefined') return moduleCallback('Table required for ' + options.source);
 
-
-
-
   var fs = require('fs'),
     async = require('async'),
     file = options.table,
