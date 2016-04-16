@@ -1,7 +1,7 @@
 /**
  * Bridging between source and destination
  */
-module.exports = function(opts, moduleCallback) {
+module.exports = function(config, opts, moduleCallback) {
 
   //setup timer and define shortcuts for log/error
   var tmr = require('./timer'),
@@ -27,7 +27,7 @@ module.exports = function(opts, moduleCallback) {
   //if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
 
   try {
-    source = require('./sources/' + opts.source);
+    source = require(config.dirs.sources + opts.source);
   } catch (e) {
     error('"' + opts.source + '" is not a valid source.');
     error(e.stack);
@@ -35,7 +35,7 @@ module.exports = function(opts, moduleCallback) {
   }
 
   try {
-    destination = require('./destinations/' + opts.destination);
+    destination = require(config.dirs.destinations + opts.destination);
   } catch (e) {
     error('"' + opts.destination + '" is not a valid destination.')
     error(e.stack);

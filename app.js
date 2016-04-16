@@ -32,7 +32,7 @@ async.waterfall([
     },
     //get valid sources
     function(cb) {
-      fs.readdir('./bin/sources', function(err, files) {
+      fs.readdir(config.dirs.sources, function(err, files) {
         if (err) return cb(err);
         //sources exclude .js extensions
         for (var i = 0; i < files.length; i++) {
@@ -43,7 +43,7 @@ async.waterfall([
     },
     //get valid destinations
     function(cb) {
-      fs.readdir('./bin/destinations', function(err, files) {
+      fs.readdir(config.dirs.destinations, function(err, files) {
         if (err) return cb(err);
         //again - exclude .js extension
         for (var i = 0; i < files.length; i++) {
@@ -54,7 +54,7 @@ async.waterfall([
     },
     //get batches
     function(cb) {
-      fs.readdir('./batches', function(err, files) {
+      fs.readdir(config.dirs.batches, function(err, files) {
         if (err) return cb(err);
         for (var i = 0; i < files.length; i++) {
           batches.push(files[i].replace('.json', ''));
@@ -97,7 +97,7 @@ async.waterfall([
       //parse command options for
       //show valid source table options
       if (missingKeys(program, ['source', 'table', 'show']) == false) {
-        fs.readdir('./input/' + program.source, function(err, files) {
+        fs.readdir(config.dirs.input + program.source, function(err, files) {
           if (err) return cb(err);
           var valid = [];
           for (var i = 0; i < files.length; i++) {
@@ -130,7 +130,7 @@ async.waterfall([
       var bridges = [];
       //run bridge batch
       if (missingKeys(program, ['batch']) == false) {
-        fs.readFile('./batches/' + program.batch + '.json', 'utf-8', function(err, json) {
+        fs.readFile(config.dirs.batches + program.batch + '.json', 'utf-8', function(err, json) {
           if (err) return cb(err);
           var batch = JSON.parse(json);
 
@@ -162,7 +162,7 @@ async.waterfall([
         if (missing.length) return cb('Wrong usage.');
         //push program version
         bridges.push(function(cb2) {
-          bridge({
+          bridge(config, {
             source: program.source,
             destination: program.destination,
             binds: program.binds,

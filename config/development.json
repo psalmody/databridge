@@ -1,11 +1,11 @@
 {
   "dirs": {
     "batches": "c:/www/dbutil/local/",
-    "connections": "c:/www/dbutil/connections/",
-    "destinations": "c:/www/dbutil/destinations/",
-    "input": "c:/www/dbutil/input/",
-    "logs": "c:/www/dbutil/logs/",
-    "output": "c:/www/dbutil/output/",
-    "sources": "c:/www/dbutil/sources/"
+    "connections": "c:/www/dbutil/local/connections/",
+    "destinations": "c:/www/dbutil/local/destinations/",
+    "input": "c:/www/dbutil/local/input/",
+    "logs": "c:/www/dbutil/local/logs/",
+    "output": "c:/www/dbutil/local/output/",
+    "sources": "c:/www/dbutil/local/sources/"
   }
 }
