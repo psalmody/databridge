@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
 
-  var projectFiles = ['*.js', 'bin/**/*.js', 'creds/*', 'batches/*.json', 'spec/**/*.js'];
+  var projectFiles = ['*.js', 'bin/**/*.js', 'local/**/*.js', 'local/**/*.json', 'spec/**/*.js'];
 
   // Project configuration.
   grunt.initConfig({
