@@ -18,7 +18,7 @@ var program = require('./bin/cli'),
   destinations = fs.readdirSync(config.dirs.destinations),
   batches = fs.readdirSync(config.dirs.batches);
 
-
+//show valid tables
 if (missingKeys(program, ['source', 'table', 'show']) == false) {
   fs.readdir(config.dirs.input + program.source, function(err, files) {
     if (err) return cb(err);
@@ -50,7 +50,7 @@ else if (missingKeys(program, ['batch', 'show']) == false) {
   process.exit();
 }
 
-//run bridge functions async style
+//function to run bridge functions async waterfall
 function runBridges(bridges) {
   if (!bridges.length) return cb('No bridges found or defined. Check usage or batch file.');
   //taking all bridge functions created and Running
@@ -65,7 +65,7 @@ function runBridges(bridges) {
 
 //define array of bridge functions to run
 var bridges = [];
-//run bridge batch
+//run batch if specified
 if (missingKeys(program, ['batch']) == false) {
   fs.readFile(config.dirs.batches + program.batch + '.json', 'utf-8', function(err, json) {
     if (err) return console.error(colors.red(err));
@@ -94,7 +94,10 @@ if (missingKeys(program, ['batch']) == false) {
   //only source / destination are required - each source module should throw
   //an error if table is necessary
   var missing = missingKeys(program, ['source', 'destination']);
-  if (missing.length) return cb('Wrong usage.');
+  if (missing.length) {
+    console.error(colors.red('Wrong usage.'));
+    program.help();
+  }
   //push program version
   bridges.push(function(cb) {
     bridge(config, {
