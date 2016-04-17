@@ -20,10 +20,10 @@ module.exports = function(opt) {
   //for first log time - need to log start time
   var first = true;
   //log location
-  log.filename = 'logs/' + dir + '/' + batch + table + '.' + Math.round(Date.now() / 1000) + '.log.txt';
+  log.filename = opt.cfg.dirs.logs + dir + '/' + batch + table + '.' + Math.round(Date.now() / 1000) + '.log.txt';
 
   //use mkdirp to make log folders recursively if not existing
-  mkdirp('logs/' + dir + '/' + batch, function(err) {
+  mkdirp(opt.cfg.dirs.logs + dir + '/' + batch, function(err) {
     if (err) return console.error(err);
     //log command line call
     fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');

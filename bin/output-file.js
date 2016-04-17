@@ -2,23 +2,18 @@
  * handles the output file created for data between
  * source and destination
  */
-module.exports = function(opts, moduleCallback) {
+module.exports = function(opt, moduleCallback) {
   //options are required
-  if (typeof(opts) == 'undefined') return moduleCallback('No options specified.');
-  //if opts is a string, assume it's the table name
-  var opts = typeof(opts) == 'string' ? {
-    table: opts
-  } : opts;
+  if (typeof(opt) == 'undefined') return moduleCallback('No options specified.');
   //setup and require
   var FILE = new Object(),
     fs = require('graceful-fs'),
-    mkdirp = require('mkdirp'),
-    dt = new Date(),
-    dirname = __dirname.replace(/\\/g, '/'),
-    dir = dirname + '/../output/';
+    dt = new Date();
+
+  dir = opt.cfg.dirs.output;
 
   //filename stores the complete filename for writing to later
-  FILE.filename = typeof(opts.filename) == 'undefined' ? dir + opts.table + '.' + Math.round(Date.now() / 1000) + '.dat' : opts.filename;
+  FILE.filename = dir + opt.table + '.' + Math.round(Date.now() / 1000) + '.dat';
 
   //cleanup (remove) output file
   FILE.clean = function(callback) {
@@ -26,8 +21,6 @@ module.exports = function(opts, moduleCallback) {
     var callback = typeof(callback) == 'undefined' ? function() {
       return;
     } : callback;
-    //don't cleanup csv files loaded by user
-    if (typeof(opts.filename) !== 'undefined') return callback();
     //delete file
     fs.unlink(FILE.filename, function(err) {
       if (err) return callback(err);
@@ -40,8 +33,6 @@ module.exports = function(opts, moduleCallback) {
     var callback = typeof(callback) == 'undefined' ? function() {
       return;
     } : callback;
-    //don't accidentally append data to user loaded csv file
-    if (typeof(opts.filename) !== 'undefined') return callback('Won\'t append to pre-existing file.');
     //append data and return callback
     fs.appendFile(FILE.filename, data, function(err) {
       if (err) return callback(err);
@@ -72,30 +63,20 @@ module.exports = function(opts, moduleCallback) {
     return fs.createReadStream(FILE.filename);
   }
 
-  //if filename isn't specified, then create file/directory
-  if (typeof(opts.filename) == 'undefined') {
-    mkdirp(dir, function(err) {
+
+  //create file
+  fs.open(FILE.filename, 'w', function(err, fd) {
+    if (err) {
+      console.log(err);
+      return moduleCallback(err);
+    }
+    //close it now that it's created
+    fs.close(fd, function(err) {
       if (err) {
         console.log(err);
         return moduleCallback(err);
       }
-      //create file
-      fs.open(FILE.filename, 'w', function(err, fd) {
-        if (err) {
-          console.log(err);
-          return moduleCallback(err);
-        }
-        //close it now that it's created
-        fs.close(fd, function(err) {
-          if (err) {
-            console.log(err);
-            return moduleCallback(err);
-          }
-          moduleCallback(null, FILE);
-        })
-      })
+      moduleCallback(null, FILE);
     })
-  } else {
-    moduleCallback(null, FILE);
-  }
+  })
 }

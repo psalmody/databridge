@@ -1,7 +1,7 @@
 /**
  * Bridging between source and destination
  */
-module.exports = function(config, opts, moduleCallback) {
+module.exports = function(config, opt, moduleCallback) {
 
   //setup timer and define shortcuts for log/error
   var tmr = require('./timer'),
@@ -12,72 +12,89 @@ module.exports = function(config, opts, moduleCallback) {
     fs = require('fs'),
     colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
-    spinner = new Spinner('processing... %s');
+    spinner = new Spinner('processing... %s'),
+    outputFile = require('./output-file');
 
-  //console.log(opts);
-  if (missingKeys(opts, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
+  //options will now include all things the source/destination scripts need
+  opt.cfg = config;
+  opt.bin = __dirname.replace(/\\/g, '/') + '/';
+  //start timer
+  opt.timer = require('./timer');
+  //spinner if not task
+  opt.spinner = (opt.task) ? false : (function() {
+    var s = new Spinner('processing... %s');
+    s.setSpinnerString(0);
+    return s;
+  })();
+  //setup log
+  opt.log = (process.env.NODE_ENV == 'development') ? require('./log-dev')(opt) : require('./log')(opt);
 
-  spinner.setSpinnerString(0);
-  //don't start if -k or --task (accomplished by overriding spinner.start())
-  if (opts.task) spinner.start = function() {
-    return;
-  };
+  //check usage first
+  if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
 
   //make sure enough parameters were passed
   //if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
 
   try {
-    source = require(config.dirs.sources + opts.source);
+    source = require(opt.cfg.dirs.sources + opt.source);
   } catch (e) {
-    error('"' + opts.source + '" is not a valid source.');
+    error('"' + opt.source + '" is not a valid source.');
     error(e.stack);
     return;
   }
 
   try {
-    destination = require(config.dirs.destinations + opts.destination);
+    destination = require(opt.cfg.dirs.destinations + opt.destination);
   } catch (e) {
-    error('"' + opts.destination + '" is not a valid destination.')
+    error('"' + opt.destination + '" is not a valid destination.')
     error(e.stack);
     return;
   }
 
   async.waterfall([
-    //moving to source - destination type
+    //setup opfile
     function(cb) {
-      spinner.start();
-      source(opts, spinner, function(err, opfile, log, timer) {
+      outputFile(opt, function(err, opfile) {
+        if (err) return moduleCallback(err);
+        opt.opfile = opfile;
+        cb(null);
+      })
+    },
+    //run source
+    function(cb) {
+      if (opt.spinner) opt.spinner.start();
+      source(opt, function(err) {
         if (err) return cb(err);
-        cb(null, opfile, log, timer);
+        cb(null);
       })
     },
     //attempt to get column definitions
-    function(opfile, log, timer, cb) {
-      colParser(opfile, function(err, columns) {
+    function(cb) {
+      colParser(opt.opfile, function(err, columns) {
         if (err) return cb(err);
-        cb(null, opfile, columns, log, timer);
+        cb(null, columns);
       })
     },
-    function(opfile, columns, log, timer, cb) {
-      destination(opts, opfile, columns, log, timer, function(err, opfile) {
+    function(columns, cb) {
+      destination(opt, columns, function(err) {
         if (err) return cb(err);
-        cb(null, opfile, log);
+        cb(null);
       })
     }
-  ], function(err, opfile, log) {
-    spinner.stop(true);
+  ], function(err) {
+    if (opt.spinner) opt.spinner.stop(true);
     try {
       if (process.NODE_ENV !== 'development') opfile.clean();
     } catch (e) {
       if (typeof(opfile) !== 'undefined') error(e);
     }
     if (err) {
-      error(tmr.now.str());
+      error(opt.timer.now.str());
       //error(err);
       return moduleCallback(err);
     }
-    l(tmr.now.str());
-    l('Completed ' + JSON.stringify(opts));
+    l(opt.timer.now.str());
+    l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
     moduleCallback();
   })
 }
