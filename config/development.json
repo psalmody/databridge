@@ -7,5 +7,10 @@
     "logs": "c:/www/dbutil/local/logs/",
     "output": "c:/www/dbutil/local/output/",
     "sources": "c:/www/dbutil/local/sources/"
+  },
+  "defaultBindVars": {
+    "term_code": 201503,
+    "current_term": 201601,
+    "pell_eligible_rate": 5198
   }
 }
