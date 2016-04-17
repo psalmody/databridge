@@ -5,14 +5,13 @@
 var fs = require('graceful-fs'),
   mkdirp = require('mkdirp');
 
-//if development environment, use development log instead
-if (process.env.NODE_ENV.trim() == 'development') return module.exports = require('./log.dev');
-
 //production log
-module.exports = function(table, batch) {
+module.exports = function(opt) {
   //if batch, put logs inside additional folder to keep them together
-  var batch = typeof(batch) == 'undefined' ? '' : batch + '/';
+  var batch = typeof(opt.batch) == 'undefined' ? '' : batch + '/';
+  var table = opt.table;
   var log = new Object();
+  var spinner = opt.spinner;
   //log group is prepended to every log call
   log.g = '';
   //log folder settings
