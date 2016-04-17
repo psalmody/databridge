@@ -1,7 +1,7 @@
 {
   "dirs": {
     "batches": "c:/www/dbutil/local/batches/",
-    "connections": "c:/www/dbutil/local/connections/",
+    "creds": "c:/www/dbutil/local/creds/",
     "destinations": "c:/www/dbutil/local/destinations/",
     "input": "c:/www/dbutil/local/input/",
     "logs": "c:/www/dbutil/local/logs/",
