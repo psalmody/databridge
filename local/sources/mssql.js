@@ -1,19 +1,19 @@
-module.exports = function(options, spinner, moduleCallback) {
-  if (typeof(options.table) == 'undefined') return moduleCallback('Table required for ' + options.source);
+module.exports = function(opt, spinner, moduleCallback) {
+  if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source);
   var mssql = require('mssql'),
     async = require('async'),
     creds = require('../../creds/mssql'),
     fs = require('fs'),
-    table = options.table.indexOf('.') > -1 ? options.table : 'dbo.' + options.table,
+    table = opt.table.indexOf('.') > -1 ? opt.table : 'dbo.' + opt.table,
     schema = table.split('.')[0],
-    log = require('../log')(options.source + '.' + table, options.batch, spinner),
-    timer = require('../timer'),
-    allBinds = require('../../input/binds'),
-    bindQuery = require('../bind-query'),
+    log = opt.log, //require('../log')(opt.source + '.' + table, opt.batch, spinner),
+    //timer = require('../timer'),
+    allBinds = require('../binds'),
+    bindQuery = require(opt.bin + 'bind-query'),
     query = '',
     binds = {},
-    outputFile = require('../output-file'),
-    db = options.source,
+    //outputFile = require('../output-file'),
+    db = opt.source,
     prependFile = require('prepend-file');
 
   async.waterfall([
@@ -35,7 +35,7 @@ module.exports = function(options, spinner, moduleCallback) {
     //format query and bind variables
     function(data, cb) {
       log.group('Setup').log('Processing query ' + table);
-      var defs = (typeof(options.binds) !== 'undefined') ? true : false;
+      var defs = (typeof(opt.binds) !== 'undefined') ? true : false;
       bindQuery(data, allBinds, defs, spinner, function(err, sql, binds) {
         log.group('Binds').log(JSON.stringify(binds));
         if (err) return cb(err);
@@ -104,7 +104,7 @@ module.exports = function(options, spinner, moduleCallback) {
       log.error(err);
       return moduleCallback(err);
     }
-    log.group('Finished source').log(timer.now.str());
-    moduleCallback(null, opfile, log, timer);
+    log.group('Finished source').log(opt.timer.now.str());
+    moduleCallback(null);
   })
 }
