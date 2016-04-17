@@ -1,14 +1,15 @@
-module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
+module.exports = function(opt, columns, moduleCallback) {
 
   var mssql = require('mssql'),
-    creds = require('../../creds/mssql'),
+    creds = require(opt.cfg.dirs.creds + 'mssql'),
     async = require('async'),
-    fs = require('fs');
+    fs = require('fs'),
+    log = opt.log,
+    opfile = opt.opfile;
 
-
-  var db = options.source,
+  var db = opt.source,
     //use default dbo unless schema in filename
-    table = options.table.indexOf('.') > -1 ? options.table : 'dbo.' + options.table,
+    table = opt.table.indexOf('.') > -1 ? opt.table : 'dbo.' + opt.table,
     schema = table.split('.')[0];
 
   function sqlTable() {
@@ -56,7 +57,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     },
     //drop table if exists
     function(cb) {
-      if (options.update) {
+      if (opt.update) {
         log.log('Insert only - not dropping table.');
         return cb(null); //don't drop table if update option
       }
@@ -70,7 +71,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     },
     //create table
     function(cb) {
-      if (options.update) return cb(null); //don't drop table if update option
+      if (opt.update) return cb(null); //don't drop table if update option
       log.group('Table setup').log('creating table');
       var sql = sqlTable();
       log.log(sql);
@@ -172,7 +173,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
   ], function(err) {
     mssql.close();
     if (err) return moduleCallback(err);
-    log.group('Finished destination').log(timer.now.str());
+    log.group('Finished destination').log(opt.timer.now.str());
     moduleCallback(null, opfile);
   })
 }

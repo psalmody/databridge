@@ -1,34 +1,35 @@
-module.exports = function(options, spinner, moduleCallback) {
-  if (typeof(options.table) == 'undefined') return moduleCallback('Table required for ' + options.source);
+module.exports = function(opt, moduleCallback) {
 
-  var rptp = require('oracledb'),
+  if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source);
+
+  var creds = require(opt.cfg.dirs.creds + 'rptp'),
+    oracle = require('oracledb'),
     async = require('async'),
     fs = require('fs'),
-    table = options.table,
-    log = require('../log')(options.source + '.' + table, options.batch, spinner),
-    timer = require('../timer'),
+    table = opt.table,
+    log = opt.log,
     stringify = require('csv-stringify'),
-    creds = require('../../creds/rptp'),
-    allBinds = require('../../input/binds'),
-    bindQuery = require('../bind-query'),
-    outputFile = require('../output-file'),
-    db,
+    allBinds = opt.cfg.defaultBindVars,
+    bindQuery = require(opt.bin + 'bind-query'),
     query = '',
-    binds = {};
+    binds = {},
+    rptp,
+    opfile = opt.opfile,
+    timer = opt.timer;
+
 
   async.waterfall([
-      //connect to rptp
+      //connect to database
       function(cb) {
-        rptp.getConnection(creds, function(err, conn) {
-          db = conn;
-          if (err) return cb("RPTP connection error: " + err);
+        oracle.getConnection(creds, function(err, conn) {
+          if (err) return cb(err);
+          rptp = conn;
           cb(null);
         })
       },
       //read query
       function(cb) {
-        log.group('readquery');
-        fs.readFile('input/rptp/' + table + '.sql', 'utf-8', function(err, data) {
+        fs.readFile(opt.cfg.dirs.input + opt.source + '/' + table + '.sql', 'utf-8', function(err, data) {
           if (err) return cb("fs readFile error on input query: " + err);
           cb(null, data);
         })
@@ -36,24 +37,16 @@ module.exports = function(options, spinner, moduleCallback) {
       //format query and prompt for binds
       function(data, cb) {
         log.group('Setup').log('Processing query ' + table);
-        var defs = (typeof(options.binds) !== 'undefined') ? true : false;
-        bindQuery(data, allBinds, defs, spinner, function(err, sql, binds) {
+        bindQuery(data, opt, function(err, sql, binds) {
           log.group('Binds').log(JSON.stringify(binds));
           if (err) return cb(err);
           cb(null, sql);
         })
       },
-      //create output file
-      function(sql, cb) {
-        outputFile(table, function(err, opfile) {
-          if (err) return cb(err);
-          cb(null, sql, opfile);
-        })
-      },
       //run query
-      function(sql, opfile, cb) {
+      function(sql, cb) {
         log.group('rptp').log('Selecting data from RPTP');
-        db.execute(sql, [], {
+        rptp.execute(sql, [], {
           resultSet: true,
           prefetchRows: 10000
         }, function(err, results) {
@@ -94,7 +87,7 @@ module.exports = function(options, spinner, moduleCallback) {
 
               results.resultSet.close(function(err) {
                 if (err) return cb('Closing resultSet error: ' + err);
-                cb(null, opfile);
+                cb(null);
 
               });
 
@@ -105,17 +98,17 @@ module.exports = function(options, spinner, moduleCallback) {
         })
       }
     ],
-    function(err, opfile) {
+    function(err) {
       if (err) {
         log.error(err);
         try {
-          db.release(function(err) {});
+          rptp.release(function(err) {});
         } catch (e) {
           log.error(e);
         }
         return moduleCallback(err);
       }
       log.group('Finished source').log(timer.now.str());
-      moduleCallback(null, opfile, log, timer);
+      moduleCallback(null);
     })
 }
