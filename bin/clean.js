@@ -1,25 +1,23 @@
 /**
  * Cleanup logs and output folder - prompt user for number of days
  */
+
+//assume we're in development
+process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? 'development' : process.env.NODE_ENV;
+
 var fs = require('fs'),
   async = require('async'),
   colors = require('colors/safe'),
   rimraf = require('rimraf'),
   program = require('commander'),
-  DBUTIL,
+  config = require('../config/' + process.env.NODE_ENV),
+  DBUTIL = require('../package'),
   dirCount = 0,
   opCount = 0,
   days = 7;
 
 
 async.waterfall([
-    //read package.json
-    function(cb) {
-      fs.readFile('package.json', 'utf-8', function(err, data) {
-        DBUTIL = JSON.parse(data);
-        cb(null);
-      })
-    },
     //setup commander
     function(cb) {
       program.version(DBUTIL.version)
@@ -31,7 +29,7 @@ async.waterfall([
     },
     function(cb) {
       //delete logs younger than specified days
-      fs.readdir('logs/', function(err, files) {
+      fs.readdir(config.dirs.logs, function(err, files) {
         if (err) return cb(err);
         for (var i = 0; i < files.length; i++) {
           if (files[i] == '.gitignore') continue;
@@ -40,7 +38,7 @@ async.waterfall([
           if ((Number(tddir) - Number(days)) >= Number(files[i].replace(/-/g, ''))) {
             dirCount++;
             try {
-              rimraf.sync('logs/' + files[i])
+              rimraf.sync(config.dirs.logs + files[i])
             } catch (e) {
               cb(e);
             };
@@ -51,12 +49,12 @@ async.waterfall([
     },
     function(cb) {
       //delete any extra output files
-      fs.readdir('output/', function(err, files) {
+      fs.readdir(config.dirs.output, function(err, files) {
         if (err) return cb(err);
         for (var i = 0; i < files.length; i++) {
           if (files[i] == '.gitignore') continue;
           opCount++;
-          fs.unlink('output/' + files[i]);
+          fs.unlink(config.dirs.output + files[i]);
         }
         cb(null);
       })
