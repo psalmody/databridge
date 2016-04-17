@@ -15,6 +15,11 @@ async.each(fs.readdirSync('./config/'), function(file, callback) {
       }
       assert(false, 'Missing: ' + msg);
       done();
+    });
+
+    it("Should have some default bind variables", function(done) {
+      assert(typeof(cfg.defaultBindVars) == 'undefined' ? false : true);
+      done();
     })
   })
 })

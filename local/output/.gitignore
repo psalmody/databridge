@@ -1,5 +1,2 @@
 *
 !.gitignore
-!csv
-csv/*
-!xlsx
