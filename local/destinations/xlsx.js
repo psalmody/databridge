@@ -1,13 +1,15 @@
-module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
-
+module.exports = function(opt, columns, moduleCallback) {
 
   var dt = new Date(),
     dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
-  var filename = './output/xlsx/' + dir + '/' + options.source + '.' + options.table + '.xlsx',
+  var filename = opt.cfg.dirs.output + 'xlsx/' + dir + '/' + opt.source + '.' + opt.table + '.xlsx',
     fs = require('fs'),
     Excel = require('exceljs'),
     async = require('async'),
-    mkdirp = require('mkdirp');
+    mkdirp = require('mkdirp'),
+    log = opt.log,
+    opfile = opt.opfile,
+    timer = opt.timer;
 
   //setup workbook and columns
   var workbook = new Excel.Workbook();
@@ -32,7 +34,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
   async.waterfall([
     //mkdirp
     function(cb) {
-      mkdirp('./output/xlsx/' + dir, function(err) {
+      mkdirp(opt.cfg.dirs.output + 'xlsx/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
       })
@@ -61,7 +63,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
   ], function(err) {
     if (err) return moduleCallback(err);
     log.log('Created xlsx file at ' + filename);
-    moduleCallback(null, opfile);
+    moduleCallback(null);
   })
 
 
