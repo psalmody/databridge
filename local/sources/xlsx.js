@@ -10,10 +10,8 @@ module.exports = function(opt, moduleCallback) {
     timer = opt.timer,
     worksheet;
 
-
-
-
   async.waterfall([
+      //read xlsx file - streaming support is iffy for exceljs
       function(cb) {
         log.group('XLSX').log('Reading file...');
         workbook.xlsx.readFile(filename).then(function() {
@@ -21,8 +19,8 @@ module.exports = function(opt, moduleCallback) {
           cb(null);
         })
       },
+      //process columns
       function(cb) {
-        //process columns
         log.log('Using first row as columns.');
         var cols = [];
         var row = worksheet.getRow(1).eachCell(function(cell, colNumber) {
@@ -33,19 +31,22 @@ module.exports = function(opt, moduleCallback) {
           cb(null);
         });
       },
+      //process rows
       function(cb) {
         log.log('Reading rest of rows.');
-        //process rows
         var rows = [];
         var first = true;
+        //each row - push to array
         worksheet.eachRow(function(row) {
-          if (first) return first = false;
-          var cells = [];
-          row.eachCell(function(cell) {
-            cells.push(cell.value);
+            if (first) return first = false;
+            var cells = [];
+            //each cell push to array, join with \t
+            row.eachCell(function(cell) {
+              cells.push(cell.value);
+            })
+            rows.push(cells.join('\t'));
           })
-          rows.push(cells.join('\t'));
-        })
+          //join rows with \n and put in opfile
         opfile.append(rows.join('\n'), function(err) {
           log.log('Added ' + (rows.length - 1) + ' rows. Sending to destination.');
           if (err) return cb(err);
@@ -58,6 +59,4 @@ module.exports = function(opt, moduleCallback) {
       log.group('Finished source').log(timer.now.str());
       moduleCallback(null);
     })
-
-
 }
