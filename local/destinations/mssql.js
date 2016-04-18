@@ -174,6 +174,6 @@ module.exports = function(opt, columns, moduleCallback) {
     mssql.close();
     if (err) return moduleCallback(err);
     log.group('Finished destination').log(opt.timer.now.str());
-    moduleCallback(null, opfile);
+    moduleCallback(null);
   })
 }
