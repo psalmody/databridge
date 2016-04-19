@@ -3,27 +3,31 @@
  * Removes any existing commas before converting
  * output file to csv.
  */
-module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
+module.exports = function(opt, columns, moduleCallback) {
 
   var dt = new Date(),
     dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
 
-  var table = options.source + '.' + options.table,
+  var table = opt.source + '.' + opt.table,
     fs = require('graceful-fs'),
     mkdirp = require('mkdirp'),
     async = require('async'),
-    Stream = require('stream');
+    Stream = require('stream'),
+    log = opt.log,
+    opfile = opt.opfile;
 
   log.group('CSV Output').log('Copying file from opfile tmp to output/csv/' + dir + '/' + table + '.csv');
 
   async.waterfall([
     function(cb) {
-      mkdirp('./output/csv/' + dir, function(err) {
+      log.log('Creating directory');
+      mkdirp(opt.cfg.dirs.output + 'csv/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
       })
     },
     function(cb) {
+      log.log('Streaming from opfile to new csv file...');
       //streaming data from outputFile to CSV
       var tab2CommaStream = new Stream.Transform();
       tab2CommaStream._transform = function(chunk, encoding, done) {
@@ -33,7 +37,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         }
         //pipe data
       var opfileRStream = opfile.createReadStream();
-      var outputCSVStream = fs.createWriteStream('./output/csv/' + dir + '/' + table + '.csv');
+      var outputCSVStream = fs.createWriteStream(opt.cfg.dirs.output + 'csv/' + dir + '/' + table + '.csv');
       outputCSVStream.on('error', function(err) {
         cb(err);
       })
