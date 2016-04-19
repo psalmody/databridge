@@ -26,7 +26,7 @@ module.exports = function(opt, moduleCallback) {
       comma2TabStream._transform = function(chunk, encoding, done) {
           //TODO change to line by line and only replace , outside "" using some kind
           // of regex like /(,)(?=(?:[^"]|"[^"]*")*$)/g
-          var data = chunk.toString().replace(/,/g, '\t');
+          var data = chunk.toString().replace(/,/g, '\t').replace(/\r/g, '');
           this.push(data);
           done();
         }
