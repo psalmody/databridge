@@ -4,12 +4,7 @@ var assert = require('chai').assert,
 var bridge = require('../bin/bridge');
 var fs = require('fs');
 var config = require('../config/development');
-
-function removeFileExtension(str) {
-  var s = str.split('.');
-  s.pop();
-  return s.join('.');
-}
+var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 
 async.each(fs.readdirSync(config.dirs.sources), function(file, callback) {
   describe('Checking source ' + file, function() {
