@@ -1,5 +1,4 @@
 var assert = require('chai').assert,
-  async = require('async'),
   fs = require('fs'),
   missingKeys = require('../bin/missing-keys');
 
