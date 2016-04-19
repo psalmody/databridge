@@ -88,7 +88,7 @@ module.exports = function(opt, moduleCallback) {
         cb(null);
       })
     }
-  ], function(err, opfile) {
+  ], function(err) {
     try {
       mssql.close();
     } catch (e) {

@@ -1,10 +1,13 @@
-module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
+module.exports = function(opt, columns, moduleCallback) {
 
   var mysql = require('mysql'),
-    mySqlCreds = require('../../creds/mysql'),
+    mySqlCreds = require(opt.cfg.dirs.creds + 'mysql'),
     db = mysql.createConnection(mySqlCreds),
     async = require('async'),
-    table = options.source + '.' + options.table;
+    table = opt.source + '.' + opt.table.replace(/\./g, '_'),
+    opfile = opt.opfile,
+    log = opt.log,
+    timer = opt.timer;
 
   function sqlTable() {
     var cols = [],
@@ -22,14 +25,14 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
   async.waterfall([
     //create database if not existing
     function(cb) {
-      db.query('CREATE DATABASE IF NOT EXISTS ' + options.source, function(err) {
+      db.query('CREATE DATABASE IF NOT EXISTS ' + opt.source, function(err) {
         if (err) return cb(err);
         cb(null);
       })
     },
     //drop existing table
     function(cb) {
-      if (options.update) {
+      if (opt.update) {
         log.log('Insert only - not dropping table.');
         return cb(null); //don't drop table if update option
       }
@@ -40,7 +43,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     },
     //create new table
     function(cb) {
-      if (options.update) return cb(null); //don't drop table if update option
+      if (opt.update) return cb(null); //don't drop table if update option
       log.group('Table setup').log('Dropped table, setting new.');
       var sql = sqlTable();
       log.log(sql);
@@ -67,18 +70,14 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       })
     }
   ], function(err) {
-    try {
-      db.end(function(err) {
-        if (err) console.error(err);
-      })
-    } catch (e) {
-
-    }
+    db.end(function(err) {
+      if (err) moduleCallback(err);
+    })
     if (err) {
       log.error(err);
       return moduleCallback(err);
     }
     log.group('Finished destination').log(timer.now.str());
-    moduleCallback(null, opfile);
+    moduleCallback(null);
   })
 };
