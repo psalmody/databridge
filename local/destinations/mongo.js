@@ -1,17 +1,20 @@
 //insert data into MongoDB
-module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
+module.exports = function(opt, columns, moduleCallback) {
 
   var fs = require('fs'),
     async = require('async');
 
   var client = require('mongodb').MongoClient,
-    creds = require('../../creds/mongo'),
+    creds = require(opt.cfg.dirs.creds + 'mongo'),
     db,
     collection,
     Stream = require('stream'),
-    split = require('split');
+    split = require('split'),
+    log = opt.log,
+    timer = opt.timer,
+    opfile = opt.opfile;
 
-  const table = options.table.indexOf('.') > -1 ? options.table : 'dbutil.' + options.table;
+  const table = opt.table.indexOf('.') > -1 ? opt.table : 'dbutil.' + opt.table;
   const databaseName = table.split('.')[0];
   const collectionName = table.split('.')[1];
 
@@ -27,7 +30,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       },
       function(cb) {
         //sometimes only insert, don't delete data
-        if (options.update) {
+        if (opt.update) {
           log.log('Insert only - not dropping existing data.');
           return cb(null);
         }
@@ -136,14 +139,18 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
       }
     ],
     function(err) {
+      db.close(true, function(err) {
+        if (err) moduleCallback(err);
+      });
+      //client.close();
       try {
         db.close();
       } catch (e) {
-        log.error(e);
+        return moduleCallback(e);
       }
       if (err) return moduleCallback(err);
       log.group('Finished destination').log(timer.now.str());
-      moduleCallback(null, opfile);
+      moduleCallback(null);
     })
 
 }

@@ -1,11 +1,14 @@
-module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
+module.exports = function(opt, columns, moduleCallback) {
 
 
   var request = require('request'),
     fs = require('fs'),
     async = require('async'),
-    clcreds = require('../../creds/campuslabs.js'),
-    accounts = [];
+    clcreds = require(opt.cfg.dirs.creds + 'campuslabs'),
+    accounts = [],
+    log = opt.log,
+    timer = opt.timer,
+    opfile = opt.opfile;
 
 
   var OAuth = require('oauth');
@@ -19,7 +22,7 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         fs.readFile(opfile.filename, 'utf-8', function(err, data) {
           if (err) return cb(err);
           data = data.split('\n');
-          if (data[0].replace(/\t/g, '') !== 'ExternalIDFirstNameLastNameEmail') return cb('Improper input - columns don\'t match right format for campuslabs account import.');
+          if (data[0].replace(/\t/g, '') !== 'externalIdfirstNamelastNameemail') return cb('Improper input - columns don\'t match right format for campuslabs account import. ' + data[0].replace(/\t/g, ' '));
           data.shift();
           for (var i = 0; i < data.length; i++) {
             var r = data[i].split('\t');
@@ -53,12 +56,6 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
           },
           form: {
             "accounts": accounts
-              /*[{
-                            "externalId": "uaa_student_affairs",
-                            "firstName": "UAA",
-                            "lastName": "Student Affairs",
-                            "email": "uaa_studentaffairs@uaa.alaska.edu"
-                          }]*/
           }
         }, function(e, r, body) {
           if (e) return cb(e);
@@ -77,6 +74,6 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     function(err) {
       if (err) return moduleCallback(err);
       log.group('Finished destination').log(timer.now.str());
-      moduleCallback(null, opfile);
+      moduleCallback(null);
     })
 }
