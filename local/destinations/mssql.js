@@ -171,7 +171,12 @@ module.exports = function(opt, columns, moduleCallback) {
       })
     }
   ], function(err) {
-    mssql.close();
+    try {
+      mssql.close();
+    } catch (e) {
+      console.error(e);
+    }
+
     if (err) return moduleCallback(err);
     log.group('Finished destination').log(opt.timer.now.str());
     moduleCallback(null);

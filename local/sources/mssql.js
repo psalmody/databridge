@@ -89,13 +89,13 @@ module.exports = function(opt, moduleCallback) {
       })
     }
   ], function(err, opfile) {
+    try {
+      mssql.close();
+    } catch (e) {
+      log.error(e);
+    }
     if (err) {
       log.error(err);
-      try {
-        mssql.close();
-      } catch (e) {
-        log.error(e);
-      }
       return moduleCallback(err);
     }
     log.group('Finished source').log(timer.now.str());
