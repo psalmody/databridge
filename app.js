@@ -63,30 +63,10 @@ function runBridges(bridges) {
   })
 }
 
-//define array of bridge functions to run
-var bridges = [];
 //run batch if specified
 if (missingKeys(program, ['batch']) == false) {
-  fs.readFile(config.dirs.batches + program.batch + '.json', 'utf-8', function(err, json) {
-    if (err) return console.error(colors.red(err));
-    var batch = JSON.parse(json);
-
-    for (var i = 0; i < batch.length; i++) {
-      var b = batch[i];
-      //set to task by default
-      if (Object.keys(batch[i]).indexOf('task') === -1) batch[i].task = true;
-      batch[i].batch = program.batch;
-      var fn = (function() {
-        var options = JSON.parse(JSON.stringify(b));
-        return function(cb) {
-          bridge(config, options, function(err) {
-            if (err) return cb(err);
-            cb(null);
-          })
-        }
-      })(b);
-      bridges.push(fn);
-    }
+  var batches = require('./bin/batches');
+  batches(program.batch, config.dirs.batches + program.batch, function(bridges) {
     runBridges(bridges);
   })
 } else {
@@ -98,8 +78,8 @@ if (missingKeys(program, ['batch']) == false) {
     console.error(colors.red('Wrong usage.'));
     program.help();
   }
-  //push program version
-  bridges.push(function(cb) {
+  //run one bridge
+  runBridges([function(cb) {
     bridge(config, {
       source: program.source,
       destination: program.destination,
@@ -111,6 +91,5 @@ if (missingKeys(program, ['batch']) == false) {
       if (err) return cb(err);
       cb(null);
     })
-  })
-  runBridges(bridges);
+  }]);
 }
