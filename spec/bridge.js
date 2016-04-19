@@ -28,9 +28,9 @@ async.each(fs.readdirSync(config.dirs.sources), function(file, callback) {
       if (value.indexOf('.') == 0) return false;
       return true;
     });
-    console.log(file, tables);
+    //console.log(file, tables);
     var table = removeFileExtension(tables[0]);
-    console.log(table);
+    //console.log(table);
 
     it("Should run a bridge", function(done) {
       bridge(config, {
