@@ -1,17 +1,20 @@
 /**
  * Output as JSON (pretty) to /output/csv/
  */
-module.exports = function(options, opfile, columns, log, timer, moduleCallback) {
+module.exports = function(opt, columns, moduleCallback) {
   var dt = new Date(),
     dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
 
-  var table = options.source + '.' + options.table,
+  var table = opt.source + '.' + opt.table,
     fs = require('graceful-fs'),
     mkdirp = require('mkdirp'),
     async = require('async'),
     Stream = require('stream'),
     keys = [],
-    split = require('split');
+    split = require('split'),
+    opfile = opt.opfile,
+    log = opt.log,
+    timer = opt.timer;
 
   for (var i = 0; i < columns.length; i++) {
     keys.push(columns[i].name);
@@ -21,23 +24,28 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
 
   async.waterfall([
     function(cb) {
-      mkdirp('./output/json/' + dir, function(err) {
+      log.log('Making directory for json output.');
+      mkdirp(opt.cfg.dirs.output + 'json/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
       })
     },
     function(cb) {
+      log.log('Transforming data from opfile to json.');
       var first = true;
       var second = true;
       var tab2JSONStream = new Stream.Transform();
       tab2JSONStream._transform = function(chunk, encoding, done) {
+        //skip first row (columns)
         if (first) {
           first = false;
           return done();
         }
+        //only put new line and comma before each row (except first data row)
         var str = (second) ? '' : ',\n';
         if (second) second = false;
-        var values = chunk.toString().split('\t');
+        //handle windows \r return
+        var values = chunk.toString().replace(/\r/g, '').split('\t');
         if (values.length !== keys.length) return done();
         var data = {};
         for (var i = 0; i < values.length; i++) {
@@ -50,12 +58,12 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
         cb(err);
       })
       var opfileRStream = opfile.createReadStream();
-      var outputJSONStream = fs.createWriteStream('./output/json/' + dir + '/' + table + '.json');
+      var outputJSONStream = fs.createWriteStream(opt.cfg.dirs.output + 'json/' + dir + '/' + table + '.json');
       outputJSONStream.on('error', function(err) {
         cb(err);
       })
       outputJSONStream.on('finish', function() {
-        fs.appendFile('./output/json/' + dir + '/' + table + '.json', ']', function(err) {
+        fs.appendFile(opt.cfg.dirs.output + 'json/' + dir + '/' + table + '.json', ']', function(err) {
           if (err) return cb(err);
           cb(null);
         });
@@ -66,7 +74,6 @@ module.exports = function(options, opfile, columns, log, timer, moduleCallback) 
     }
   ], function(err) {
     if (err) return moduleCallback(err);
-    moduleCallback(null, opfile);
+    moduleCallback(null);
   })
-
 }
