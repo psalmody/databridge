@@ -54,7 +54,11 @@ async.waterfall([
         for (var i = 0; i < files.length; i++) {
           if (files[i] == '.gitignore') continue;
           opCount++;
-          fs.unlink(config.dirs.output + files[i]);
+          try {
+            rimraf.sync(config.dirs.output + files[i])
+          } catch (e) {
+            cb(e);
+          }
         }
         cb(null);
       })
