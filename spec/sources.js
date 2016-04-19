@@ -41,8 +41,7 @@ async.each(fs.readdirSync(config.dirs.sources), function(file, callback) {
         table: table
       }, function(err) {
         if (err) {
-          console.log(err);
-          assert(false);
+          assert(false, err);
           done();
         } else {
           assert(true);

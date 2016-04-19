@@ -32,17 +32,18 @@ async.each(fs.readdirSync(config.dirs.destinations), function(file, callback) {
     var table = removeFileExtension(tables[0]);
 
     it("Should run a bridge", function(done) {
-      bridge(config, {
+      var options = {
         source: 'mssql',
         destination: destination,
         binds: true,
         task: true,
         update: false,
         table: table
-      }, function(err) {
+      };
+      bridge(config, options, function(err) {
         if (err) {
-          console.log(err);
-          assert(false);
+          console.log(options);
+          assert(false, err);
           done();
         } else {
           assert(true);

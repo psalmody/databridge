@@ -13,12 +13,12 @@ async.each(fs.readdirSync('./config/'), function(file, callback) {
         assert(true);
         return done();
       }
-      assert(false, 'Missing: ' + msg);
+      assert(false, 'Missing: ' + msg.join(', '));
       done();
     });
 
     it("Should have some default bind variables", function(done) {
-      assert(typeof(cfg.defaultBindVars) == 'undefined' ? false : true);
+      assert(typeof(cfg.defaultBindVars) == 'undefined' ? false : true, typeof(cfg.defaultBindVars));
       done();
     })
   })
