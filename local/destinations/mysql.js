@@ -70,18 +70,14 @@ module.exports = function(opt, columns, moduleCallback) {
       })
     }
   ], function(err) {
-    try {
-      db.end(function(err) {
-        if (err) console.error(err);
-      })
-    } catch (e) {
-
-    }
+    db.end(function(err) {
+      if (err) moduleCallback(err);
+    })
     if (err) {
       log.error(err);
       return moduleCallback(err);
     }
     log.group('Finished destination').log(timer.now.str());
-    moduleCallback(null, opfile);
+    moduleCallback(null);
   })
 };
