@@ -53,13 +53,25 @@ else if (missingKeys(program, ['batch', 'show']) == false) {
 //function to run bridge functions async waterfall
 function runBridges(bridges) {
   if (!bridges.length) return cb('No bridges found or defined. Check usage or batch file.');
+  //push dummy function to beginning of async
+  //so we get a responses object
+  bridges.unshift(function(cb) {
+    //push empty array into first function
+    //for responses
+    return cb(null, []);
+  })
+
   //taking all bridge functions created and Running
   //them one at a time
-  async.waterfall(bridges, function(err) {
+
+  async.waterfall(bridges, function(err, responses) {
     if (err) {
       console.error(colors.red(err));
       program.help();
+      return;
     }
+    //let's see what we got
+    if (process.env.NODE_ENV == 'development') console.log(JSON.stringify(responses, null, 2));
   })
 }
 
@@ -79,7 +91,7 @@ if (missingKeys(program, ['batch']) == false) {
     program.help();
   }
   //run one bridge
-  runBridges([function(cb) {
+  runBridges([function(responses, cb) {
     bridge(config, {
       source: program.source,
       destination: program.destination,
@@ -87,9 +99,11 @@ if (missingKeys(program, ['batch']) == false) {
       table: program.table,
       task: program.task,
       update: program.update
-    }, function(err) {
+    }, function(err, response) {
       if (err) return cb(err);
-      cb(null);
+      //push clean version (no methods) of response
+      responses.push(response.strip());
+      cb(null, responses);
     })
   }]);
 }
