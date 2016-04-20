@@ -1,6 +1,7 @@
 var assert = require('chai').assert,
   fs = require('fs'),
-  missingKeys = require('../bin/missing-keys');
+  missingKeys = require('../bin/missing-keys'),
+  async = require('async');
 
 //test for all necessasry configuration options
 async.each(fs.readdirSync('./config/'), function(file, callback) {
