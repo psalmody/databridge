@@ -6,8 +6,46 @@ var fs = require('fs');
 var config = require('../config/development');
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 
+function getOneTable(src) {
+  var dir = fs.readdirSync(config.dirs.input + src);
+  var tables = dir.filter(function(v) {
+    if (v.indexOf('.') == 0) return false;
+    return true;
+  });
+  return removeFileExtension(tables[0]);
+}
+
+//if --destination passed, only test one
+//if --source passed, only test one
+if (process.argv.length == 4) {
+  var destination = process.argv[3].replace(/-/g, '');
+  describe('Checking only one destination: ' + destination, function() {
+    this.timeout(30000);
+    process.env.NODE_ENV = "production";
+
+    var table = getOneTable('mssql');
+
+    it("Should run a bridge", function(done) {
+      bridge(config, {
+        source: 'mssql',
+        destination: destination,
+        binds: true,
+        task: true,
+        update: false,
+        table: table
+      }, function(err, response) {
+        if (err) return done(new Error(err.toString()));
+        done();
+      })
+    })
+  });
+  //quit
+  return;
+}
+
+//all destinations
 async.each(fs.readdirSync(config.dirs.destinations), function(file, callback) {
-  describe('Checking source ' + file, function() {
+  describe('Checking destination ' + file, function() {
     //at least 30 seconds
     this.timeout(30000);
 
@@ -35,15 +73,9 @@ async.each(fs.readdirSync(config.dirs.destinations), function(file, callback) {
         update: false,
         table: table
       };
-      bridge(config, options, function(err) {
-        if (err) {
-          console.log(options);
-          assert(false, err);
-          done();
-        } else {
-          assert(true);
-          done();
-        }
+      bridge(config, options, function(err, response) {
+        if (err) return done(new Error(err.toString()));
+        done();
       })
     })
 
