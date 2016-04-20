@@ -51,18 +51,18 @@ module.exports = function(opt, moduleCallback) {
         .on('end', function() {
           opfileWriteStream.end();
           log.log('Rows: ' + rowsProcessed);
-          cb(null, columns);
+          cb(null, rowsProcessed, columns);
         })
     },
-    function(columns, cb) {
+    function(rows, columns, cb) {
       var colstring = columns.join('\t') + '\n';
       prependFile(opfile.filename, colstring, function(err) {
         if (err) return cb(err);
         log.log('prependFile columns');
-        cb(null);
+        cb(null, rows, columns);
       })
     }
-  ], function(err) {
+  ], function(err, rows, columns) {
     db.end(function(err) {
       if (err) return moduleCallback(err);
     })
@@ -71,7 +71,7 @@ module.exports = function(opt, moduleCallback) {
       return moduleCallback(err);
     }
     log.group('Finished source').log(timer.now.str());
-    moduleCallback(null);
+    moduleCallback(null, rows, columns);
   })
 
 }

@@ -12,10 +12,12 @@ module.exports = function(batchName, batchFile, moduleCallback) {
     b.batch = batchName;
     var fn = (function() {
       var options = Object.create(b);
-      return function(cb) {
-        bridge(config, b, function(err) {
+      return function(responses, cb) {
+        bridge(config, b, function(err, response) {
           if (err) return cb(err);
-          cb(null)
+          //push clean version (no methods) of response
+          responses.push[response.strip()];
+          cb(null, responses);
         })
       }
     })(b);

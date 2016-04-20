@@ -17,8 +17,8 @@ module.exports = function(opt) {
       stop: function() {
         obj.source.et = Date.now();
       },
-      duration: function() {
-        return obj.source.et - obj.source.st / 1000;
+      calcDuration: function() {
+        return (obj.source.et - obj.source.st) / 1000;
       }
     },
     destination: {
@@ -37,10 +37,12 @@ module.exports = function(opt) {
       stop: function() {
         obj.destination.et = Date.now();
       },
-      duration: function() {
-        return obj.destination.et - obj.destination.st / 1000;
+      calcDuration: function() {
+        return (obj.destination.et - obj.destination.st) / 1000;
       }
     },
+    log: opt.log.filename,
+    config: opt.cfg,
     check: function() {
       if (typeof(obj.source.errorMsg) !== 'undefined') return ["Source error.", obj.source.errorMsg];
       if (typeof(obj.destination.errorMsg) !== 'undefined') return ["Destination error.", obj.destination.errorMsg];
@@ -51,7 +53,23 @@ module.exports = function(opt) {
       var dCol = obj.destination.columns.join('').replace(/_IND/gi, '');
       if (sCol !== dCol) return ["Column mismatch.", obj.source.columns, obj.destination.columns];
       //if no problems, return true
-      return true;
+      return null;
+    },
+    strip: function() {
+      //return this reponse object clean
+      obj.checkDurations();
+      var o = JSON.parse(JSON.stringify(obj));
+      o.source.columns = typeof(o.source.columns) == 'undefined' ? null : o.source.columns.join(', ');
+      o.destination.columns = typeof(o.destination.columns) == 'undefined' ? null : o.destination.columns.join(', ');
+      delete o.source.st;
+      delete o.source.et;
+      delete o.destination.st;
+      delete o.destination.et;
+      return o;
+    },
+    checkDurations: function() {
+      obj.source.duration = obj.source.calcDuration();
+      obj.destination.duration = obj.destination.calcDuration();
     }
   }
   return obj;

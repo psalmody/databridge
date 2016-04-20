@@ -17,7 +17,7 @@ module.exports = function(config, opt, moduleCallback) {
 
 
 
-  //options will now include all things the source/destination scripts need
+  //opt includes all things the source/destination scripts need
   opt.cfg = config;
   opt.bin = __dirname.replace(/\\/g, '/') + '/';
   //start timer
@@ -97,8 +97,9 @@ module.exports = function(config, opt, moduleCallback) {
       })
     }
   ], function(err) {
-    if (opt.spinner) opt.spinner.stop(true);
-    //try and clean up the output file
+    opt.log.group('Bridge').log('Finished a bridge');
+    //try and clean up the output file and stop spinner
+
     try {
       opfile.clean();
     } catch (e) {
@@ -106,6 +107,7 @@ module.exports = function(config, opt, moduleCallback) {
     }
     //error handling
     if (err) {
+      error(err)
       error(opt.timer.now.str());
       //error(err);
       return moduleCallback(err);
@@ -113,6 +115,10 @@ module.exports = function(config, opt, moduleCallback) {
     //success! log and return response object
     l(opt.timer.now.str());
     l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
-    moduleCallback(null, response.check());
+    //response.check() returns null if no problem
+    //opt.log.group('').log(JSON.stringify(response.strip(), null, 2));
+    opt.log.log(JSON.stringify(response.strip(), null, 2));
+    if (opt.spinner) opt.spinner.stop(true);
+    return moduleCallback(response.check(), response);
   })
 }

@@ -3,12 +3,13 @@ module.exports = function(opt, moduleCallback) {
 
   var fs = require('fs'),
     async = require('async'),
+    Stream = require('stream'),
+    split = require('split'),
     file = opt.table,
     filename = opt.cfg.dirs.input + 'csv/' + file + '.csv',
     log = opt.log,
     timer = opt.timer,
-    opfile = opt.opfile,
-    Stream = require('stream');
+    opfile = opt.opfile;
 
   async.waterfall([
     //make sure csv has data
@@ -21,13 +22,22 @@ module.exports = function(opt, moduleCallback) {
     },
     //read data and change to tab-delimited
     function(cb) {
+      var rowsProcessed = 0;
+      var first = true;
+      var columns;
       //creating through stream to format data
       var comma2TabStream = new Stream.Transform();
       comma2TabStream._transform = function(chunk, encoding, done) {
-          //TODO change to line by line and only replace , outside "" using some kind
+          if (first) {
+            first = false;
+            columns = chunk.toString().replace(/\r/g, '').split(',');
+          } else {
+            rowsProcessed++;
+          }
+          //TODO only replace , outside "" using some kind
           // of regex like /(,)(?=(?:[^"]|"[^"]*")*$)/g
           var data = chunk.toString().replace(/,/g, '\t').replace(/\r/g, '');
-          this.push(data);
+          this.push(data + '\n');
           done();
         }
         //pipe data from csv to output file
@@ -38,17 +48,17 @@ module.exports = function(opt, moduleCallback) {
         cb(err);
       })
       opfileWStream.on('finish', function() {
-        cb(null);
+        cb(null, rowsProcessed, columns);
       })
-      readCSVStream.pipe(comma2TabStream).pipe(opfileWStream);
+      readCSVStream.pipe(split()).pipe(comma2TabStream).pipe(opfileWStream);
     }
-  ], function(err) {
+  ], function(err, rows, columns) {
     if (err) {
       log.error(err);
       return moduleCallback(err);
     }
     log.group('Finished source').log(timer.now.str());
-    moduleCallback(null);
+    moduleCallback(null, rows, columns);
   })
 
 }

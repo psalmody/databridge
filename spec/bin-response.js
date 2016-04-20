@@ -7,7 +7,10 @@ function reset() {
   res = require('../bin/response')({
     source: 'rptp',
     table: 'anchorage_usernames',
-    destination: 'mssql'
+    destination: 'mssql',
+    log: {
+      filename: 'test.log'
+    }
   });
   return true;
 }
@@ -59,7 +62,7 @@ describe('Testing bin\\response module', function() {
   });
   it('pass .check()', function() {
     var check = res.check();
-    assert(check == true, 'Bad response: ' + JSON.stringify(check));
+    assert(check === null, 'Bad response: ' + JSON.stringify(check));
   });
   it('reset', function() {
     assert(reset());

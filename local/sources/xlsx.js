@@ -28,35 +28,41 @@ module.exports = function(opt, moduleCallback) {
         });
         opfile.append(cols.join('\t') + '\n', function(err) {
           if (err) return cb(err);
-          cb(null);
+          cb(null, cols);
         });
       },
       //process rows
-      function(cb) {
+      function(columns, cb) {
         log.log('Reading rest of rows.');
         var rows = [];
         var first = true;
+        var rowsProcessed = 0;
         //each row - push to array
         worksheet.eachRow(function(row) {
             if (first) return first = false;
             var cells = [];
             //each cell push to array, join with \t
             row.eachCell(function(cell) {
-              cells.push(cell.value);
-            })
+                cells.push(cell.value);
+              })
+              //skip empty rows (often at end)
             rows.push(cells.join('\t'));
+            if (cells.join(' ').trim() !== '') rowsProcessed++;
           })
           //join rows with \n and put in opfile
         opfile.append(rows.join('\n'), function(err) {
           log.log('Added ' + (rows.length - 1) + ' rows. Sending to destination.');
           if (err) return cb(err);
-          cb(null);
+          cb(null, rowsProcessed, columns);
         })
       }
     ],
-    function(err) {
-      if (err) return moduleCallback(err);
+    function(err, rows, columns) {
+      if (err) {
+        log.error(err);
+        return moduleCallback(err);
+      }
       log.group('Finished source').log(timer.now.str());
-      moduleCallback(null);
+      moduleCallback(null, rows, columns);
     })
 }

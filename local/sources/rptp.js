@@ -87,7 +87,7 @@ module.exports = function(opt, moduleCallback) {
 
               results.resultSet.close(function(err) {
                 if (err) return cb('Closing resultSet error: ' + err);
-                cb(null);
+                cb(null, rowsProcessed, columns);
 
               });
 
@@ -98,7 +98,7 @@ module.exports = function(opt, moduleCallback) {
         })
       }
     ],
-    function(err) {
+    function(err, rows, columns) {
       if (err) {
         log.error(err);
         try {
@@ -109,6 +109,6 @@ module.exports = function(opt, moduleCallback) {
         return moduleCallback(err);
       }
       log.group('Finished source').log(timer.now.str());
-      moduleCallback(null);
+      moduleCallback(null, rows, columns);
     })
 }
