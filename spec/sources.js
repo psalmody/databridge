@@ -1,5 +1,4 @@
-var assert = require('chai').assert,
-  async = require('async');
+var async = require('async');
 
 var bridge = require('../bin/bridge');
 var fs = require('fs');
@@ -33,14 +32,9 @@ if (process.argv.length == 4) {
         task: true,
         update: false,
         table: table
-      }, function(err) {
-        if (err) {
-          assert(false, err);
-          done();
-        } else {
-          assert(true);
-          done();
-        }
+      }, function(err, response) {
+        if (err) return done(new Error(err.toString()));
+        done();
       })
     })
   });
@@ -71,14 +65,9 @@ async.each(fs.readdirSync(config.dirs.sources), function(file, callback) {
         task: true,
         update: false,
         table: table
-      }, function(err) {
-        if (err) {
-          assert(false, err);
-          done();
-        } else {
-          assert(true);
-          done();
-        }
+      }, function(err, response) {
+        if (err) return done(new Error(err.toString()));
+        done();
       });
     });
   });
