@@ -5,7 +5,8 @@ module.exports = function(opt, columns, moduleCallback) {
     async = require('async'),
     fs = require('fs'),
     log = opt.log,
-    opfile = opt.opfile;
+    opfile = opt.opfile,
+    timer = opt.timer;
 
   var db = opt.source,
     //use default dbo unless schema in filename
@@ -144,7 +145,7 @@ module.exports = function(opt, columns, moduleCallback) {
           rl.resume();
         } else {
           thousand.push(line); //don't forget row 1000
-          //if 10 rows, run an insert
+          //if 1000 rows, run an insert
           insertLines(thousand, function(rows) {
             rowsProcessed += rows;
             thousand.length = 0;
@@ -179,7 +180,6 @@ module.exports = function(opt, columns, moduleCallback) {
           recordset.forEach(function(row) {
             columns.push(row.col);
           })
-
           cb(null, rows, columns);
         }).catch(function(err) {
           cb(err);
@@ -192,9 +192,8 @@ module.exports = function(opt, columns, moduleCallback) {
     } catch (e) {
       console.error(e);
     }
-
     if (err) return moduleCallback(err);
-    log.group('Finished destination').log(opt.timer.now.str());
+    log.group('Finished destination').log(timer.now.str());
     moduleCallback(null, rows, columns);
   })
 }

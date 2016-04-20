@@ -9,7 +9,8 @@ module.exports = function(opt, columns, moduleCallback) {
     mkdirp = require('mkdirp'),
     log = opt.log,
     opfile = opt.opfile,
-    timer = opt.timer;
+    timer = opt.timer,
+    rowsProcessed = 0;
 
   //setup workbook and columns
   var workbook = new Excel.Workbook();
@@ -29,7 +30,6 @@ module.exports = function(opt, columns, moduleCallback) {
   worksheet.getRow(1).font = {
     bold: true
   }
-
 
   async.waterfall([
     //mkdirp
@@ -53,7 +53,10 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     function(data, cb) {
       log.log('Split data into ' + data.length + ' rows and writing to workbook.');
+      var first = true;
       data.forEach(function(row) {
+        if (!first) rowsProcessed++;
+        if (first) first = false;
         worksheet.addRow(row.split('\t'));
       })
       cb(null);
@@ -67,7 +70,10 @@ module.exports = function(opt, columns, moduleCallback) {
     }
   ], function(err) {
     if (err) return moduleCallback(err);
-    moduleCallback(null);
+    //exceljs arrays are all 1 based so remove first item
+    var cols = worksheet.getRow(1).values;
+    cols.shift();
+    moduleCallback(null, rowsProcessed, cols);
   })
 
 

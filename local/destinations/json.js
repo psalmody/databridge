@@ -34,25 +34,29 @@ module.exports = function(opt, columns, moduleCallback) {
       log.log('Transforming data from opfile to json.');
       var first = true;
       var second = true;
+      var rowsProcessed = 0;
       var tab2JSONStream = new Stream.Transform();
-      tab2JSONStream._transform = function(chunk, encoding, done) {
+      tab2JSONStream._transform = function(chunk, encoding, callback) {
         //skip first row (columns)
         if (first) {
           first = false;
-          return done();
+          return callback();
         }
+
         //only put new line and comma before each row (except first data row)
         var str = (second) ? '' : ',\n';
         if (second) second = false;
         //handle windows \r return
         var values = chunk.toString().replace(/\r/g, '').split('\t');
-        if (values.length !== keys.length) return done();
+        //handle blanks lines
+        if (values.length !== keys.length) return callback();
+        rowsProcessed++;
         var data = {};
         for (var i = 0; i < values.length; i++) {
           data[keys[i]] = values[i];
         }
         this.push(str + JSON.stringify(data, null, 2));
-        done();
+        callback();
       };
       tab2JSONStream.on('error', function(err) {
         cb(err);
@@ -65,15 +69,15 @@ module.exports = function(opt, columns, moduleCallback) {
       outputJSONStream.on('finish', function() {
         fs.appendFile(opt.cfg.dirs.output + 'json/' + dir + '/' + table + '.json', ']', function(err) {
           if (err) return cb(err);
-          cb(null);
+          cb(null, rowsProcessed);
         });
       })
       outputJSONStream.write('[');
       opfileRStream.pipe(split()).pipe(tab2JSONStream).pipe(outputJSONStream);
 
     }
-  ], function(err) {
+  ], function(err, rows) {
     if (err) return moduleCallback(err);
-    moduleCallback(null);
+    moduleCallback(null, rows, keys);
   })
 }

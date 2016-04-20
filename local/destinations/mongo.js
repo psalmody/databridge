@@ -12,7 +12,8 @@ module.exports = function(opt, columns, moduleCallback) {
     split = require('split'),
     log = opt.log,
     timer = opt.timer,
-    opfile = opt.opfile;
+    opfile = opt.opfile,
+    cols = [];
 
   const table = opt.table.indexOf('.') > -1 ? opt.table : 'dbutil.' + opt.table;
   const databaseName = table.split('.')[0];
@@ -69,12 +70,18 @@ module.exports = function(opt, columns, moduleCallback) {
         for (var i = 0; i < columns.length; i++) {
           //generate key and save for indexes
           var name = columns[i].name.replace(/_IND/ig, '');
+          cols.push(name);
           if (columns[i].index) {
             indexes.push(name);
           }
         }
         /* transform stream */
         mongoWriteStream._write = function(chunk, encoding, callback) {
+          //skip first (columns)
+          if (first) {
+            first = false;
+            return callback();
+          }
           //write every line
           var data = chunk.toString().split('\t');
           var doc = {};
@@ -95,6 +102,7 @@ module.exports = function(opt, columns, moduleCallback) {
               doc[name] = data[i];
             }
           }
+          //skip blank lines
           if (data.length !== columns.length) return callback();
           //console.log(doc);
           collection.insertOne(doc, function(err, result) {
@@ -134,15 +142,14 @@ module.exports = function(opt, columns, moduleCallback) {
       function(rowCount, cb) {
         collection.count(function(err, count) {
           log.log('Success! Inserted ' + rowCount + ' documents. MongoDB says ' + databaseName + '.' + collectionName + ' now has ' + count + ' docs.');
-          cb(null);
+          cb(null, count);
         })
       }
     ],
-    function(err) {
+    function(err, rows) {
       db.close(true, function(err) {
         if (err) moduleCallback(err);
       });
-      //client.close();
       try {
         db.close();
       } catch (e) {
@@ -150,7 +157,7 @@ module.exports = function(opt, columns, moduleCallback) {
       }
       if (err) return moduleCallback(err);
       log.group('Finished destination').log(timer.now.str());
-      moduleCallback(null);
+      moduleCallback(null, rows, cols);
     })
 
 }

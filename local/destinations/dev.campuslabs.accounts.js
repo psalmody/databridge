@@ -10,6 +10,12 @@ module.exports = function(opt, columns, moduleCallback) {
     timer = opt.timer,
     opfile = opt.opfile;
 
+  var columns = [
+    'externalId',
+    'firstName',
+    'lastName',
+    'email'
+  ];
 
   var OAuth = require('oauth');
   var OAuth2 = OAuth.OAuth2;
@@ -19,13 +25,17 @@ module.exports = function(opt, columns, moduleCallback) {
       //read opfile
       function(cb) {
         log.log('Reading file and formatting as JSON');
+        //read output file and parse to JSON
         fs.readFile(opfile.filename, 'utf-8', function(err, data) {
           if (err) return cb(err);
           data = data.split('\n');
           if (data[0].replace(/\t/g, '') !== 'externalIdfirstNamelastNameemail') return cb('Improper input - columns don\'t match right format for campuslabs account import. ' + data[0].replace(/\t/g, ' '));
           data.shift();
           for (var i = 0; i < data.length; i++) {
+            //skip any blank lines
+            if (data[i].trim() == '') continue;
             var r = data[i].split('\t');
+            //push into accounts array
             accounts.push({
               externalId: r[0],
               firstName: r[1],
@@ -74,6 +84,7 @@ module.exports = function(opt, columns, moduleCallback) {
     function(err) {
       if (err) return moduleCallback(err);
       log.group('Finished destination').log(timer.now.str());
-      moduleCallback(null);
+
+      moduleCallback(null, accounts.length, columns);
     })
 }

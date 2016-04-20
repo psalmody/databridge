@@ -66,10 +66,23 @@ module.exports = function(opt, columns, moduleCallback) {
       db.query('SELECT count(*) as rows FROM ' + table, function(err, result) {
         if (err) return cb('SELECT COUNT(*) err: ' + err);
         log.log('Successfully loaded ' + result[0].rows + ' rows into MySQL.');
-        cb(null);
+        cb(null, result[0].rows);
+      })
+    },
+    function(rows, cb) {
+      //check columns
+      var table_name = table.split('.')[1];
+      var sql = "SELECT COLUMN_NAME as col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + opt.source + "' AND TABLE_NAME='" + table_name + "'";
+      db.query(sql, function(err, result) {
+        if (err) return cb('SELECT COLUMN_NAME err: ' + err);
+        var cols = [];
+        result.forEach(function(row) {
+          cols.push(row.col);
+        })
+        cb(null, rows, cols);
       })
     }
-  ], function(err) {
+  ], function(err, rows, columns) {
     db.end(function(err) {
       if (err) moduleCallback(err);
     })
@@ -78,6 +91,6 @@ module.exports = function(opt, columns, moduleCallback) {
       return moduleCallback(err);
     }
     log.group('Finished destination').log(timer.now.str());
-    moduleCallback(null);
+    moduleCallback(null, rows, columns);
   })
 };
