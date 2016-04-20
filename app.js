@@ -13,6 +13,7 @@ var program = require('./bin/cli'),
   bridge = require('./bin/bridge'),
   missingKeys = require('./bin/missing-keys'),
   pkg = require('./package'),
+  runBridges = require('./bin/bridge-runner'),
   config = require('./config/' + process.env.NODE_ENV),
   sources = fs.readdirSync(config.dirs.sources),
   destinations = fs.readdirSync(config.dirs.destinations),
@@ -50,7 +51,7 @@ else if (missingKeys(program, ['batch', 'show']) == false) {
   process.exit();
 }
 
-//function to run bridge functions async waterfall
+/*//function to run bridge functions async waterfall
 function runBridges(bridges) {
   if (!bridges.length) return cb('No bridges found or defined. Check usage or batch file.');
   //push dummy function to beginning of async
@@ -73,13 +74,20 @@ function runBridges(bridges) {
     //let's see what we got
     if (process.env.NODE_ENV == 'development') console.log(JSON.stringify(responses, null, 2));
   })
-}
+}*/
 
 //run batch if specified
 if (missingKeys(program, ['batch']) == false) {
-  var batches = require('./bin/batches');
-  batches(program.batch, config.dirs.batches + program.batch, function(bridges) {
-    runBridges(bridges);
+  var parseBatch = require('./bin/batches');
+  parseBatch(program.batch, config.dirs.batches + program.batch, function(bridges) {
+    runBridges(bridges, function(err, responses) {
+      if (err) {
+        console.error(colors.red(err));
+        program.help();
+        return;
+      }
+      if (process.env.NODE_ENV == 'development') console.log(responses);
+    });
   })
 } else {
   //otherwise, run bridge once
@@ -105,5 +113,12 @@ if (missingKeys(program, ['batch']) == false) {
       responses.push(response.strip());
       cb(null, responses);
     })
-  }]);
+  }], function(err, responses) {
+    if (err) {
+      console.error(colors.red(err));
+      program.help();
+      return;
+    }
+    if (process.env.NODE_ENV == 'development') console.log(responses);
+  });
 }

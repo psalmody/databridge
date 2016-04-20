@@ -51,8 +51,8 @@ module.exports = function(opt) {
       if (obj.source.rows !== obj.destination.rows) return ["Row mismatch.", obj.source.rows, obj.destination.rows];
       if (typeof(obj.source.columns) == 'undefined') return ["Source didn't respond with any columns.", obj.source.name]
       if (typeof(obj.destination.columns) == 'undefined') return ["Destination didn't respond with any columns.", obj.destination.name]
-      var sCol = obj.source.columns.join('').replace(/_IND/gi, '');
-      var dCol = obj.destination.columns.join('').replace(/_IND/gi, '');
+      var sCol = obj.source.columns.join('').replace(/_IND| /gi, '');
+      var dCol = obj.destination.columns.join('').replace(/_IND| /gi, '');
       if (sCol !== dCol) return ["Column mismatch.", obj.source.columns, obj.destination.columns];
       //if no problems, return true
       return null;

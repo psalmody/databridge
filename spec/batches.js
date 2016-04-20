@@ -3,7 +3,8 @@ var assert = require('chai').assert,
   config = require('../config/development'),
   async = require('async'),
   bridge = require('../bin/bridge'),
-  batchRunner = require('../bin/batches');
+  parseBatch = require('../bin/batches'),
+  runBridges = require('../bin/bridge-runner');
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 
@@ -68,21 +69,28 @@ describe('Running last batch in directory: ' + batch, function() {
   //this could take a couple of minutes at least
   this.timeout(120000);
   process.env.NODE_ENV = 'production';
-  batchRunner('testBatch', config.dirs.batches + batch, function(bridges) {
+  parseBatch('testBatch', config.dirs.batches + batch, function(bridges) {
     it('Generates same number of bridges as batch settings.', function(done) {
       assert(batchSettings.length == bridges.length, 'Length of batches and generated bridges does not match. Batches: ' + batchSettings.length + ', bridges: ' + bridges.length);
       done();
     })
 
     it('Runs the batch without error.', function(done) {
-      async.waterfall(bridges, function(err) {
-        if (err) {
-          assert(false, err);
+      var runBridges = require('../bin/bridge-runner');
+      runBridges(bridges, function(err, responses) {
+          if (err) return done(err);
           done();
-        }
-        assert(true);
-        done();
-      })
+        })
+        /*bridges.unshift(function(cb) {
+          //push empty array into first function
+          //for responses
+          return cb(null, []);
+        })
+        async.waterfall(bridges, function(err, responses) {
+          if (err) return done(new Error(err.toString()));
+          done();
+        })*/
+
     })
   })
 })
