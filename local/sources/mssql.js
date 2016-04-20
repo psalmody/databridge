@@ -77,18 +77,18 @@ module.exports = function(opt, moduleCallback) {
 
         opfileWStream.end();
         log.log('Rows: ' + rowsProcessed);
-        cb(null, columns);
+        cb(null, rowsProcessed, columns);
       })
     },
     //prepend columns
-    function(columns, cb) {
+    function(rows, columns, cb) {
       prependFile(opfile.filename, columns, function(err) {
         if (err) return cb(err);
         log.log('prependFile columns');
-        cb(null);
+        cb(null, rows, columns.replace(/\n/g, '').split('\t'));
       })
     }
-  ], function(err) {
+  ], function(err, rows, columns) {
     try {
       mssql.close();
     } catch (e) {
@@ -99,6 +99,6 @@ module.exports = function(opt, moduleCallback) {
       return moduleCallback(err);
     }
     log.group('Finished source').log(timer.now.str());
-    moduleCallback(null);
+    moduleCallback(null, rows, columns);
   })
 }

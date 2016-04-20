@@ -165,12 +165,28 @@ module.exports = function(opt, columns, moduleCallback) {
     function(cb) {
       new mssql.Request().query('USE ' + db + '; SELECT count(*) as rows FROM ' + table).then(function(recordset) {
         log.log('imported ' + recordset[0].rows)
-        cb(null);
+        cb(null, recordset[0].rows);
       }).catch(function(err) {
         cb(err);
       })
+    },
+    function(rows, cb) {
+      var sql = 'USE ' + db + '; SELECT COLUMN_NAME col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = \'' + table.split('.')[1] + '\' AND TABLE_SCHEMA = \'' + schema + '\'';
+      new mssql.Request()
+        .query(sql)
+        .then(function(recordset) {
+          var columns = [];
+          recordset.forEach(function(row) {
+            columns.push(row.col);
+          })
+
+          cb(null, rows, columns);
+        }).catch(function(err) {
+          cb(err);
+        })
+
     }
-  ], function(err) {
+  ], function(err, rows, columns) {
     try {
       mssql.close();
     } catch (e) {
@@ -179,6 +195,6 @@ module.exports = function(opt, columns, moduleCallback) {
 
     if (err) return moduleCallback(err);
     log.group('Finished destination').log(opt.timer.now.str());
-    moduleCallback(null);
+    moduleCallback(null, rows, columns);
   })
 }
