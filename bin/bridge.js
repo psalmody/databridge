@@ -36,7 +36,7 @@ module.exports = function(config, opt, moduleCallback) {
 
   //check usage first
   if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
-
+  //try to require source
   try {
     source = require(opt.cfg.dirs.sources + opt.source);
   } catch (e) {
@@ -44,7 +44,7 @@ module.exports = function(config, opt, moduleCallback) {
     error(e.stack);
     return;
   }
-
+  //try to require destination
   try {
     destination = require(opt.cfg.dirs.destinations + opt.destination);
   } catch (e) {
@@ -65,6 +65,7 @@ module.exports = function(config, opt, moduleCallback) {
     //run source
     function(cb) {
       if (opt.spinner) opt.spinner.start();
+      //start logging with response object
       response.source.start();
       source(opt, function(err, rows, columns) {
         response.source.stop();
@@ -97,18 +98,21 @@ module.exports = function(config, opt, moduleCallback) {
     }
   ], function(err) {
     if (opt.spinner) opt.spinner.stop(true);
+    //try and clean up the output file
     try {
-      if (process.NODE_ENV !== 'development') opfile.clean();
+      opfile.clean();
     } catch (e) {
       if (typeof(opfile) !== 'undefined') error(e);
     }
+    //error handling
     if (err) {
       error(opt.timer.now.str());
       //error(err);
       return moduleCallback(err);
     }
+    //success! log and return response object
     l(opt.timer.now.str());
     l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
-    moduleCallback(response.check());
+    moduleCallback(null, response.check());
   })
 }
