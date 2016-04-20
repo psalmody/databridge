@@ -15,6 +15,8 @@ module.exports = function(config, opt, moduleCallback) {
     spinner = new Spinner('processing... %s'),
     outputFile = require('./output-file');
 
+
+
   //options will now include all things the source/destination scripts need
   opt.cfg = config;
   opt.bin = __dirname.replace(/\\/g, '/') + '/';
@@ -29,11 +31,11 @@ module.exports = function(config, opt, moduleCallback) {
   //setup log
   opt.log = (process.env.NODE_ENV == 'development') ? require('./log-dev')(opt) : require('./log')(opt);
 
+  //setup response object
+  var response = require(opt.bin + 'response')(opt);
+
   //check usage first
   if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
-
-  //make sure enough parameters were passed
-  //if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
 
   try {
     source = require(opt.cfg.dirs.sources + opt.source);
@@ -63,21 +65,33 @@ module.exports = function(config, opt, moduleCallback) {
     //run source
     function(cb) {
       if (opt.spinner) opt.spinner.start();
-      source(opt, function(err) {
-        if (err) return cb(err);
+      response.source.start();
+      source(opt, function(err, rows, columns) {
+        response.source.stop();
+        if (err) {
+          response.source.error(err);
+          return cb(err);
+        }
+        response.source.respond('ok', rows, columns);
         cb(null);
       })
     },
     //attempt to get column definitions
     function(cb) {
-      colParser(opt.opfile, function(err, columns) {
+      colParser(opt.opfile, function(err, parsedCols) {
         if (err) return cb(err);
-        cb(null, columns);
+        cb(null, parsedCols);
       })
     },
-    function(columns, cb) {
-      destination(opt, columns, function(err) {
-        if (err) return cb(err);
+    function(parsedCols, cb) {
+      response.destination.start();
+      destination(opt, parsedCols, function(err, rows, columns) {
+        response.destination.stop();
+        if (err) {
+          response.destination.error(err);
+          return cb(err);
+        }
+        response.destination.respond('ok', rows, columns);
         cb(null);
       })
     }
@@ -95,6 +109,6 @@ module.exports = function(config, opt, moduleCallback) {
     }
     l(opt.timer.now.str());
     l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
-    moduleCallback();
+    moduleCallback(response.check());
   })
 }
