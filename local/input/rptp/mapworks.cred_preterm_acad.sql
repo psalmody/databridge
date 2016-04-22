@@ -14,5 +14,4 @@ SELECT REG.STUDENT_PIDM AS PIDM_IND,
                                                                                  AND 599)
        AND REG.REGISTRATION_STATUS NOT IN ('AU', 'FW')
        AND REG.REGISTRATION_STATUS NOT LIKE 'W%'
-       AND ROWNUM < 1000
 GROUP BY REG.STUDENT_PIDM
