@@ -51,31 +51,6 @@ else if (missingKeys(program, ['batch', 'show']) == false) {
   process.exit();
 }
 
-/*//function to run bridge functions async waterfall
-function runBridges(bridges) {
-  if (!bridges.length) return cb('No bridges found or defined. Check usage or batch file.');
-  //push dummy function to beginning of async
-  //so we get a responses object
-  bridges.unshift(function(cb) {
-    //push empty array into first function
-    //for responses
-    return cb(null, []);
-  })
-
-  //taking all bridge functions created and Running
-  //them one at a time
-
-  async.waterfall(bridges, function(err, responses) {
-    if (err) {
-      console.error(colors.red(err));
-      program.help();
-      return;
-    }
-    //let's see what we got
-    if (process.env.NODE_ENV == 'development') console.log(JSON.stringify(responses, null, 2));
-  })
-}*/
-
 //run batch if specified
 if (missingKeys(program, ['batch']) == false) {
   var parseBatch = require('./bin/batches');
