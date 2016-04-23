@@ -1,10 +1,8 @@
 [{
-  "binds": true,
   "source": "csv",
   "table": "housing",
   "destination": "mssql"
 }, {
-  "binds": true,
   "source": "csv",
   "table": "housing.kpc_201601",
   "destination": "mssql"
@@ -14,7 +12,6 @@
   "table": "surveys.population_open",
   "destination": "mssql"
 }, {
-  "binds": true,
   "source": "mssql",
   "table": "surveys.population_open",
   "destination": "xlsx"
