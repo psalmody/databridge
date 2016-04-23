@@ -8,7 +8,7 @@ var fs = require('graceful-fs'),
 //production log
 module.exports = function(opt) {
   //if batch, put logs inside additional folder to keep them together
-  var batch = typeof(opt.batch) == 'undefined' ? '' : batch + '/';
+  var batch = typeof(opt.batch) == 'undefined' ? '' : opt.batch + '/';
   var table = opt.table;
   var log = new Object();
   var spinner = opt.spinner;
