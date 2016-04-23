@@ -19,8 +19,6 @@ function reset() {
 reset();
 
 
-
-
 describe('Testing bin\\response module', function() {
   it('log a source error', function() {
     res.source.error('!!');

@@ -78,19 +78,9 @@ describe('Running last batch in directory: ' + batch, function() {
     it('Runs the batch without error.', function(done) {
       var runBridges = require('../bin/bridge-runner');
       runBridges(bridges, function(err, responses) {
-          if (err) return done(err);
-          done();
-        })
-        /*bridges.unshift(function(cb) {
-          //push empty array into first function
-          //for responses
-          return cb(null, []);
-        })
-        async.waterfall(bridges, function(err, responses) {
-          if (err) return done(new Error(err.toString()));
-          done();
-        })*/
-
+        if (err) return done(err);
+        done();
+      })
     })
   })
 })
