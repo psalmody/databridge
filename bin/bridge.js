@@ -33,6 +33,7 @@ module.exports = function(config, opt, moduleCallback) {
 
   //setup response object
   var response = require(opt.bin + 'response')(opt);
+  response.binds = opt.binds;
 
   //check usage first
   if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
