@@ -8,7 +8,8 @@ module.exports = function(query, opt, moduleCallback) {
     //bindPattern = /[:].[a-z_0-9]+/g;
     //now bind pattern ignores : inside quotes (date formats)
     bindPattern = /[:].[A-Za-z_0-9]+(?=([^']*'[^']*')*[^']*$)/g,
-    defBinds = opt.cfg.defaultBindVars,
+    //extend config binds with any attached to opt
+    defBinds = Object.assign({}, opt.cfg.defaultBindVars, opt.binds),
     spinner = opt.spinner;
 
   while (result = bindPattern.exec(sql)) {
