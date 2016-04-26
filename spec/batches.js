@@ -62,6 +62,12 @@ async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
   })
 })
 
+
+if (process.argv.length == 4 && process.argv[3] == '--no-run') {
+  return;
+}
+
+
 //then run one batch
 var batch = batches[batches.length - 1];
 var batchSettings = require(config.dirs.batches + batch);
