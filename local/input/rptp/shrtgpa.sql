@@ -15,4 +15,4 @@ SELECT SHRTGPA_PIDM PIDM_IND,
                                  'GA',
                                  'UV',
                                  'GV')
-       AND SHRTGPA_TERM_CODE = :term_code
+       AND SHRTGPA_TERM_CODE >= 200903
