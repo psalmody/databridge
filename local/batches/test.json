@@ -1,0 +1,10 @@
+[{
+  "binds": true,
+  "source": "rptp",
+  "table": "surveys.population_open",
+  "destination": "mssql"
+}, {
+  "source": "mssql",
+  "table": "surveys.population_open",
+  "destination": "xlsx"
+}]

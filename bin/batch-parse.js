@@ -16,7 +16,7 @@ module.exports = function(batchName, batchFile, moduleCallback) {
         bridge(config, b, function(err, response) {
           if (err) return cb(err);
           //push clean version (no methods) of response
-          responses.push[response.strip()];
+          responses.push(response.strip());
           cb(null, responses);
         })
       }

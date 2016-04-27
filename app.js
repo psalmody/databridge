@@ -53,7 +53,7 @@ else if (missingKeys(program, ['batch', 'show']) == false) {
 
 //run batch if specified
 if (missingKeys(program, ['batch']) == false) {
-  var parseBatch = require('./bin/batches');
+  var parseBatch = require('./bin/batch-parse');
   parseBatch(program.batch, config.dirs.batches + program.batch, function(bridges) {
     runBridges(bridges, function(err, responses) {
       if (err) {
@@ -94,6 +94,8 @@ if (missingKeys(program, ['batch']) == false) {
       program.help();
       return;
     }
+    //only echo responses with development
+    //TODO handle logging this way #3 #4
     if (process.env.NODE_ENV == 'development') console.log(responses);
   });
 }

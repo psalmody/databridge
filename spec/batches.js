@@ -3,7 +3,7 @@ var assert = require('chai').assert,
   config = require('../config/development'),
   async = require('async'),
   bridge = require('../bin/bridge'),
-  parseBatch = require('../bin/batches'),
+  parseBatch = require('../bin/batch-parse'),
   runBridges = require('../bin/bridge-runner');
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
