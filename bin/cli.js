@@ -10,7 +10,7 @@ program.version(pkg.version)
   .option('-h, --show', 'Shows valid sources/destinations/tables.')
   .option('-b, --binds', 'Use default binds from input/binds.js rather than prompting ' + newline + '(applies to some sources only).')
   .option('-k, --task', 'This command is a schedule task or piping to output file.' + newline + 'Don\'t generate processing spinner.')
-  .option('--batch [batch]', 'Run json [batch] from batches/')
+  .option('-c, --batch [batch]', 'Run json [batch] from batches/')
   .option('-u, --update', 'Update table (insert data only) don\'t overwrite ' + newline + 'existing table or update table structure (for database destinations).')
   .on('--help', function() {
     console.log('  Examples: ');
