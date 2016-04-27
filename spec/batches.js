@@ -75,18 +75,17 @@ describe('Running last batch in directory: ' + batch, function() {
   //this could take a couple of minutes at least
   this.timeout(120000);
   process.env.NODE_ENV = 'production';
-  parseBatch('testBatch', config.dirs.batches + batch, function(bridges) {
-    it('Generates same number of bridges as batch settings.', function(done) {
-      assert(batchSettings.length == bridges.length, 'Length of batches and generated bridges does not match. Batches: ' + batchSettings.length + ', bridges: ' + bridges.length);
-      done();
-    })
+  var bridges = parseBatch('testBatch', config.dirs.batches + batch);
+  it('Generates same number of bridges as batch settings.', function(done) {
+    assert(batchSettings.length == bridges.length, 'Length of batches and generated bridges does not match. Batches: ' + batchSettings.length + ', bridges: ' + bridges.length);
+    done();
+  })
 
-    it('Runs the batch without error.', function(done) {
-      var runBridges = require('../bin/bridge-runner');
-      runBridges(bridges, function(err, responses) {
-        if (err) return done(err);
-        done();
-      })
+  it('Runs the batch without error.', function(done) {
+    var runBridges = require('../bin/bridge-runner');
+    runBridges(bridges, function(err, responses) {
+      if (err) return done(err);
+      done();
     })
   })
 })

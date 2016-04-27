@@ -58,16 +58,16 @@ else if (missingKeys(program, ['batch', 'show']) == false) {
 //run batch if specified
 else if (missingKeys(program, ['batch']) == false) {
   var parseBatch = require('./bin/batch-parse');
-  parseBatch(program.batch, config.dirs.batches + program.batch, function(bridges) {
-    runBridges(bridges, function(err, responses) {
-      if (err) {
-        console.error(colors.red(err));
-        program.help();
-        return;
-      }
-      if (process.env.NODE_ENV == 'development') console.log(responses);
-    });
-  })
+  var bridges = parseBatch(program.batch, config.dirs.batches + program.batch);
+  runBridges(bridges, function(err, responses) {
+    if (err) {
+      console.error(colors.red(err));
+      program.help();
+      return;
+    }
+    if (process.env.NODE_ENV == 'development') console.log(responses);
+  });
+  //})
 } else {
   //otherwise, run bridge once
   //only source / destination are required - each source module should throw
