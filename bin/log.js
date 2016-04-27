@@ -5,14 +5,13 @@
 var fs = require('graceful-fs'),
   mkdirp = require('mkdirp');
 
-//if development environment, use development log instead
-if (process.env.NODE_ENV.trim() == 'development') return module.exports = require('./log.dev');
-
 //production log
-module.exports = function(table, batch) {
+module.exports = function(opt) {
   //if batch, put logs inside additional folder to keep them together
-  var batch = typeof(batch) == 'undefined' ? '' : batch + '/';
+  var batch = typeof(opt.batch) == 'undefined' ? '' : opt.batch + '/';
+  var table = opt.table;
   var log = new Object();
+  var spinner = opt.spinner;
   //log group is prepended to every log call
   log.g = '';
   //log folder settings
@@ -21,10 +20,10 @@ module.exports = function(table, batch) {
   //for first log time - need to log start time
   var first = true;
   //log location
-  log.filename = 'logs/' + dir + '/' + batch + table + '.' + Math.round(Date.now() / 1000) + '.log.txt';
+  log.filename = opt.cfg.dirs.logs + dir + '/' + batch + table + '.' + Math.round(Date.now() / 1000) + '.log.txt';
 
   //use mkdirp to make log folders recursively if not existing
-  mkdirp('logs/' + dir + '/' + batch, function(err) {
+  mkdirp(opt.cfg.dirs.logs + dir + '/' + batch, function(err) {
     if (err) return console.error(err);
     //log command line call
     fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');

@@ -1,7 +1,7 @@
 /**
  * Bridging between source and destination
  */
-module.exports = function(opts, moduleCallback) {
+module.exports = function(config, opt, moduleCallback) {
 
   //setup timer and define shortcuts for log/error
   var tmr = require('./timer'),
@@ -12,72 +12,114 @@ module.exports = function(opts, moduleCallback) {
     fs = require('fs'),
     colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
-    spinner = new Spinner('processing... %s');
+    spinner = new Spinner('processing... %s'),
+    outputFile = require('./output-file');
 
-  //console.log(opts);
-  if (missingKeys(opts, ['source', 'destination', 'table']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
 
-  spinner.setSpinnerString(0);
-  //don't start if -k or --task (accomplished by overriding spinner.start())
-  if (opts.task) spinner.start = function() {
-    return;
-  };
 
-  //make sure enough parameters were passed
-  //if (argvs._.length < 4) return console.error('Incorrect usage. Try: \n   npm start <source> <table/query/file name> to <destination>\n  Optionally add --defaults flag to use default binds from binds.js rather than prompt for bind values.');
+  //opt includes all things the source/destination scripts need
+  opt.cfg = config;
+  opt.bin = __dirname.replace(/\\/g, '/') + '/';
+  //start timer
+  opt.timer = require('./timer');
+  //spinner if not task
+  opt.spinner = (opt.task) ? false : (function() {
+    var s = new Spinner('processing... %s');
+    s.setSpinnerString(0);
+    return s;
+  })();
+  //setup log
+  opt.log = (process.env.NODE_ENV == 'development') ? require('./log-dev')(opt) : require('./log')(opt);
 
+  //setup response object
+  var response = require(opt.bin + 'response')(opt);
+  response.binds = opt.binds;
+
+  //check usage first
+  if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
+  //try to require source
   try {
-    source = require('./sources/' + opts.source);
+    source = require(opt.cfg.dirs.sources + opt.source);
   } catch (e) {
-    error('"' + opts.source + '" is not a valid source.');
+    error('"' + opt.source + '" is not a valid source.');
     error(e.stack);
     return;
   }
-
+  //try to require destination
   try {
-    destination = require('./destinations/' + opts.destination);
+    destination = require(opt.cfg.dirs.destinations + opt.destination);
   } catch (e) {
-    error('"' + opts.destination + '" is not a valid destination.')
+    error('"' + opt.destination + '" is not a valid destination.')
     error(e.stack);
     return;
   }
 
   async.waterfall([
-    //moving to source - destination type
+    //setup opfile
     function(cb) {
-      spinner.start();
-      source(opts, spinner, function(err, opfile, log, timer) {
-        if (err) return cb(err);
-        cb(null, opfile, log, timer);
+      outputFile(opt, function(err, opfile) {
+        if (err) return moduleCallback(err);
+        opt.opfile = opfile;
+        cb(null);
+      })
+    },
+    //run source
+    function(cb) {
+      if (opt.spinner) opt.spinner.start();
+      //start logging with response object
+      response.source.start();
+      source(opt, function(err, rows, columns) {
+        response.source.stop();
+        if (err) {
+          response.source.error(err);
+          return cb(err);
+        }
+        response.source.respond('ok', rows, columns);
+        cb(null);
       })
     },
     //attempt to get column definitions
-    function(opfile, log, timer, cb) {
-      colParser(opfile, function(err, columns) {
+    function(cb) {
+      colParser(opt.opfile, function(err, parsedCols) {
         if (err) return cb(err);
-        cb(null, opfile, columns, log, timer);
+        cb(null, parsedCols);
       })
     },
-    function(opfile, columns, log, timer, cb) {
-      destination(opts, opfile, columns, log, timer, function(err, opfile) {
-        if (err) return cb(err);
-        cb(null, opfile, log);
+    function(parsedCols, cb) {
+      response.destination.start();
+      destination(opt, parsedCols, function(err, rows, columns) {
+        response.destination.stop();
+        if (err) {
+          response.destination.error(err);
+          return cb(err);
+        }
+        response.destination.respond('ok', rows, columns);
+        cb(null);
       })
     }
-  ], function(err, opfile, log) {
-    spinner.stop(true);
+  ], function(err) {
+    opt.log.group('Bridge').log('Finished a bridge');
+    //try and clean up the output file and stop spinner
+
     try {
-      if (process.NODE_ENV !== 'development') opfile.clean();
+      opfile.clean();
     } catch (e) {
-      error(e);
+      if (typeof(opfile) !== 'undefined') error(e);
     }
+    //error handling
     if (err) {
-      error(tmr.now.str());
-      error(err);
+      error(err)
+      error(opt.timer.now.str());
+      //error(err);
       return moduleCallback(err);
     }
-    l(tmr.now.str());
-    l('Completed ' + JSON.stringify(opts));
-    moduleCallback();
+    //success! log and return response object
+    l(opt.timer.now.str());
+    l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
+    //response.check() returns null if no problem
+    //opt.log.group('').log(JSON.stringify(response.strip(), null, 2));
+    opt.log.log(JSON.stringify(response.strip(), null, 2));
+    if (opt.spinner) opt.spinner.stop(true);
+    return moduleCallback(response.check(), response);
   })
 }

@@ -1,9 +1,11 @@
 module.exports = function(grunt) {
 
+  var projectFiles = ['*.js', 'bin/**/*.js', 'local/**/*.js', 'local/**/*.json', 'spec/**/*.js'];
+
   // Project configuration.
   grunt.initConfig({
     "jsbeautifier": {
-      src: ['*.js', 'bin/**/*.js', 'creds/*', 'batches/*.json'],
+      src: projectFiles,
       options: {
         js: {
           indentSize: 2
@@ -12,7 +14,7 @@ module.exports = function(grunt) {
       },
     },
     watch: {
-      files: ['*.js', 'bin/**/*.js', 'creds/*', 'batches/*.json'],
+      files: projectFiles,
       tasks: ['default'],
       options: {
         livereload: true

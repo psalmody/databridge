@@ -1,6 +1,5 @@
-module.exports = function(query, defBinds, useDefaults, spinner, moduleCallback) {
+module.exports = function(query, opt, moduleCallback) {
   //read query, check binds, prompt or use defBinds
-
 
   var qBinds = [],
     //remove comments
@@ -8,7 +7,10 @@ module.exports = function(query, defBinds, useDefaults, spinner, moduleCallback)
     //find binds
     //bindPattern = /[:].[a-z_0-9]+/g;
     //now bind pattern ignores : inside quotes (date formats)
-    bindPattern = /[:].[A-Za-z_0-9]+(?=([^']*'[^']*')*[^']*$)/g;
+    bindPattern = /[:].[A-Za-z_0-9]+(?=([^']*'[^']*')*[^']*$)/g,
+    //extend config binds with any attached to opt
+    defBinds = Object.assign({}, opt.cfg.defaultBindVars, opt.binds),
+    spinner = opt.spinner;
 
   while (result = bindPattern.exec(sql)) {
     var r = result[0].replace(':', '');
@@ -27,15 +29,10 @@ module.exports = function(query, defBinds, useDefaults, spinner, moduleCallback)
     return query;
   }
 
-  if (useDefaults) {
-    //return formatted query
-    return moduleCallback(null, replaceBinds(sql, defBinds), defBinds);
-  }
-
-
+  //return formatted query
+  if (opt.binds) return moduleCallback(null, replaceBinds(sql, defBinds), defBinds);
 
   //if not using defBinds, prompt
-
   var prompt = require('prompt'),
     colors = require('colors'),
     prompts = {
@@ -53,11 +50,11 @@ module.exports = function(query, defBinds, useDefaults, spinner, moduleCallback)
     }
   }
 
-  spinner.stop(true);
+  if (spinner) spinner.stop(true);
   prompt.start();
   prompt.get(prompts, function(err, result) {
     if (err) return moduleCallback(err);
-    spinner.start();
+    if (spinner) spinner.start();
     moduleCallback(null, replaceBinds(sql, result), result);
   });
 }

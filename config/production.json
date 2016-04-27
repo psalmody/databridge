@@ -1,0 +1,16 @@
+{
+  "dirs": {
+    "batches": "c:/www/dbutil/local/batches/",
+    "creds": "c:/www/dbutil/local/creds/",
+    "destinations": "c:/www/dbutil/local/destinations/",
+    "input": "c:/www/dbutil/local/input/",
+    "logs": "c:/www/dbutil/local/logs/",
+    "output": "c:/www/dbutil/local/output/",
+    "sources": "c:/www/dbutil/local/sources/"
+  },
+  "defaultBindVars": {
+    "term_code": 201503,
+    "current_term": 201601,
+    "pell_eligible_rate": 5198
+  }
+}
