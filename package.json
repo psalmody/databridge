@@ -4,7 +4,7 @@
   "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",
   "main": "app.js",
   "scripts": {
-    "test": "mocha spec\\*",
+    "test": "mocha spec --recursive",
     "start": "node app",
     "clean": "node bin/clean",
     "deploy": "git add . && git commit -m \"npm deploy\" && git push origin master",
