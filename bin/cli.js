@@ -15,7 +15,7 @@ program.version(pkg.version)
   .on('--help', function() {
     console.log('  Examples: ');
     console.log('');
-    console.log('    Run dbutil for rptp query employees into mysql:');
+    console.log('    Run databridge for rptp query employees into mysql:');
     console.log('    > node app -s rptp -t employees -d mysql');
     console.log('');
     console.log('    Show all valid sources:');

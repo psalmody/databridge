@@ -1,12 +1,12 @@
 {
   "dirs": {
-    "batches": "c:/www/dbutil/local/batches/",
-    "creds": "c:/www/dbutil/local/creds/",
-    "destinations": "c:/www/dbutil/local/destinations/",
-    "input": "c:/www/dbutil/local/input/",
-    "logs": "c:/www/dbutil/local/logs/",
-    "output": "c:/www/dbutil/local/output/",
-    "sources": "c:/www/dbutil/local/sources/"
+    "batches": "c:/www/databridge/local/batches/",
+    "creds": "c:/www/databridge/local/creds/",
+    "destinations": "c:/www/databridge/local/destinations/",
+    "input": "c:/www/databridge/local/input/",
+    "logs": "c:/www/databridge/local/logs/",
+    "output": "c:/www/databridge/local/output/",
+    "sources": "c:/www/databridge/local/sources/"
   },
   "defaultBindVars": {
     "term_code": 201503,

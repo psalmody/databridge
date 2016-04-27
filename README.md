@@ -1,4 +1,4 @@
-# dbutil - Data Bridging Framework
+# databridge - Data Bridging Framework
 
 Module-based data bridging applications. Takes data from source modules, outputs temporarily as a tab-delimited file and then parses to destination modules.
 
