@@ -63,7 +63,7 @@ async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
 })
 
 
-if (process.argv.length == 4 && process.argv[3] == '--no-run') {
+if (process.argv.join(' ').indexOf('--no-run') !== -1) {
   return;
 }
 
