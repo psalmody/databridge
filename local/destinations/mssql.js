@@ -83,83 +83,14 @@ module.exports = function(opt, columns, moduleCallback) {
         cb(err);
       });
     },
-    //insert data
+    //insert data with BULK INSERT - way faster
     function(cb) {
-      LineByLine = require('line-by-line'),
-        rl = new LineByLine(opfile.filename);
-      //every 100 lines of data, run insert query
-      var thousand = [],
-        first = true,
-        rowsProcessed = 0,
-        request = new mssql.Request();
-
-      function insertLines(arr, callback) {
-        //once empty, don't process
-        if (!arr.length) return cb(0);
-        //write query
-        var sql = 'USE ' + db + '; INSERT INTO ' + table + ' VALUES ';
-        //value array to use for this query
-        var vals = [];
-        for (var i = 0; i < arr.length; i++) {
-          //escape any ' in the data
-          var s = arr[i].replace(/'/g, "''").split('\t');
-          //if missing columns, push null values
-
-          while (s.length < columns.length) {
-            s.push('null');
-          }
-          //join quoted string
-          s = s.join("','");
-          //encapsulate with quotes and parentheses
-          s = " ('" + s + "') ";
-          //replace any 'null' or '' with null
-          s = s.replace(/'null'/g, 'null').replace(/''/g, 'null');
-          //put data in array
-          vals.push(s);
-        }
-        //join val statements
-        sql += vals.join(',');
-        //we'll return the rows processed
-        rP = arr.length;
-        arr.length = 0; //reset arr
-        //insert rows - run query
-        new mssql.Request().query(sql).then(function(recordset) {
-          callback(rP);
-        }).catch(function(err) {
-          //if error, kill the entire script
-          log.error('Error in insertLines(). This may be caused by extra commas in your data.');
-          log.error(rowsProcessed);
-          log.error(arr);
-          log.error(err);
-          process.exit();
-        })
-      }
-
-      rl.on('line', function(line) {
-        rl.pause();
-        if (first) {
-          first = false; //skip first line
-          rl.resume();
-        } else if (thousand.length < 999) {
-          thousand.push(line); //if less than 999, push line to array and continue
-          rl.resume();
-        } else {
-          thousand.push(line); //don't forget row 1000
-          //if 1000 rows, run an insert
-          insertLines(thousand, function(rows) {
-            rowsProcessed += rows;
-            thousand.length = 0;
-            rl.resume();
-          });
-        }
-      });
-      rl.on('end', function() {
-        //at end, insert any remaining lines in the thousand array
-        insertLines(thousand, function(rows) {
-          rowsProcessed += rows;
-          log.group('Finish').log('Rows processed: ' + rowsProcessed);
-          cb(null);
-        })
+      var sql = "USE " + db + "; BULK INSERT " + table + " FROM '" + opfile.filename + "' WITH ( FIELDTERMINATOR='\t', ROWTERMINATOR='\n', FIRSTROW=2)";
+      new mssql.Request().query(sql).then(function() {
+        log.log('BULK INSERT successful.');
+        cb(null);
+      }).catch(function(err) {
+        cb(err);
       })
     },
     //check number of inserted rows
