@@ -1,4 +1,7 @@
 module.exports = function(query, opt, moduleCallback) {
+
+  var missingKeys = require('./missing-keys');
+
   //read query, check binds, prompt or use defBinds
 
   var qBinds = [],
@@ -29,8 +32,10 @@ module.exports = function(query, opt, moduleCallback) {
     return query;
   }
 
+  //check to see if ALL binds are present in defBinds AND opt.binds is present
+  if (opt.binds && missingKeys(defBinds, qBinds) == false)
   //return formatted query
-  if (opt.binds) return moduleCallback(null, replaceBinds(sql, defBinds), defBinds);
+    return moduleCallback(null, replaceBinds(sql, defBinds), defBinds);
 
   //if not using defBinds, prompt
   var prompt = require('prompt'),
