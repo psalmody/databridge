@@ -4,7 +4,7 @@ var assert = require('chai').assert;
 var res;
 
 function reset() {
-  res = require('../bin/response')({
+  res = require('../../bin/response')({
     source: 'rptp',
     table: 'anchorage_usernames',
     destination: 'mssql',
