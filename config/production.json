@@ -12,5 +12,10 @@
     "term_code": 201503,
     "current_term": 201601,
     "pell_eligible_rate": 5198
+  },
+  "schedule": "c:/www/databridge/local/schedule.json",
+  "service": {
+    "name": "prodDataBridge",
+    "log": "c:/www/databridge/local/schedule.log.txt"
   }
 }

@@ -1,7 +1,8 @@
 //function to run bridge functions async waterfall
-var colors = require('colors'),
-  async = require('async');
+
 module.exports = function runBridges(bridges, callback) {
+  var colors = require('colors'),
+    async = require('async');
   if (!bridges.length) return cb('No bridges found or defined. Check usage or batch file.');
   //push dummy function to beginning of async
   //so we get a responses object

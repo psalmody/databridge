@@ -1,0 +1,11 @@
+[{
+  "type": "batch",
+  "cron": "*/60 * * * * *",
+  "name": "test"
+}, {
+  "type": "bridge",
+  "cron": "*/30 * * * * *",
+  "source": "rptp",
+  "destination": "mssql",
+  "table": "employees.ferpa_certified"
+}]
