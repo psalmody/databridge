@@ -4,8 +4,7 @@
 module.exports = function(config, opt, moduleCallback) {
 
   //setup timer and define shortcuts for log/error
-  var tmr = require('./timer'),
-    async = require('async'),
+  var async = require('async'),
     missingKeys = require('./missing-keys'),
     l = console.log,
     error = console.error,
