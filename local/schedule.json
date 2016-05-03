@@ -9,7 +9,7 @@
   "binds": true,
   "source": "rptp",
   "destination": "mssql",
-  "table": "employee.ferpa_certified"
+  "table": "employees.ferpa_certified"
 }, {
   "type": "bridge",
   "name": "mssql surveys.population_open => csv",
