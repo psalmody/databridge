@@ -1,5 +1,6 @@
 module.exports = function(opt) {
   var obj = {
+    start: new Date().toString(),
     source: {
       name: opt.source,
       table: opt.table,

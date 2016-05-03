@@ -12,6 +12,7 @@ spinner.start = function() {
 //sql expectations
 var sql = "/* testing */ \n --test \n SELECT * --test \n FROM test_table \n WHERE column = '101' AND column_two = :bind_variable_one --test\nand column_three = :bind_variable_two\n/*test test */\nAND column_four = :bind_variable_three /* test */";
 var shouldbesql = " \n  SELECT *  FROM test_table \n WHERE column = '101' AND column_two = uno and column_three = 2\n\nAND column_four = three ";
+var noBindsSql = shouldbesql;
 
 var opt = {
   cfg: config,
@@ -66,6 +67,26 @@ describe('Testing bind-query', function() {
       bindQuery(sql, opt3, function(err, newsql, defBinds) {
         if (err) return assert(false, err);
         assert(newsql == shouldbesql, "Bound sql doesn't match " + shouldbesql + "\nInstead it's:\n" + newsql)
+        done();
+      })
+    })
+  });
+  describe('testing using a query with no bind variables and no binds in opt.', function() {
+    it('Does not prompt and returns the correct query with no error.', function(done) {
+      this.timeout(10000);
+      bindQuery(noBindsSql, opt3, function(err, newsql, defBinds) {
+        if (err) return assert(false, err);
+        assert(newsql == noBindsSql, "SQL does not match " + noBindsSql + "\nInstead it's:\n" + newsql);
+        done();
+      })
+    })
+  });
+  describe('testing using a query with no bind vars and binds ARE in opt', function() {
+    it('Does not prompt and returns the correct query with no error.', function(done) {
+      this.timeout(10000);
+      bindQuery(noBindsSql, opt, function(err, newsql, defBinds) {
+        if (err) return assert(false, err);
+        assert(newsql == noBindsSql, "SQL does not match " + noBindsSql + "\nInstead it's:\n" + newsql);
         done();
       })
     })

@@ -124,7 +124,7 @@ module.exports = function(opt, columns, moduleCallback) {
       console.error(e);
     }
     if (err) return moduleCallback(err);
-    log.group('Finished destination').log(timer.now.str());
+    log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
   })
 }

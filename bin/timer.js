@@ -3,36 +3,31 @@
  * in order to time entire process.
  */
 var Timer = function() {
-
-  var timer = this;
-  timer.s = Date.now();
-
-  //get current timer
-  timer.now = {
-    sec: function() {
-      return seconds(Date.now() - timer.s);
-    },
-    min: function() {
-      return minutes(Date.now() - timer.s);
-    },
-    str: function() {
-      return "Since timer start: " + timer.now.sec() + " seconds / " + timer.now.min() + " minutes.";
-    }
-  }
-
-  //get timer start
-  timer.start = function() {
-    return timer.s.toString();
-  }
-
-  function seconds(t) {
-    return (t / 1000).toFixed(2);
-  }
-
-  function minutes(t) {
-    return (t / 1000 / 60).toFixed(2);
-  }
-
+  this.s = Date.now();
 }
 
-module.exports = new Timer();
+function seconds(t) {
+  return (t / 1000).toFixed(2);
+}
+
+function minutes(t) {
+  return (t / 1000 / 60).toFixed(2);
+}
+
+Timer.prototype.sec = function() {
+  return seconds(Date.now() - this.s);
+};
+
+Timer.prototype.min = function() {
+  return minutes(Date.now() - this.s);
+};
+
+Timer.prototype.str = function() {
+  return "Since timer start: " + this.sec() + " seconds / " + this.min() + " minutes.";
+}
+
+Timer.prototype.start = function() {
+  return timer.s.toString();
+}
+
+module.exports = Timer;

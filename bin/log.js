@@ -2,11 +2,12 @@
  * Logger - piped between source and destination so there
  *   is only one log per bridge run.
  */
-var fs = require('graceful-fs'),
-  mkdirp = require('mkdirp');
+
 
 //production log
 module.exports = function(opt) {
+  var fs = require('graceful-fs'),
+    mkdirp = require('mkdirp');
   //if batch, put logs inside additional folder to keep them together
   var batch = typeof(opt.batch) == 'undefined' ? '' : opt.batch + '/';
   var table = opt.table;

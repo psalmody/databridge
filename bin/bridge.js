@@ -4,8 +4,7 @@
 module.exports = function(config, opt, moduleCallback) {
 
   //setup timer and define shortcuts for log/error
-  var tmr = require('./timer'),
-    async = require('async'),
+  var async = require('async'),
     missingKeys = require('./missing-keys'),
     l = console.log,
     error = console.error,
@@ -13,7 +12,8 @@ module.exports = function(config, opt, moduleCallback) {
     colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
     spinner = new Spinner('processing... %s'),
-    outputFile = require('./output-file');
+    outputFile = require('./output-file'),
+    Timer = require('./timer');
 
 
 
@@ -21,7 +21,7 @@ module.exports = function(config, opt, moduleCallback) {
   opt.cfg = config;
   opt.bin = __dirname.replace(/\\/g, '/') + '/';
   //start timer
-  opt.timer = require('./timer');
+  opt.timer = new Timer();
   //spinner if not task
   opt.spinner = (opt.task) ? false : (function() {
     var s = new Spinner('processing... %s');
@@ -34,7 +34,6 @@ module.exports = function(config, opt, moduleCallback) {
   //setup response object
   var response = require(opt.bin + 'response')(opt);
   response.binds = opt.binds;
-
   //check usage first
   if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
   //try to require source
@@ -68,15 +67,19 @@ module.exports = function(config, opt, moduleCallback) {
       if (opt.spinner) opt.spinner.start();
       //start logging with response object
       response.source.start();
-      source(opt, function(err, rows, columns) {
-        response.source.stop();
-        if (err) {
-          response.source.error(err);
-          return cb(err);
-        }
-        response.source.respond('ok', rows, columns);
-        cb(null);
-      })
+      try {
+        source(opt, function(err, rows, columns) {
+          response.source.stop();
+          if (err) {
+            response.source.error(err);
+            return cb(err);
+          }
+          response.source.respond('ok', rows, columns);
+          cb(null);
+        })
+      } catch (e) {
+        console.trace(e);
+      }
     },
     //attempt to get column definitions
     function(cb) {
@@ -109,12 +112,12 @@ module.exports = function(config, opt, moduleCallback) {
     //error handling
     if (err) {
       error(err)
-      error(opt.timer.now.str());
+      error(opt.timer.str());
       //error(err);
       return moduleCallback(err);
     }
     //success! log and return response object
-    l(opt.timer.now.str());
+    l(opt.timer.str());
     l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
     //response.check() returns null if no problem
     //opt.log.group('').log(JSON.stringify(response.strip(), null, 2));

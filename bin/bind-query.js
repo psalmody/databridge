@@ -20,6 +20,9 @@ module.exports = function(query, opt, moduleCallback) {
     if (qBinds.indexOf(r) == -1) qBinds.push(r);
   }
 
+  //if no binds in query, return the query file
+  if (!qBinds.length) return moduleCallback(null, sql, defBinds);
+
   function replaceBinds(query, binds) {
     for (var i = 0; i < qBinds.length; i++) {
       try {

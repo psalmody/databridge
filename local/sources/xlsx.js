@@ -62,7 +62,7 @@ module.exports = function(opt, moduleCallback) {
         log.error(err);
         return moduleCallback(err);
       }
-      log.group('Finished source').log(timer.now.str());
+      log.group('Finished source').log(timer.str());
       moduleCallback(null, rows, columns);
     })
 }
