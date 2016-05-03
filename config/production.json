@@ -15,7 +15,7 @@
   },
   "schedule": "c:/www/databridge/local/schedule.json",
   "service": {
-    "name": "prodDataBridge",
-    "log": "c:/www/databridge/local/schedule.log.txt"
+    "name": "dataBridgeProd",
+    "log": "c:/www/databridge/local/logs/schedule.log.txt"
   }
 }
