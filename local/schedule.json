@@ -1,11 +1,29 @@
 [{
+  "name": "test",
   "type": "batch",
-  "cron": "*/60 * * * * *",
-  "name": "test"
+  "cron": "*/30 * * * *"
 }, {
   "type": "bridge",
-  "cron": "*/30 * * * * *",
+  "name": "rptp employees.ferpa_certified => mssql",
+  "cron": "*/10 * * * *",
+  "binds": true,
   "source": "rptp",
+  "destination": "mssql",
+  "table": "employee.ferpa_certified"
+}, {
+  "type": "bridge",
+  "name": "mssql surveys.population_open => csv",
+  "cron": "*/20 * * * *",
+  "binds": true,
+  "source": "mssql",
+  "table": "surveys.population_open",
+  "destination": "csv"
+}, {
+  "type": "bridge",
+  "name": "xlsx employees.ferpa_certified => mssql",
+  "cron": "*/25 * * * *",
+  "binds": true,
+  "source": "xlsx",
   "destination": "mssql",
   "table": "employees.ferpa_certified"
 }]
