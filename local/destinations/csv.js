@@ -63,7 +63,7 @@ module.exports = function(opt, columns, moduleCallback) {
     }
   ], function(err, rows, columns) {
     if (err) return moduleCallback(err);
-    log.group('Finished destination').log(timer.now.str());
+    log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
   })
 }

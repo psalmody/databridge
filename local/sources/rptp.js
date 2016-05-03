@@ -89,7 +89,7 @@ module.exports = function(opt, moduleCallback) {
               }
 
               log.log('Finish processing ' + rowsProcessed + ' rows');
-              log.log(timer.now.str());
+              log.log(timer.str());
 
               results.resultSet.close(function(err) {
                 if (err) return cb('Closing resultSet error: ' + err);
@@ -114,7 +114,7 @@ module.exports = function(opt, moduleCallback) {
         }
         return moduleCallback(err);
       }
-      log.group('Finished source').log(timer.now.str());
+      log.group('Finished source').log(timer.str());
       moduleCallback(null, rows, columns);
     })
 }

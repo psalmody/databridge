@@ -12,7 +12,8 @@ module.exports = function(config, opt, moduleCallback) {
     colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
     spinner = new Spinner('processing... %s'),
-    outputFile = require('./output-file');
+    outputFile = require('./output-file'),
+    Timer = require('./timer');
 
 
 
@@ -20,7 +21,7 @@ module.exports = function(config, opt, moduleCallback) {
   opt.cfg = config;
   opt.bin = __dirname.replace(/\\/g, '/') + '/';
   //start timer
-  opt.timer = require('./timer');
+  opt.timer = new Timer();
   //spinner if not task
   opt.spinner = (opt.task) ? false : (function() {
     var s = new Spinner('processing... %s');
@@ -111,12 +112,12 @@ module.exports = function(config, opt, moduleCallback) {
     //error handling
     if (err) {
       error(err)
-      error(opt.timer.now.str());
+      error(opt.timer.str());
       //error(err);
       return moduleCallback(err);
     }
     //success! log and return response object
-    l(opt.timer.now.str());
+    l(opt.timer.str());
     l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
     //response.check() returns null if no problem
     //opt.log.group('').log(JSON.stringify(response.strip(), null, 2));
