@@ -29,7 +29,9 @@ module.exports = function(opt, moduleCallback) {
       },
       //read query
       function(cb) {
-        fs.readFile(opt.cfg.dirs.input + opt.source + '/' + table + '.sql', 'utf-8', function(err, data) {
+        var f = opt.cfg.dirs.input + opt.source + '/' + table + '.sql';
+        log.log(f);
+        fs.readFile(f, 'utf8', function(err, data) {
           if (err) return cb("fs readFile error on input query: " + err);
           cb(null, data);
         })
@@ -37,11 +39,15 @@ module.exports = function(opt, moduleCallback) {
       //format query and prompt for binds
       function(data, cb) {
         log.group('Setup').log('Processing query ' + table);
-        bindQuery(data, opt, function(err, sql, binds) {
-          log.group('Binds').log(JSON.stringify(binds));
-          if (err) return cb(err);
-          cb(null, sql);
-        })
+        try {
+          bindQuery(data, opt, function(err, sql, binds) {
+            if (err) return cb(err);
+            log.group('Binds').log(JSON.stringify(binds));
+            cb(null, sql);
+          })
+        } catch (e) {
+          console.trace(e);
+        }
       },
       //run query
       function(sql, cb) {

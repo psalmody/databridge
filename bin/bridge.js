@@ -34,7 +34,6 @@ module.exports = function(config, opt, moduleCallback) {
   //setup response object
   var response = require(opt.bin + 'response')(opt);
   response.binds = opt.binds;
-
   //check usage first
   if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
   //try to require source
@@ -68,15 +67,19 @@ module.exports = function(config, opt, moduleCallback) {
       if (opt.spinner) opt.spinner.start();
       //start logging with response object
       response.source.start();
-      source(opt, function(err, rows, columns) {
-        response.source.stop();
-        if (err) {
-          response.source.error(err);
-          return cb(err);
-        }
-        response.source.respond('ok', rows, columns);
-        cb(null);
-      })
+      try {
+        source(opt, function(err, rows, columns) {
+          response.source.stop();
+          if (err) {
+            response.source.error(err);
+            return cb(err);
+          }
+          response.source.respond('ok', rows, columns);
+          cb(null);
+        })
+      } catch (e) {
+        console.trace(e);
+      }
     },
     //attempt to get column definitions
     function(cb) {

@@ -34,12 +34,12 @@ if (program.add) {
     programArgs: ["--run"]
   };
   service.add(config.service.name, options, function(err) {
-    if (err) console.trace(err);
+    if (err) return console.trace(err);
     console.log("Started service " + config.service.name + ". Start with:\n  Windows: net start \"" + config.service.name + "\"\n  Linux:  service " + config.service.name + " start");
   })
 } else if (program.remove) {
   service.remove(config.service.name, function(err) {
-    if (err) return console.log(err);
+    if (err) return console.trace(err);
   })
 } else if (program.run) {
 
@@ -47,29 +47,55 @@ if (program.add) {
     defaultEncoding: 'utf8'
   });
 
+  var errorStream = fs.createWriteStream(config.service.log + '.error.txt', {
+    defaultEncoding: 'utf8'
+  })
 
-  service.run(logStream, function() {
+
+  service.run(logStream, errorStream, function() {
     service.stop(0);
   })
 
   schedules.forEach(function(sched) {
-    var j = schedule.scheduleJob(sched.cron, function() {
-      switch (sched.type) {
-        case "batch":
-          var bridges = parseBatch(sched.name, config.dirs.batches + sched.name);
-          runBridges(bridges, function(err, responses) {
-            if (err) return console.error(err);
-            console.log(responses);
-          })
-          break;
-        case "bridge":
-          bridge(config, sched, function(err, response) {
-            if (err) return console.error(err);
-            console.log(response.strip());
-          })
-          break;
-      }
-    })
+    //run as task - no spinner
+    sched.task = true;
+    console.log(sched);
+    try {
+      var j = schedule.scheduleJob(sched.cron, function() {
+        switch (sched.type) {
+          case "batch":
+            var dt = new Date().toString();
+            console.log('Starting batch ' + sched.name + ' at ' + dt);
+            try {
+              var bridges = parseBatch(sched.name, config.dirs.batches + sched.name);
+              runBridges(bridges, function(err, responses) {
+                if (err) return console.error(err);
+                //console.log(responses);
+              })
+            } catch (e) {
+              console.log('Error in run bridges:');
+              console.trace(e);
+            }
+            break;
+          case "bridge":
+            var dt = new Date().toString();
+            console.log('Starting bridge ' + sched.name + ' at ' + dt);
+            try {
+              bridge(config, sched, function(err, response) {
+                if (err) return console.error(err);
+                //console.log(response.strip());
+              })
+            } catch (e) {
+              console.log('Error in single bridge:', e);
+            }
+
+            break;
+        }
+        //console.log(new Date().toString());
+      })
+    } catch (e) {
+      console.log(e);
+    }
     jobs.push(j);
   });
 
