@@ -17,53 +17,57 @@ var program = require('./bin/cli'),
   config = require('./config/' + process.env.NODE_ENV),
   sources = fs.readdirSync(config.dirs.sources),
   destinations = fs.readdirSync(config.dirs.destinations),
-  batches = fs.readdirSync(config.dirs.batches);
+  batches = fs.readdirSync(config.dirs.batches),
+  removeFileExtension = require('./bin/string-utilities').removeFileExtension;
 
 //show valid tables
 if (missingKeys(program, ['source', 'table', 'show']) == false) {
   fs.readdir(config.dirs.input + program.source, function(err, files) {
     if (err) return cb(err);
-    var valid = [];
-    for (var i = 0; i < files.length; i++) {
-      if (files[i].indexOf('.') !== 0) valid.push(files[i].replace(/.sql|.js|.csv|.txt/g, ''));
-    }
     console.log('Valid tables for ' + program.source + ':');
-    console.log('  ' + valid.join('\n  '));
+    files.forEach(function(file) {
+      console.log('  ' + removeFileExtension(file));
+    })
   })
   return;
 }
 //show valid sources
 else if (missingKeys(program, ['source', 'show']) == false) {
   console.log('Valid sources:');
-  console.log('  ' + sources.join('\n  '));
-  process.exit();
+  sources.forEach(function(source) {
+    console.log('  ' + removeFileExtension(source))
+  })
+  return;
 }
 //show valid destinations
 else if (missingKeys(program, ['destination', 'show']) == false) {
   console.log('Valid destinations:');
-  console.log('  ' + destinations.join('\n  '));
-  process.exit();
+  destinations.forEach(function(destination) {
+    console.log('  ' + removeFileExtension(destination));
+  })
+  return;
 }
 //show valid batches
 else if (missingKeys(program, ['batch', 'show']) == false) {
   console.log('Valid batches:');
-  console.log('  ' + batches.join(', '));
-  process.exit();
-}
-
-//run batch if specified
-if (missingKeys(program, ['batch']) == false) {
-  var parseBatch = require('./bin/batch-parse');
-  parseBatch(program.batch, config.dirs.batches + program.batch, function(bridges) {
-    runBridges(bridges, function(err, responses) {
-      if (err) {
-        console.error(colors.red(err));
-        program.help();
-        return;
-      }
-      if (process.env.NODE_ENV == 'development') console.log(responses);
-    });
+  batches.forEach(function(batch) {
+    console.log('  ' + removeFileExtension(batch));
   })
+  return;
+}
+//run batch if specified
+else if (missingKeys(program, ['batch']) == false) {
+  var parseBatch = require('./bin/batch-parse');
+  var bridges = parseBatch(program.batch, config.dirs.batches + program.batch);
+  runBridges(bridges, function(err, responses) {
+    if (err) {
+      console.error(colors.red(err));
+      program.help();
+      return;
+    }
+    if (process.env.NODE_ENV == 'development') console.log(responses);
+  });
+  //})
 } else {
   //otherwise, run bridge once
   //only source / destination are required - each source module should throw

@@ -28,6 +28,8 @@ module.exports = function(opt, moduleCallback) {
       //creating through stream to format data
       var comma2TabStream = new Stream.Transform();
       comma2TabStream._transform = function(chunk, encoding, done) {
+          //skip blank rows
+          if (chunk.toString().trim() == '') return done();
           if (first) {
             first = false;
             columns = chunk.toString().replace(/\r/g, '').split(',');
@@ -57,7 +59,7 @@ module.exports = function(opt, moduleCallback) {
       log.error(err);
       return moduleCallback(err);
     }
-    log.group('Finished source').log(timer.now.str());
+    log.group('Finished source').log(timer.str());
     moduleCallback(null, rows, columns);
   })
 

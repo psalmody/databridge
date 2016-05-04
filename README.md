@@ -1,4 +1,4 @@
-# dbutil - Data Bridging Framework
+# databridge - Data Bridging Framework
 
 Module-based data bridging applications. Takes data from source modules, outputs temporarily as a tab-delimited file and then parses to destination modules.
 
@@ -43,3 +43,25 @@ Destination modules MUST return the output file for cleanup in the bridge module
 ## <a name="clusage"></a> Command-Line Usage
 
 For help run `node app --help`.
+
+## Running as a service
+
+Uses `config.schedule` file and can setup service.
+
+Each schedule object requires `type` attribute: `bridge` or `batch`.
+
+> NOTE: Single bridge scheduled object MUST have `binds: true` OR `binds: {...}` otherwise it will cause an error and stop the service.
+
+Each schedule object requires `cron` attribute in the following format:
+
+```
+*    *    *    *    *    *
+┬    ┬    ┬    ┬    ┬    ┬
+│    │    │    │    │    |
+│    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
+│    │    │    │    └───── month (1 - 12)
+│    │    │    └────────── day of month (1 - 31)
+│    │    └─────────────── hour (0 - 23)
+│    └──────────────────── minute (0 - 59)
+└───────────────────────── second (0 - 59, optional)
+```

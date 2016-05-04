@@ -15,7 +15,7 @@ module.exports = function(opt, columns, moduleCallback) {
     opfile = opt.opfile,
     cols = [];
 
-  const table = opt.table.indexOf('.') > -1 ? opt.table : 'dbutil.' + opt.table;
+  const table = opt.table.indexOf('.') > -1 ? opt.table : 'databridge.' + opt.table;
   const databaseName = table.split('.')[0];
   const collectionName = table.split('.')[1];
 
@@ -156,7 +156,7 @@ module.exports = function(opt, columns, moduleCallback) {
         return moduleCallback(e);
       }
       if (err) return moduleCallback(err);
-      log.group('Finished destination').log(timer.now.str());
+      log.group('Finished destination').log(timer.str());
       moduleCallback(null, rows, cols);
     })
 

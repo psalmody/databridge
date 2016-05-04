@@ -1,0 +1,2 @@
+["C:\\Program Files\\nodejs\\node.exe","C:\\www\\databridge\\bin\\schedule","--add"]
+C:\www\databridge\bin

@@ -2,8 +2,8 @@ var assert = require('chai').assert;
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var async = require('async');
-var config = require('../config/development');
-var clean = require('../bin/clean');
+var config = require('../../config/development');
+var clean = require('../../bin/clean');
 
 var dt = new Date(),
   dtdir = dt.getFullYear() + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + ('0' + dt.getDate()).slice(-2);

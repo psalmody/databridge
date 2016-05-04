@@ -1,5 +1,5 @@
 //batches should return an array of bridge functions to run
-module.exports = function(batchName, batchFile, moduleCallback) {
+module.exports = function(batchName, batchFile) {
   var batch = require(batchFile);
   var bridge = require('./bridge');
   var bridges = [];
@@ -23,6 +23,5 @@ module.exports = function(batchName, batchFile, moduleCallback) {
     })(b);
     bridges.push(fn);
   })
-
-  return moduleCallback(bridges);
+  return bridges;
 }

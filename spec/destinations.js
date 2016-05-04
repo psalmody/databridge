@@ -16,9 +16,9 @@ function getOneTable(src) {
 }
 
 //if --destination passed, only test one
-//if --source passed, only test one
-if (process.argv.length == 4) {
-  var destination = process.argv[3].replace(/-/g, '');
+//if --one= passed, only test one
+if (process.argv.join(' ').indexOf('--one=') !== -1) {
+  var destination = process.argv.join(' ').split('--one=')[1].split(' ')[0].replace(/-/g, '');
   describe('Checking only one destination: ' + destination, function() {
     this.timeout(30000);
     process.env.NODE_ENV = "production";

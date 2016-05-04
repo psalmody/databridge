@@ -4,8 +4,11 @@ module.exports = function(a, b) {
     return false;
 
   // compare lengths - can save a lot of time
-  if (a.length != array.length)
+  if (a.length != b.length)
     return false;
+
+  //check if both are arrays
+  if (!a instanceof Array || !b instanceof Array) return false;
 
   for (var i = 0, l = a.length; i < l; i++) {
     // Check if we have nested arrays

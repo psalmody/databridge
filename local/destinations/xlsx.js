@@ -14,7 +14,7 @@ module.exports = function(opt, columns, moduleCallback) {
 
   //setup workbook and columns
   var workbook = new Excel.Workbook();
-  workbook.creator = 'dbutil';
+  workbook.creator = 'databridge';
   workbook.created = new Date();
   workbook.modified = new Date();
 
