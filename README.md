@@ -65,3 +65,37 @@ Each schedule object requires `cron` attribute in the following format:
 │    └──────────────────── minute (0 - 59)
 └───────────────────────── second (0 - 59, optional)
 ```
+
+Example `schedule.json` file:
+
+```json
+[{
+  "name": "test",
+  "type": "batch",
+  "cron": "*/30 * * * *"
+}, {
+  "type": "bridge",
+  "name": "rptp employees.ferpa_certified => mssql",
+  "cron": "*/10 * * * *",
+  "binds": true,
+  "source": "rptp",
+  "destination": "mssql",
+  "table": "employees.ferpa_certified"
+}, {
+  "type": "bridge",
+  "name": "mssql surveys.population_open => csv",
+  "cron": "*/20 * * * *",
+  "binds": true,
+  "source": "mssql",
+  "table": "surveys.population_open",
+  "destination": "csv"
+}, {
+  "type": "bridge",
+  "name": "xlsx employees.ferpa_certified => mssql",
+  "cron": "*/25 * * * *",
+  "binds": true,
+  "source": "xlsx",
+  "destination": "mssql",
+  "table": "employees.ferpa_certified"
+}]
+```
