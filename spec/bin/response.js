@@ -3,15 +3,17 @@ var assert = require('chai').assert;
 //setup response
 var res;
 
-function reset() {
-  res = require('../../bin/response')({
+function reset(up) {
+  var opt = {
     source: 'rptp',
     table: 'anchorage_usernames',
     destination: 'mssql',
     log: {
       filename: 'test.log'
     }
-  });
+  };
+  if (up) opt.update = true;
+  res = require('../../bin/response')(opt);
   return true;
 }
 
@@ -95,5 +97,20 @@ describe('Testing bin\\response module', function() {
   it('gave a rows error', function() {
     var check = res.check();
     assert(check[0] == 'Row mismatch.', "Bad error: " + JSON.stringify(check));
+  });
+  it('gave a rows error when update and column returned less than source', function() {
+    //reset with update true
+    reset(true);
+    res.source.respond('fine', 20, ['a', 'b', 'c']);
+    res.destination.respond('fine', 10, ['a', 'b', 'c']);
+    var check = res.check();
+    assert(check[0] == 'Update specified but destination says it has less rows than source.', 'Bad response from .check(): ' + check[0]);
+  });
+  it('gave no rows error when update and column returned more than source', function() {
+    reset(true);
+    res.source.respond('fine', 20, ['a', 'b', 'c']);
+    res.destination.respond('fine', 40, ['a', 'b', 'c']);
+    var check = res.check();
+    assert(check === null, 'Bad response from check: ' + JSON.stringify(check))
   });
 })
