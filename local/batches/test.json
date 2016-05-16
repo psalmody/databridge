@@ -1,6 +1,6 @@
 [{
   "binds": true,
-  "source": "rptp",
+  "source": "oracle",
   "table": "surveys.population_open",
   "destination": "mssql"
 }, {

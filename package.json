@@ -9,7 +9,7 @@
     "clean": "node bin/clean",
     "deploy": "git add . && git commit -m \"npm deploy\" && git push origin master",
     "pullinstall": "git pull && npm install",
-    "test_temp": "node app -s rptp -t employees.ferpa_certified -d mssql"
+    "test_temp": "node app -s oracle -t employees.ferpa_certified -d mssql"
   },
   "author": "Michael A Smith msmith104@uaa.alaska.edu @psalmody psalmody@gmail.com",
   "license": "MIT",

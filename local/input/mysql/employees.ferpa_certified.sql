@@ -1,1 +1,1 @@
-SELECT * FROM rptp.employees_ferpa_certified
+SELECT * FROM oracle.employees_ferpa_certified

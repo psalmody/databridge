@@ -2,7 +2,7 @@ WITH CUM_CREDITS
         AS (SELECT reg.STUDENT_PIDM,
                    SUM (CAST (reg.CREDIT_ATTEMPTED AS NUMERIC (6, 2)))
                       CREDITS
-              FROM RPTP.dsdmgr.dsd_registration reg
+              FROM oracle.dsdmgr.dsd_registration reg
              WHERE     1 = 1
                    AND reg.TERM_CODE <= 201503
                    AND reg.CREDIT_ENR = 'Y'
@@ -47,10 +47,10 @@ SELECT DISTINCT
           AS GPA,
        STUDENT.BIRTH_DATE BIRTH_DATE,
        CUM_CREDITS.CREDITS AS CUM_CREDITS
-  FROM rptp.dsdmgr.dsd_student_statistics STATS
+  FROM oracle.dsdmgr.dsd_student_statistics STATS
        LEFT JOIN csv.dbo.housing_fall_2015 HOUSING
           ON STATS.STUDENT_ID = HOUSING.StudentNumber
-       LEFT JOIN rptp.dbo.shrtgpa SHRTGPA
+       LEFT JOIN oracle.dbo.shrtgpa SHRTGPA
           ON     STATS.TERM_CODE = SHRTGPA.TERM_CODE
              AND SHRTGPA.PIDM = STATS.STUDENT_PIDM
              AND SHRTGPA.LEVL_CODE = 'UA'
@@ -59,10 +59,10 @@ SELECT DISTINCT
           ON     CUM_CREDITS.STUDENT_PIDM = STATS.STUDENT_PIDM
              AND CUM_CREDITS.CREDITS < 30.0
        INNER JOIN (SELECT STUDENT_PIDM
-                     FROM rptp.dsdmgr.dsd_student_statistics s2
+                     FROM oracle.dsdmgr.dsd_student_statistics s2
                     WHERE 1 = 1 AND s2.AO_CLASS_STAND = 'FF') FF
           ON FF.STUDENT_PIDM = STATS.STUDENT_PIDM
-       LEFT JOIN rptp.dsdmgr.dsd_student STUDENT
+       LEFT JOIN oracle.dsdmgr.dsd_student STUDENT
           ON     STUDENT.STUDENT_ID = STATS.STUDENT_ID
              AND STUDENT.TERM_CODE = STATS.TERM_CODE
  WHERE     1 = 1

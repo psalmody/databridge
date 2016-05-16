@@ -28,7 +28,7 @@ SELECT DISTINCT
        END
           AS ON_OFF_CAMPUS,
        pop.PREFERRED_EMAIL
-  FROM rptp.surveys.population_open pop
+  FROM oracle.surveys.population_open pop
        LEFT JOIN csv.dbo.housing housing
           ON     pop.UAID = housing.StudentNumber
              AND pop.TERM_CODE = housing.TermNumericCode
