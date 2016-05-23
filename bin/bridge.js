@@ -45,7 +45,7 @@ module.exports = function(config, opt, moduleCallback) {
       source = require(opt.cfg.dirs.sources + opt.source);
     } catch (e2) {
       var err = '\n  ' + e.toString() + '\n  ' + e2.toString();
-      return moduleCallback('Invalid source.'+err);
+      return moduleCallback('Invalid source.' + err);
     }
   }
   //try to require destination
