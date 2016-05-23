@@ -40,7 +40,7 @@ module.exports = function(config, opt, moduleCallback) {
   try {
     source = require('databridge-source-' + opt.source);
   } catch (e) {
-    //try to require source from installed module
+    //try to require source from local module
     try {
       source = require(opt.cfg.dirs.sources + opt.source);
     } catch (e2) {
@@ -50,11 +50,15 @@ module.exports = function(config, opt, moduleCallback) {
   }
   //try to require destination
   try {
-    destination = require(opt.cfg.dirs.destinations + opt.destination);
+    destination = require('databridge-destination-' + opt.destination);
   } catch (e) {
-    error('"' + opt.destination + '" is not a valid destination.')
-    error(e.stack);
-    return moduleCallback();
+    //try to require destination from local module
+    try {
+      destination = require(opt.cfg.dirs.destinations + opt.destination);
+    } catch (e2) {
+      var err = '\n  ' + e.toString() + '\n  ' + e2.toString();
+      return moduleCallback('Invalid destination.' + err);
+    }
   }
 
   async.waterfall([

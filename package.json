@@ -21,6 +21,7 @@
     "commander": "^2.9.0",
     "csv-stringify": "^1.0.2",
     "databridge-destination-mssql": "git+ssh://git@gitlab.com/databridge/databridge-destination-mssql.git",
+    "databridge-source-csv": "git+ssh://git@gitlab.com/databridge/databridge-source-csv.git",
     "databridge-source-mssql": "git+ssh://git@gitlab.com/databridge/databridge-source-mssql.git",
     "exceljs": "^0.2.7",
     "graceful-fs": "^4.1.3",
