@@ -16,7 +16,6 @@ module.exports = function(config, opt, moduleCallback) {
     Timer = require('./timer');
 
 
-
   //opt includes all things the source/destination scripts need
   opt.cfg = config;
   opt.bin = __dirname.replace(/\\/g, '/') + '/';
@@ -36,13 +35,18 @@ module.exports = function(config, opt, moduleCallback) {
   response.binds = opt.binds;
   //check usage first
   if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
-  //try to require source
+
+  //try to require source -- npm installed first
   try {
-    source = require(opt.cfg.dirs.sources + opt.source);
+    source = require('databridge-source-' + opt.source);
   } catch (e) {
-    error('"' + opt.source + '" is not a valid source.');
-    error(e.stack);
-    return;
+    //try to require source from installed module
+    try {
+      source = require(opt.cfg.dirs.sources + opt.source);
+    } catch (e2) {
+      var err = '\n  ' + e.toString() + '\n  ' + e2.toString();
+      return moduleCallback('Invalid source.'+err);
+    }
   }
   //try to require destination
   try {
@@ -50,7 +54,7 @@ module.exports = function(config, opt, moduleCallback) {
   } catch (e) {
     error('"' + opt.destination + '" is not a valid destination.')
     error(e.stack);
-    return;
+    return moduleCallback();
   }
 
   async.waterfall([
