@@ -5,7 +5,7 @@ var res;
 
 function reset(up) {
   var opt = {
-    source: 'rptp',
+    source: 'oracle',
     table: 'anchorage_usernames',
     destination: 'mssql',
     log: {

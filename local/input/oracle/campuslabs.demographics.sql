@@ -3,7 +3,7 @@
 --standings, full-time/part-time status); demographic info from the
 --demographic table; and information about the student's primary program from the
 --curriculum table. Additional information is pulled directly from
---RPTP Banner tables - specifically, GPA and contact info. GPA and previous term enrolled
+--oracle Banner tables - specifically, GPA and contact info. GPA and previous term enrolled
 --are based on SHRTGPA (term GPA) records for the level of the student's
 --primary program as recorded in the DSD curriculum table.
 --  NOTE: if the opening freeze has not occurred yet, the query will

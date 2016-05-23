@@ -75,10 +75,10 @@ Example `schedule.json` file:
   "cron": "*/30 * * * *"
 }, {
   "type": "bridge",
-  "name": "rptp employees.ferpa_certified => mssql",
+  "name": "oracle employees.ferpa_certified => mssql",
   "cron": "*/10 * * * *",
   "binds": true,
-  "source": "rptp",
+  "source": "oracle",
   "destination": "mssql",
   "table": "employees.ferpa_certified"
 }, {

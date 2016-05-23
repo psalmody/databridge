@@ -1,21 +1,21 @@
 [{
-  "source": "rptp",
+  "source": "oracle",
   "table": "dsdmgr.dsd_registration",
   "destination": "mssql"
 }, {
-  "source": "rptp",
+  "source": "oracle",
   "table": "dsdmgr.dsd_student_demog_clos",
   "destination": "mssql"
 }, {
-  "source": "rptp",
+  "source": "oracle",
   "table": "dsdmgr.dsd_student_statistics",
   "destination": "mssql"
 }, {
-  "source": "rptp",
+  "source": "oracle",
   "table": "dsdmgr.dsd_student",
   "destination": "mssql"
 }, {
-  "source": "rptp",
+  "source": "oracle",
   "table": "shrtgpa",
   "destination": "mssql"
 }]

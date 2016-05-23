@@ -1,1 +1,1 @@
-SELECT * FROM rptp.mapworks.adm_latest
+SELECT * FROM oracle.mapworks.adm_latest

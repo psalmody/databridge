@@ -2,7 +2,7 @@ module.exports = function(opt, moduleCallback) {
 
   if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source);
 
-  var creds = require(opt.cfg.dirs.creds + 'rptp'),
+  var creds = require(opt.cfg.dirs.creds + 'oracle'),
     oracle = require('oracledb'),
     async = require('async'),
     fs = require('fs'),
@@ -13,7 +13,7 @@ module.exports = function(opt, moduleCallback) {
     bindQuery = require(opt.bin + 'bind-query'),
     query = '',
     binds = {},
-    rptp,
+    oracle,
     opfile = opt.opfile,
     timer = opt.timer;
 
@@ -23,7 +23,7 @@ module.exports = function(opt, moduleCallback) {
       function(cb) {
         oracle.getConnection(creds, function(err, conn) {
           if (err) return cb(err);
-          rptp = conn;
+          oracle = conn;
           cb(null);
         })
       },
@@ -51,12 +51,12 @@ module.exports = function(opt, moduleCallback) {
       },
       //run query
       function(sql, cb) {
-        log.group('rptp').log('Selecting data from RPTP');
-        rptp.execute(sql, [], {
+        log.group('oracle').log('Selecting data from oracle');
+        oracle.execute(sql, [], {
           resultSet: true,
           prefetchRows: 10000
         }, function(err, results) {
-          if (err) return cb("RPTP SELECT query error: " + err);
+          if (err) return cb("oracle SELECT query error: " + err);
           var columnDefs = results.metaData,
             rowsProcessed = 0,
             columns = [];
@@ -73,7 +73,7 @@ module.exports = function(opt, moduleCallback) {
 
           function processResultSet() {
             results.resultSet.getRows(500, function(err, rows) {
-              if (err) return cb("RPTP resultSet.getRows() error: " + err);
+              if (err) return cb("oracle resultSet.getRows() error: " + err);
               if (rows.length) {
                 rowsProcessed += rows.length;
                 stringify(rows, {
@@ -108,7 +108,7 @@ module.exports = function(opt, moduleCallback) {
       if (err) {
         log.error(err);
         try {
-          rptp.release(function(err) {});
+          oracle.release(function(err) {});
         } catch (e) {
           log.error(e);
         }

@@ -70,7 +70,7 @@ SELECT Username,
        AbroadStateProvince,
        AbroadPostalCode,
        AbroadCountry
-  FROM rptp.campuslabs.demographics cldemo
+  FROM oracle.campuslabs.demographics cldemo
        LEFT JOIN csv.dbo.housing housing
           ON     cldemo.SISID = housing.StudentNumber
              AND housing.Term_Code = :current_term
