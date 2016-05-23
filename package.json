@@ -20,6 +20,7 @@
     "colors": "^1.1.2",
     "commander": "^2.9.0",
     "csv-stringify": "^1.0.2",
+    "databridge-destination-mssql": "git+ssh://git@gitlab.com/databridge/databridge-destination-mssql.git",
     "databridge-source-mssql": "git+ssh://git@gitlab.com/databridge/databridge-source-mssql.git",
     "exceljs": "^0.2.7",
     "graceful-fs": "^4.1.3",
