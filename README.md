@@ -1,5 +1,4 @@
 # DataBridge
-------------
 
 A framework for automated and programatic data transfer. Separate source
 and destination modules allow for a high degree of customization and
@@ -11,6 +10,7 @@ Clone the project:
 
 ```shell
 git clone https://gitlab.com/databridge/databridge.git
+npm install
 ```
 
 Open a terminal/command prompt in the new directory and run the install script. Follow the prompts.
@@ -23,6 +23,34 @@ Install source/destination modules as needed.
 
 ```shell
 npm install databridge-source-mssql
+```
+
+Put data files or queries in `config.dirs.input` in a directory named after the source.
+
+E.g. `<...>/local/mssql/query.sql`
+
+## Testing
+
+Install Mocha globally:
+```shell
+npm install -g mocha
+```
+
+All tests:
+```shell
+npm test
+```
+
+All destinations or sources:
+```shell
+mocha spec\destinations
+mocha spec\sources
+```
+
+Just one destination/source:
+```shell
+mocha spec\destinations --one=mssql
+mocha spec\sources --one=mysql
 ```
 
 ### Configuration Defaults

@@ -17,7 +17,7 @@ var batches = fs.readdirSync(config.dirs.batches);
 async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
   var batch = removeFileExtension(file);
   describe('Checking batch ' + batch, function() {
-    it('Contains source and destination and those localSources/localDestinations exist.', function(done) {
+    it('Contains source and destination and those localSources/localDestinations are installed.', function(done) {
       var batchSettings = require(config.dirs.batches + batch);
       var ok = true;
       var bad;
@@ -38,7 +38,7 @@ async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
           } catch (e) {
             ok = false;
             bad = bridge;
-            badIndex = index + ' destination does not exist';
+            badIndex = index + ' destination not installed';
             return false;
           }
         }
@@ -57,7 +57,7 @@ async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
           } catch (e) {
             ok = false;
             bad = bridge;
-            badIndex = index + ' source does not exist';
+            badIndex = index + ' source not installed';
             return false;
           }
         }
