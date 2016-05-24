@@ -24,7 +24,6 @@
     "databridge-destination-mongo": "git+ssh://git@gitlab.com/databridge/databridge-destination-mongo.git",
     "databridge-destination-mssql": "git+ssh://git@gitlab.com/databridge/databridge-destination-mssql.git",
     "databridge-destination-mysql": "git+ssh://git@gitlab.com/databridge/databridge-destination-mysql.git",
-    "databridge-destination-xlsx": "git+ssh://git@gitlab.com/databridge/databridge-destination-xlsx.git",
     "databridge-source-csv": "git+ssh://git@gitlab.com/databridge/databridge-source-csv.git",
     "databridge-source-mssql": "git+ssh://git@gitlab.com/databridge/databridge-source-mssql.git",
     "databridge-source-mysql": "git+ssh://git@gitlab.com/databridge/databridge-source-mysql.git",
