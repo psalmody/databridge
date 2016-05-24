@@ -1,19 +1,18 @@
 {
   "name": "databridge",
   "version": "1.0.0-beta",
-  "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",
+  "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",,
+  "keywords": "data transfer bridge bridging sql mongo TSQL Oracle MySQL csv xlsx excel",
+  "bugs": "https://gitlab.com/databridge/databridge/issues",
   "main": "app.js",
   "scripts": {
     "test": "mocha spec --recursive",
     "start": "node app",
-    "clean": "node bin/clean",
-    "deploy": "git add . && git commit -m \"npm deploy\" && git push origin master",
-    "pullinstall": "git pull && npm install",
-    "test_temp": "node app -s oracle -t employees.ferpa_certified -d mssql"
+    "clean": "node bin/clean"
   },
-  "author": "Michael A Smith msmith104@uaa.alaska.edu @psalmody psalmody@gmail.com",
+  "author": "Michael A Smith @psalmody <psalmody@gmail.com> (http://psalmody.net)",
   "license": "MIT",
-  "repository": "git@gitlab.com:databridge/databridge.git",
+  "repository": "gitlab:databridge/databridge",
   "dependencies": {
     "async": "^1.5.2",
     "cli-spinner": "^0.2.5",
