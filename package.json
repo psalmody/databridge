@@ -13,7 +13,7 @@
   },
   "author": "Michael A Smith msmith104@uaa.alaska.edu @psalmody psalmody@gmail.com",
   "license": "MIT",
-  "repository": "git@gitlab.com:psalmody/databridge.git",
+  "repository": "git@gitlab.com:databridge/databridge.git",
   "dependencies": {
     "async": "^1.5.2",
     "cli-spinner": "^0.2.5",
