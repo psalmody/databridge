@@ -36,7 +36,7 @@ if (missingKeys(program, ['source', 'table', 'show']) == false) {
 else if (missingKeys(program, ['source', 'show']) == false) {
   npmls(function(err, pkgs) {
     //console.log(pkgs.dependencies);
-    for(key in pkgs.dependencies) {
+    for (key in pkgs.dependencies) {
       if (key.indexOf('databridge-source-') !== -1) {
         var s = key.split('databridge-source-')[1];
         sources.push(s);
