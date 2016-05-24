@@ -1,8 +1,20 @@
 {
   "name": "databridge",
-  "version": "1.0.1-beta",
+  "version": "1.0.2-beta",
   "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",
-  "keywords": "data transfer bridge bridging sql mongo TSQL Oracle MySQL csv xlsx excel",
+  "keywords": ["data",
+    "transfer",
+    "bridge",
+    "bridging",
+    "sql",
+    "mongo",
+    "TSQL",
+    "Oracle",
+    "MySQL",
+    "csv",
+    "xlsx",
+    "excel"
+  ],
   "bugs": "https://gitlab.com/databridge/databridge/issues",
   "main": "app.js",
   "scripts": {
