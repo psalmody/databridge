@@ -3,7 +3,7 @@ var assert = require('chai').assert,
 
 var bridge = require('../bin/bridge');
 var fs = require('fs');
-var config = require('../config/development');
+var config = require('../config.json');
 
 //change to file log for cleaner output
 config.logto = 'file';

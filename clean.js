@@ -5,7 +5,7 @@
 //assume we're in development
 var colors = require('colors/safe'),
   program = require('commander'),
-  config = require('./config.js'),
+  config = require('./config.json'),
   pkg = require('./package'),
   cleaner = require('./bin/clean');
 

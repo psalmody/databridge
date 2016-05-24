@@ -2,7 +2,7 @@
 process.chdir(__dirname);
 
 var s = {};
-var config = require('../config.js');
+var config = require('../config.json');
 var fs = require('fs');
 var schedule = require('node-schedule');
 var parseBatch = require('./batch-parse');

@@ -3,7 +3,7 @@ module.exports = function(batchName, batchFile) {
   var batch = require(batchFile);
   var bridge = require('./bridge');
   var bridges = [];
-  var config = require('../config.js');
+  var config = require('../config.json');
 
   batch.forEach(function(options) {
     var b = Object.create(options);
