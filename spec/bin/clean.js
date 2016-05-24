@@ -2,7 +2,7 @@ var assert = require('chai').assert;
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var async = require('async');
-var config = require('../../config/development');
+var config = require('../../config.json');
 var clean = require('../../bin/clean');
 
 var dt = new Date(),

@@ -1,6 +1,6 @@
 var assert = require('chai').assert,
   fs = require('fs'),
-  config = require('../config/development'),
+  config = require('../config.json'),
   async = require('async'),
   bridge = require('../bin/bridge'),
   parseBatch = require('../bin/batch-parse'),
@@ -8,16 +8,16 @@ var assert = require('chai').assert,
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 
-var sources = fs.readdirSync(config.dirs.sources);
-var destinations = fs.readdirSync(config.dirs.destinations);
+var localSources = fs.readdirSync(config.dirs.sources);
+var localDestinations = fs.readdirSync(config.dirs.destinations);
 var batches = fs.readdirSync(config.dirs.batches);
 
 //first test batches for required settings
-//and existing sources/destinations/tables
+//and existing localSources/localDestinations/tables
 async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
   var batch = removeFileExtension(file);
   describe('Checking batch ' + batch, function() {
-    it('Contains source and destination and those sources/destinations exist.', function(done) {
+    it('Contains source and destination and those localSources/localDestinations are installed.', function(done) {
       var batchSettings = require(config.dirs.batches + batch);
       var ok = true;
       var bad;
@@ -31,11 +31,16 @@ async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
           return false;
         }
         //check destination exists
-        if (destinations.indexOf(bridge.destination + '.js') == -1) {
-          ok = false;
-          bad = bridge;
-          badIndex = index + ' destination does not exist';
-          return false;
+        if (localDestinations.indexOf(bridge.destination + '.js') == -1) {
+          //if no local, try requiring
+          try {
+            require('databridge-destination-' + bridge.destination);
+          } catch (e) {
+            ok = false;
+            bad = bridge;
+            badIndex = index + ' destination not installed';
+            return false;
+          }
         }
         //if not a string, bad
         if (typeof(bridge.source) !== 'string') {
@@ -45,11 +50,16 @@ async.each(fs.readdirSync(config.dirs.batches), function(file, callback) {
           return false;
         }
         //check source exists
-        if (sources.indexOf(bridge.source + '.js') == -1) {
-          ok = false;
-          bad = bridge;
-          badIndex = index + ' source does not exist';
-          return false;
+        if (localSources.indexOf(bridge.source + '.js') == -1) {
+          //if no local, try requiring
+          try {
+            require('databridge-source-' + bridge.source);
+          } catch (e) {
+            ok = false;
+            bad = bridge;
+            badIndex = index + ' source not installed';
+            return false;
+          }
         }
 
         return true;
@@ -74,7 +84,6 @@ var batchSettings = require(config.dirs.batches + batch);
 describe('Running last batch in directory: ' + batch, function() {
   //this could take a couple of minutes at least
   this.timeout(120000);
-  process.env.NODE_ENV = 'production';
   var bridges = parseBatch('testBatch', config.dirs.batches + batch);
   it('Generates same number of bridges as batch settings.', function(done) {
     assert(batchSettings.length == bridges.length, 'Length of batches and generated bridges does not match. Batches: ' + batchSettings.length + ', bridges: ' + bridges.length);

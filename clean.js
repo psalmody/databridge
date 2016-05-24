@@ -3,11 +3,9 @@
  */
 
 //assume we're in development
-process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? 'development' : process.env.NODE_ENV;
-
 var colors = require('colors/safe'),
   program = require('commander'),
-  config = require('./config/' + process.env.NODE_ENV),
+  config = require('./config.json'),
   pkg = require('./package'),
   cleaner = require('./bin/clean');
 

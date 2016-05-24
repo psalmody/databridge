@@ -6,15 +6,12 @@ module.exports = function(config, opt, moduleCallback) {
   //setup timer and define shortcuts for log/error
   var async = require('async'),
     missingKeys = require('./missing-keys'),
-    l = console.log,
-    error = console.error,
     fs = require('fs'),
     colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
     spinner = new Spinner('processing... %s'),
     outputFile = require('./output-file'),
     Timer = require('./timer');
-
 
 
   //opt includes all things the source/destination scripts need
@@ -29,28 +26,37 @@ module.exports = function(config, opt, moduleCallback) {
     return s;
   })();
   //setup log
-  opt.log = (process.env.NODE_ENV == 'development') ? require('./log-dev')(opt) : require('./log')(opt);
+  opt.log = (opt.cfg.logto == 'console') ? require('./log-dev')(opt) : require('./log')(opt);
 
   //setup response object
   var response = require(opt.bin + 'response')(opt);
   response.binds = opt.binds;
   //check usage first
   if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
-  //try to require source
+
+  //try to require source -- npm installed first
   try {
-    source = require(opt.cfg.dirs.sources + opt.source);
+    source = require('databridge-source-' + opt.source);
   } catch (e) {
-    error('"' + opt.source + '" is not a valid source.');
-    error(e.stack);
-    return;
+    //try to require source from local module
+    try {
+      source = require(opt.cfg.dirs.sources + opt.source);
+    } catch (e2) {
+      var err = '\n  ' + e.toString() + '\n  ' + e2.toString();
+      return moduleCallback('Invalid source.' + err);
+    }
   }
   //try to require destination
   try {
-    destination = require(opt.cfg.dirs.destinations + opt.destination);
+    destination = require('databridge-destination-' + opt.destination);
   } catch (e) {
-    error('"' + opt.destination + '" is not a valid destination.')
-    error(e.stack);
-    return;
+    //try to require destination from local module
+    try {
+      destination = require(opt.cfg.dirs.destinations + opt.destination);
+    } catch (e2) {
+      var err = '\n  ' + e.toString() + '\n  ' + e2.toString();
+      return moduleCallback('Invalid destination.' + err);
+    }
   }
 
   async.waterfall([
@@ -107,20 +113,18 @@ module.exports = function(config, opt, moduleCallback) {
     try {
       opfile.clean();
     } catch (e) {
-      if (typeof(opfile) !== 'undefined') error(e);
+      if (typeof(opfile) !== 'undefined') opt.log.error(e);
     }
     //error handling
     if (err) {
-      error(err)
-      error(opt.timer.str());
-      //error(err);
+      opt.log.error(err)
+      opt.log.error(opt.timer.str());
       return moduleCallback(err);
     }
     //success! log and return response object
-    l(opt.timer.str());
-    l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
+    opt.log.group('Finished Bridge').log(opt.timer.str());
+    opt.log.log('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
     //response.check() returns null if no problem
-    //opt.log.group('').log(JSON.stringify(response.strip(), null, 2));
     opt.log.log(JSON.stringify(response.strip(), null, 2));
     if (opt.spinner) opt.spinner.stop(true);
     return moduleCallback(response.check(), response);
