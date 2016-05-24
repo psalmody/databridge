@@ -4,6 +4,33 @@ Module-based data bridging applications. Takes data from source modules, outputs
 
 `node app` provides a command-line interface for this utility. See [Command-Line Usage](#clusage) for more information.
 
+## Installation
+
+### Configuration
+
+```json
+{
+  "dirs": {
+    "batches": "c:/databridge/local/batches/",
+    "creds": "c:/databridge/local/creds/",
+    "destinations": "c:/databridge/local/destinations/",
+    "input": "c:/databridge/local/input/",
+    "logs": "c:/databridge/local/logs/",
+    "output": "c:/databridge/local/output/",
+    "sources": "c:/databridge/local/sources/"
+  },
+  "defaultBindVars": {
+    "key":"value pairs"
+  },
+  "schedule": "c:/databridge/local/schedule.json",
+  "service": {
+    "name": "dataBridge",
+    "log": "c:/databridge/local/logs/schedule.log.txt"
+  }
+}
+```
+
+
 ## Bridge module
 
 The bridge module `bin/bridge` takes various options and connects the source and destination modules. Required options are:
