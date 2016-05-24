@@ -5,6 +5,7 @@ var bridge = require('../bin/bridge');
 var fs = require('fs');
 var config = require('../config/development');
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
+var npmls = require('../bin/npm-ls');
 
 function getOneTable(src) {
   var dir = fs.readdirSync(config.dirs.input + src);
@@ -36,50 +37,81 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
       }, function(err, response) {
         if (err) return done(new Error(err.toString()));
         done();
-      })
-    })
+      });
+    });
   });
   //quit
   return;
-}
+};
 
 //all destinations
-async.each(fs.readdirSync(config.dirs.destinations), function(file, callback) {
-  describe('Checking destination ' + file, function() {
-    //at least 30 seconds
-    this.timeout(30000);
 
-    //remove file extension
-    var destination = removeFileExtension(file);
 
-    //change to production
-    process.env.NODE_ENV = "production";
+describe('Testing all destinations', function() {
+  var destinations = [];
 
-    //which table?
-    var tableDir = fs.readdirSync(config.dirs.input + 'mssql');
-    var tables = tableDir.filter(function(value) {
-      if (value.indexOf('.') == 0) return false;
-      return true;
-    });
-
-    var table = removeFileExtension(tables[0]);
-
-    it("Should run a bridge", function(done) {
-      var options = {
-        source: 'mssql',
-        destination: destination,
-        binds: true,
-        task: true,
-        update: false,
-        table: table
-      };
-      bridge(config, options, function(err, response) {
-        if (err) return done(new Error(err.toString()));
-        done();
+  beforeEach(function(done) {
+    this.timeout(5000);
+    npmls(function(err, pkgs) {
+      if (err) return console.error(err);
+      var dests = fs.readdirSync(config.dirs.destinations).filter(function(v) {
+        return v.indexOf('.') !== 0;
+      });
+      var keys = Object.keys(pkgs.dependencies);
+      keys.forEach(function(k) {
+        if (k.indexOf('databridge-destination-') !== -1)
+          dests.push(k.split('databridge-destination-')[1]);
       })
-    })
-
+      destinations = dests;
+      done();
+    });
   });
 
+  it('found some', function() {
+    assert(destinations.length !== 0, JSON.stringify(destinations));
+  });
 
-})
+  describe('Checking them now ', function() {
+    it('Sets them up', function() {
+      async.each(destinations, function(file, callback) {
+        describe('Checking destination ' + file, function() {
+          //at least 30 seconds
+          this.timeout(30000);
+
+          //remove file extension
+          var destination = removeFileExtension(file);
+
+          //change to production
+          process.env.NODE_ENV = "production";
+
+          //which table?
+          var tableDir = fs.readdirSync(config.dirs.input + 'mssql');
+          var tables = tableDir.filter(function(value) {
+            if (value.indexOf('.') == 0) return false;
+            return true;
+          });
+
+          var table = removeFileExtension(tables[0]);
+
+          it("Should run a bridge", function(done) {
+            var options = {
+              source: 'mssql',
+              destination: destination,
+              binds: true,
+              task: true,
+              update: false,
+              table: table
+            };
+            bridge(config, options, function(err, response) {
+              if (err) return done(new Error(err.toString()));
+              done();
+            });
+          });
+        });
+
+      }, function(err) {
+        if (err) return assert(err);
+      });
+    });
+  });
+});
