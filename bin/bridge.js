@@ -6,8 +6,6 @@ module.exports = function(config, opt, moduleCallback) {
   //setup timer and define shortcuts for log/error
   var async = require('async'),
     missingKeys = require('./missing-keys'),
-    l = console.log,
-    error = console.error,
     fs = require('fs'),
     colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
@@ -115,20 +113,18 @@ module.exports = function(config, opt, moduleCallback) {
     try {
       opfile.clean();
     } catch (e) {
-      if (typeof(opfile) !== 'undefined') error(e);
+      if (typeof(opfile) !== 'undefined') opt.log.error(e);
     }
     //error handling
     if (err) {
-      error(err)
-      error(opt.timer.str());
-      //error(err);
+      opt.log.error(err)
+      opt.log.error(opt.timer.str());
       return moduleCallback(err);
     }
     //success! log and return response object
-    l(opt.timer.str());
-    l('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
+    opt.log.group('Finished Bridge').log(opt.timer.str());
+    opt.log.log('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
     //response.check() returns null if no problem
-    //opt.log.group('').log(JSON.stringify(response.strip(), null, 2));
     opt.log.log(JSON.stringify(response.strip(), null, 2));
     if (opt.spinner) opt.spinner.stop(true);
     return moduleCallback(response.check(), response);
