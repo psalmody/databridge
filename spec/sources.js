@@ -3,6 +3,9 @@ var async = require('async');
 var bridge = require('../bin/bridge');
 var fs = require('fs');
 var config = require('../config/development');
+//change to file log for cleaner test output
+config.logto = 'file';
+
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var npmls = require('../bin/npm-ls');
 var assert = require('chai').assert;
@@ -22,7 +25,6 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
   var source = process.argv.join(' ').split('--one=')[1].split(' ')[0].replace(/-/g, '');
   describe('Checking only one source: ' + source, function() {
     this.timeout(30000);
-    process.env.NODE_ENV = "production";
 
     var table = getOneTable(source);
 
@@ -78,9 +80,6 @@ describe('Testing all sources', function() {
 
           //remove file extension
           var source = removeFileExtension(file);
-
-          //change to production
-          process.env.NODE_ENV = "production";
 
           var table = getOneTable(source);
 

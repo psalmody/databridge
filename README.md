@@ -8,7 +8,7 @@ Module-based data bridging applications. Takes data from source modules, outputs
 
 ### Configuration
 
-```json
+```js
 {
   "dirs": {
     "batches": "c:/databridge/local/batches/",
@@ -19,8 +19,9 @@ Module-based data bridging applications. Takes data from source modules, outputs
     "output": "c:/databridge/local/output/",
     "sources": "c:/databridge/local/sources/"
   },
+  "logto": "console", //if console, uses log-dev, otherwise regular log
   "defaultBindVars": {
-    "key":"value pairs"
+    ...
   },
   "schedule": "c:/databridge/local/schedule.json",
   "service": {

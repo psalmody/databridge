@@ -3,9 +3,6 @@
  * tool prividing all the command line options.
  */
 
-//assume we're in development
-process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? 'development' : process.env.NODE_ENV;
-
 var program = require('./bin/cli'),
   async = require('async'),
   colors = require('colors'),
@@ -14,7 +11,7 @@ var program = require('./bin/cli'),
   missingKeys = require('./bin/missing-keys'),
   pkg = require('./package'),
   runBridges = require('./bin/bridge-runner'),
-  config = require('./config/' + process.env.NODE_ENV),
+  config = require('./config.js'),
   sources = fs.readdirSync(config.dirs.sources),
   destinations = fs.readdirSync(config.dirs.destinations),
   batches = fs.readdirSync(config.dirs.batches),
@@ -85,7 +82,7 @@ else if (missingKeys(program, ['batch']) == false) {
       program.help();
       return;
     }
-    if (process.env.NODE_ENV == 'development') console.log(responses);
+    if (config.logto == 'console') console.log(responses);
   });
   //})
 } else {
@@ -120,6 +117,6 @@ else if (missingKeys(program, ['batch']) == false) {
     }
     //only echo responses with development
     //TODO handle logging this way #3 #4
-    if (process.env.NODE_ENV == 'development') console.log(responses);
+    if (config.logto == 'console') console.log(responses);
   });
 }

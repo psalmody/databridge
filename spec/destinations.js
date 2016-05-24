@@ -4,6 +4,10 @@ var assert = require('chai').assert,
 var bridge = require('../bin/bridge');
 var fs = require('fs');
 var config = require('../config/development');
+
+//change to file log for cleaner output
+config.logto = 'file';
+
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var npmls = require('../bin/npm-ls');
 
@@ -22,7 +26,6 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
   var destination = process.argv.join(' ').split('--one=')[1].split(' ')[0].replace(/-/g, '');
   describe('Checking only one destination: ' + destination, function() {
     this.timeout(30000);
-    process.env.NODE_ENV = "production";
 
     var table = getOneTable('mssql');
 
@@ -80,9 +83,6 @@ describe('Testing all destinations', function() {
 
           //remove file extension
           var destination = removeFileExtension(file);
-
-          //change to production
-          process.env.NODE_ENV = "production";
 
           //which table?
           var tableDir = fs.readdirSync(config.dirs.input + 'mssql');

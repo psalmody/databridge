@@ -1,11 +1,8 @@
-process.env.NODE_ENV = typeof(process.env.NODE_ENV) == 'undefined' ? "production" : process.env.NODE_ENV.trim();
+//move to current dir - for service running
 process.chdir(__dirname);
 
-//console.log(__dirname);
-
-
 var s = {};
-var config = require('../config/' + process.env.NODE_ENV);
+var config = require('../config.js');
 var fs = require('fs');
 var schedule = require('node-schedule');
 var parseBatch = require('./batch-parse');

@@ -84,7 +84,6 @@ var batchSettings = require(config.dirs.batches + batch);
 describe('Running last batch in directory: ' + batch, function() {
   //this could take a couple of minutes at least
   this.timeout(120000);
-  process.env.NODE_ENV = 'production';
   var bridges = parseBatch('testBatch', config.dirs.batches + batch);
   it('Generates same number of bridges as batch settings.', function(done) {
     assert(batchSettings.length == bridges.length, 'Length of batches and generated bridges does not match. Batches: ' + batchSettings.length + ', bridges: ' + bridges.length);

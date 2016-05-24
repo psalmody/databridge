@@ -28,7 +28,7 @@ module.exports = function(config, opt, moduleCallback) {
     return s;
   })();
   //setup log
-  opt.log = (process.env.NODE_ENV == 'development') ? require('./log-dev')(opt) : require('./log')(opt);
+  opt.log = (opt.cfg.logto == 'console') ? require('./log-dev')(opt) : require('./log')(opt);
 
   //setup response object
   var response = require(opt.bin + 'response')(opt);
