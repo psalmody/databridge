@@ -147,9 +147,6 @@ module.exports = function(opt, columns, moduleCallback) {
       }
     ],
     function(err, rows) {
-      db.close(true, function(err) {
-        if (err) moduleCallback(err);
-      });
       try {
         db.close();
       } catch (e) {
