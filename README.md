@@ -1,3 +1,7 @@
+[![Github All Releases](https://img.shields.io/github/downloads/psalmody/databridge/total.svg?maxAge=2592000?style=flat-square)](https://github.com/psalmody/databridge)
+[![GitHub stars](https://img.shields.io/github/stars/psalmody/databridge.svg?style=social&label=Star&maxAge=2592000?style=flat-square)]()
+[![Twitter Follow](https://img.shields.io/twitter/follow/psalmody.svg?style=social&label=Follow&maxAge=2592000?style=flat-square)]()
+
 # DataBridge
 
 A framework for automated and programatic data transfer. Separate source
@@ -17,12 +21,6 @@ Open a terminal/command prompt in the new directory and run the install script. 
 
 ```shell
 node setup
-```
-
-Install source/destination modules as needed. [Search GitLab](https://gitlab.com/search?search=databridge) or [search NPM](https://www.npmjs.com/search?q=databridge) for all source/destination modules.
-
-```shell
-npm install databridge-source-mssql
 ```
 
 Put data files or queries in `config.dirs.input` in a directory named after the source.
@@ -83,7 +81,7 @@ mocha spec\sources --one=mysql
 In project directory at command-line:
 
 ```shell
-node app --help
+node index --help
 ```
 
 ## Bridge module

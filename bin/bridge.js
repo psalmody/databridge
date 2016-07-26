@@ -36,7 +36,7 @@ module.exports = function(config, opt, moduleCallback) {
 
   //try to require source -- npm installed first
   try {
-    source = require('databridge-source-' + opt.source);
+    source = require('./src/' + opt.source);
   } catch (e) {
     //try to require source from local module
     try {
@@ -48,7 +48,7 @@ module.exports = function(config, opt, moduleCallback) {
   }
   //try to require destination
   try {
-    destination = require('databridge-destination-' + opt.destination);
+    destination = require('./dest/' + opt.destination);
   } catch (e) {
     //try to require destination from local module
     try {
