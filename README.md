@@ -19,7 +19,7 @@ Open a terminal/command prompt in the new directory and run the install script. 
 node setup
 ```
 
-Install source/destination modules as needed.
+Install source/destination modules as needed. [Search GitLab](https://gitlab.com/search?search=databridge) or [search NPM](https://www.npmjs.com/search?q=databridge) for all source/destination modules.
 
 ```shell
 npm install databridge-source-mssql
