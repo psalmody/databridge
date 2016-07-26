@@ -19,12 +19,6 @@ Open a terminal/command prompt in the new directory and run the install script. 
 node setup
 ```
 
-Install source/destination modules as needed.
-
-```shell
-npm install databridge-source-mssql
-```
-
 Put data files or queries in `config.dirs.input` in a directory named after the source.
 
 E.g. `<...>/local/mssql/query.sql`
@@ -83,7 +77,7 @@ mocha spec\sources --one=mysql
 In project directory at command-line:
 
 ```shell
-node app --help
+node index --help
 ```
 
 ## Bridge module

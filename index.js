@@ -12,11 +12,11 @@ var program = require('./bin/cli'),
   pkg = require('./package'),
   runBridges = require('./bin/bridge-runner'),
   config = require('./config.json'),
-  sources = fs.readdirSync(config.dirs.sources),
+  //sources = fs.readdirSync(config.dirs.sources),
   destinations = fs.readdirSync(config.dirs.destinations),
   batches = fs.readdirSync(config.dirs.batches),
   removeFileExtension = require('./bin/string-utilities').removeFileExtension,
-  npmls = require('./bin/npm-ls');
+  sources = require('./bin/list-src');
 
 //show valid tables
 if (missingKeys(program, ['source', 'table', 'show']) == false) {
@@ -31,19 +31,10 @@ if (missingKeys(program, ['source', 'table', 'show']) == false) {
 }
 //show valid sources
 else if (missingKeys(program, ['source', 'show']) == false) {
-  npmls(function(err, pkgs) {
-    //console.log(pkgs.dependencies);
-    for (key in pkgs.dependencies) {
-      if (key.indexOf('databridge-source-') !== -1) {
-        var s = key.split('databridge-source-')[1];
-        sources.push(s);
-      }
-    }
-    sources.sort();
-    console.log('Valid sources:');
-    sources.forEach(function(source) {
-      console.log('  ' + removeFileExtension(source))
-    })
+  var srcs = sources(config);
+  console.log('Valid sources:');
+  srcs.forEach(function(v) {
+    console.log('  ' + v);
   })
   return;
 }
