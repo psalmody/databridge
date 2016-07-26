@@ -7,7 +7,6 @@ var config = require('../config.json');
 config.logto = 'file';
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
-var npmls = require('../bin/npm-ls');
 var assert = require('chai').assert;
 
 function getOneTable(src) {
@@ -49,22 +48,23 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
 
 // all sources
 describe('Testing all sources', function() {
-  var sources = [];
+  var sources = require('../bin/list-src')(config);
   beforeEach(function(done) {
-    this.timeout(5000);
-    npmls(function(err, pkgs) {
-      if (err) return console.error(err);
-      var srcs = fs.readdirSync(config.dirs.sources).filter(function(v) {
-        return v.indexOf('.') !== 0;
-      });
-      var keys = Object.keys(pkgs.dependencies);
-      keys.forEach(function(k) {
-        if (k.indexOf('databridge-source-') !== -1)
-          srcs.push(k.split('databridge-source-')[1]);
-      })
-      sources = srcs;
-      done();
-    });
+    /*  this.timeout(5000);
+      npmls(function(err, pkgs) {
+        if (err) return console.error(err);
+        var srcs = fs.readdirSync(config.dirs.sources).filter(function(v) {
+          return v.indexOf('.') !== 0;
+        });
+        var keys = Object.keys(pkgs.dependencies);
+        keys.forEach(function(k) {
+          if (k.indexOf('databridge-source-') !== -1)
+            srcs.push(k.split('databridge-source-')[1]);
+        })
+        sources = srcs;
+        done();
+      });*/
+    done();
   });
 
   it('found some', function() {

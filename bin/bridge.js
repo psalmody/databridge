@@ -36,7 +36,7 @@ module.exports = function(config, opt, moduleCallback) {
 
   //try to require source -- npm installed first
   try {
-    source = require('./bin/src/' + opt.source);
+    source = require('./src/' + opt.source);
   } catch (e) {
     //try to require source from local module
     try {
@@ -48,7 +48,7 @@ module.exports = function(config, opt, moduleCallback) {
   }
   //try to require destination
   try {
-    destination = require('./bin/dest/' + opt.destination);
+    destination = require('./dest/' + opt.destination);
   } catch (e) {
     //try to require destination from local module
     try {

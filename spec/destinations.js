@@ -9,7 +9,6 @@ var config = require('../config.json');
 config.logto = 'file';
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
-var npmls = require('../bin/npm-ls');
 
 function getOneTable(src) {
   var dir = fs.readdirSync(config.dirs.input + src);
@@ -51,10 +50,11 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
 
 
 describe('Testing all destinations', function() {
-  var destinations = [];
+  var destinations = require('../bin/list-dest')(config);;
 
   beforeEach(function(done) {
-    this.timeout(5000);
+    /*this.timeout(5000);
+    var dests = require('./bin/list-dest')(config);
     npmls(function(err, pkgs) {
       if (err) return console.error(err);
       var dests = fs.readdirSync(config.dirs.destinations).filter(function(v) {
@@ -66,8 +66,9 @@ describe('Testing all destinations', function() {
           dests.push(k.split('databridge-destination-')[1]);
       })
       destinations = dests;
-      done();
-    });
+
+    });*/
+    done();
   });
 
   it('found some', function() {
