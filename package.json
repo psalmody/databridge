@@ -17,7 +17,7 @@
     "xlsx",
     "excel"
   ],
-  "bugs": "https://gitlab.com/databridge/databridge/issues",
+  "bugs": "https://github.com/psalmody/databridge/issues",
   "main": "app.js",
   "scripts": {
     "test": "mocha spec --recursive",
@@ -26,7 +26,7 @@
   },
   "author": "Michael A Smith @psalmody <psalmody@gmail.com> (http://psalmody.net)",
   "license": "MIT",
-  "repository": "gitlab:databridge/databridge",
+  "repository": "https://github.com/psalmody/databridge",
   "dependencies": {
     "async": "^1.5.2",
     "cli-spinner": "^0.2.5",
