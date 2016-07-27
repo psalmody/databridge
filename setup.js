@@ -23,11 +23,25 @@ var cfg = {
   },
   "logto": "console",
   "defaultBindVars": {},
-  "schedule": dirname + "/local/schedule.json",
-  "service": {
-    "log": dirname + "/local/logs/schedule.log.txt"
-  }
+  "schedule": dirname + "/local/schedule.json"
 };
+
+var pm2cfg = {
+  "apps": [{
+      "name": "databridge",
+      "script": "bin/schedule.js",
+      "watch": ["bin/schedule.js", "pm2.json"],
+      "env": {
+        "NODE_ENV": "development",
+      },
+      "env_production": {
+        "NODE_ENV": "production"
+      },
+      "error_file": dirname + "/local/logs/schedule.log",
+      "out_file": dirname + "/local/logs/schedule.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss Z"
+    }]
+}
 
 function addTrailingSlash(s) {
   s.replace(/\\/g, '/');
@@ -160,7 +174,7 @@ async.waterfall([
           description: colors.green("Location of schedule job file")
         },
         log: {
-          default: cfg.dirs.logs + 'schedule.log.txt',
+          default: cfg.dirs.logs + 'schedule.log',
           description: colors.green('Service log file')
         }
       }
@@ -169,13 +183,22 @@ async.waterfall([
     prompt.get(schPrompt, function(err, results) {
       if (err) return cb(err);
       cfg.schedule = results.schedule;
-      cfg.service.log = results.log;
-      cb(null);
+      pm2cfg.apps[0].out_file = results.log;
+      pm2cfg.apps[0].error_file = results.log;
+      cb(null, sch);
     });
   },
-  function(cb) {
+  function(sch, cb) {
     //write log file
     fs.writeFile(filename, JSON.stringify(cfg, null, 2), function(err, result) {
+      if (err) return cb(err);
+      cb(null, sch);
+    })
+  },
+  function(sch, cb) {
+    //write pm2.json if setting up scheduler
+    if (sch !== 'yes' && sch !== 'y') return cb(null);
+    fs.writeFile('pm2.json', JSON.stringify(pm2cfg, null, 2), function(err, result) {
       if (err) return cb(err);
       cb(null);
     })

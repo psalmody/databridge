@@ -39,12 +39,18 @@ describe('Testing config.json', function() {
     assert(fs.lstatSync(cfg.schedule).isFile(), 'Not a file ' + cfg.schedule);
   });
 
-  it('If schedule defined, config has service and service has name and valid log filename.', function() {
+  it('If schedule defined, pm2 config has valid log filename.', function() {
     if (typeof(cfg.schedule) == 'undefined') return assert(true);
-    if (typeof(cfg.service) == 'undefined') return assert(false, 'No service attribute in config.');
-    if (typeof(cfg.service.name) !== 'string') return assert(false, 'service.name not exists or is not string');
-    var logdir = cfg.service.log.split('/').slice(0, -1).join('/');
-    assert(fs.lstatSync(logdir).isDirectory(), 'Not a file ' + cfg.service.log);
+    try {
+      var pm2cfg = require('../pm2.json');
+    } catch(e) {
+      assert(false,'Couldn\'t find file pm2.json. '+e.toString())
+    }
+    var p = pm2cfg.apps[0];
+    var logdir = p.out_file.split('/').slice(0, -1).join('/');
+    var errordir = p.error_file.split('/').slice(0, -1).join('/');
+    assert(fs.lstatSync(logdir).isDirectory(), 'Log directory doesn\'t exist, bad log value in pm2.json ' + p.out_file);
+    assert(fs.lstatSync(errordir).isDirectory(), 'Error log directory doesn\'t exist, bad error log value in pm2.json ' + p.error_file);
   })
 
 });
