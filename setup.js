@@ -106,7 +106,7 @@ async.waterfall([
       }
     };
 
-    cfg.dirs.forEach(function(d) {
+    Object.keys(cfg.dirs).forEach(function(d) {
       dirPrompts.properties[d] = {
         default: addTrailingSlash(defaultdir + d),
         description: colors.green(d)
