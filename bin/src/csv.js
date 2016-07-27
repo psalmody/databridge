@@ -18,7 +18,7 @@ module.exports = function(opt, moduleCallback) {
         if (err) return cb(err);
         if (res.size) return cb(null);
         cb('File has no data or doesn\'t exist');
-      })
+      });
     },
     //read data and change to tab-delimited
     function(cb) {
@@ -28,30 +28,30 @@ module.exports = function(opt, moduleCallback) {
       //creating through stream to format data
       var comma2TabStream = new Stream.Transform();
       comma2TabStream._transform = function(chunk, encoding, done) {
-          //skip blank rows
-          if (chunk.toString().trim() == '') return done();
-          if (first) {
-            first = false;
-            columns = chunk.toString().replace(/\r/g, '').split(',');
-          } else {
-            rowsProcessed++;
-          }
-          //TODO only replace , outside "" using some kind
-          // of regex like /(,)(?=(?:[^"]|"[^"]*")*$)/g
-          var data = chunk.toString().replace(/,/g, '\t').replace(/\r/g, '');
-          this.push(data + '\n');
-          done();
+        //skip blank rows
+        if (chunk.toString().trim() == '') return done();
+        if (first) {
+          first = false;
+          columns = chunk.toString().replace(/\r/g, '').split(',');
+        } else {
+          rowsProcessed++;
         }
-        //pipe data from csv to output file
+        //TODO only replace , outside "" using some kind
+        // of regex like /(,)(?=(?:[^"]|"[^"]*")*$)/g
+        var data = chunk.toString().replace(/,/g, '\t').replace(/\r/g, '');
+        this.push(data + '\n');
+        done();
+      };
+      //pipe data from csv to output file
       var opfileWStream = opfile.createWriteStream();
       var readCSVStream = fs.createReadStream(filename);
 
       opfileWStream.on('error', function(err) {
         cb(err);
-      })
+      });
       opfileWStream.on('finish', function() {
         cb(null, rowsProcessed, columns);
-      })
+      });
       readCSVStream.pipe(split()).pipe(comma2TabStream).pipe(opfileWStream);
     }
   ], function(err, rows, columns) {
@@ -61,6 +61,6 @@ module.exports = function(opt, moduleCallback) {
     }
     log.group('Finished source').log(timer.str());
     moduleCallback(null, rows, columns);
-  })
+  });
 
-}
+};

@@ -5,14 +5,8 @@ module.exports = function(opt, moduleCallback) {
     creds = require(opt.cfg.dirs.creds + 'mssql'),
     fs = require('fs'),
     table = opt.table.indexOf('.') > -1 ? opt.table : 'dbo.' + opt.table,
-    schema = table.split('.')[0],
     log = opt.log,
-    allBinds = opt.cfg.defaultBindVars,
     bindQuery = require(opt.bin + 'bind-query'),
-    query = '',
-    binds = {},
-    db = opt.source,
-    spinner = opt.spinner,
     opfile = opt.opfile,
     timer = opt.timer,
     prependFile = require('prepend-file');
@@ -24,24 +18,23 @@ module.exports = function(opt, moduleCallback) {
         cb(null);
       }).catch(function(err) {
         cb(err);
-      })
+      });
     },
     function(cb) {
       log.group('readquery');
       fs.readFile(opt.cfg.dirs.input + opt.source + '/' + table + '.sql', 'utf-8', function(err, data) {
         if (err) return cb('fs readFile error on input query: ' + err);
         cb(null, data);
-      })
+      });
     },
     //format query and bind variables
     function(data, cb) {
       log.group('Setup').log('Processing query ' + table);
-      var defs = (typeof(opt.binds) !== 'undefined') ? true : false;
       bindQuery(data, opt, function(err, sql, binds) {
         log.group('Binds').log(JSON.stringify(binds));
         if (err) return cb(err);
         cb(null, sql);
-      })
+      });
     },
     //run query
     function(sql, cb) {
@@ -57,13 +50,12 @@ module.exports = function(opt, moduleCallback) {
       request.stream = true;
       request.query(sql);
       request.on('recordset', function(cols) {
-        var str = '',
-          colnames = Object.keys(cols);
+        var colnames = Object.keys(cols);
         columns = colnames.join('\t') + '\n';
-      })
+      });
       request.on('row', function(row) {
         var vals = [];
-        for (key in row) {
+        for (var key in row) {
           vals.push(row[key]);
         }
         rowsProcessed++;
@@ -73,12 +65,11 @@ module.exports = function(opt, moduleCallback) {
       request.on('error', function(err) {
         cb(err);
       });
-      request.on('done', function(affected) {
-
+      request.on('done', function() {
         opfileWStream.end();
         log.log('Rows: ' + rowsProcessed);
         cb(null, rowsProcessed, columns);
-      })
+      });
     },
     //prepend columns
     function(rows, columns, cb) {
@@ -86,7 +77,7 @@ module.exports = function(opt, moduleCallback) {
         if (err) return cb(err);
         log.log('prependFile columns');
         cb(null, rows, columns.replace(/\n/g, '').split('\t'));
-      })
+      });
     }
   ], function(err, rows, columns) {
     try {
@@ -100,5 +91,5 @@ module.exports = function(opt, moduleCallback) {
     }
     log.group('Finished source').log(timer.str());
     moduleCallback(null, rows, columns);
-  })
-}
+  });
+};

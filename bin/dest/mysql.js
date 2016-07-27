@@ -28,7 +28,7 @@ module.exports = function(opt, columns, moduleCallback) {
       db.query('CREATE DATABASE IF NOT EXISTS ' + opt.source, function(err) {
         if (err) return cb(err);
         cb(null);
-      })
+      });
     },
     //drop existing table
     function(cb) {
@@ -39,7 +39,7 @@ module.exports = function(opt, columns, moduleCallback) {
       db.query('DROP TABLE IF EXISTS ' + table, function(err) {
         if (err) return cb(err);
         cb(null);
-      })
+      });
     },
     //create new table
     function(cb) {
@@ -50,16 +50,16 @@ module.exports = function(opt, columns, moduleCallback) {
       db.query(sql, function(err) {
         if (err) return cb(err);
         cb(null);
-      })
+      });
     },
     //load data into table
     function(cb) {
       log.log('Loading data in opfile to MySQL');
-      var sql = "LOAD DATA INFILE '" + opfile.filename + "' INTO TABLE " + table + " FIELDS TERMINATED BY '\t' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES ";
+      var sql = 'LOAD DATA INFILE \'' + opfile.filename + '\' INTO TABLE ' + table + ' FIELDS TERMINATED BY \'\t\' ENCLOSED BY \'"\' LINES TERMINATED BY \'\n\' IGNORE 1 LINES ';
       db.query(sql, function(err) {
         if (err) return cb('Load data infile error: ' + err);
         cb(null);
-      })
+      });
     },
     //check table rows
     function(cb) {
@@ -67,30 +67,30 @@ module.exports = function(opt, columns, moduleCallback) {
         if (err) return cb('SELECT COUNT(*) err: ' + err);
         log.log('Successfully loaded ' + result[0].rows + ' rows into MySQL.');
         cb(null, result[0].rows);
-      })
+      });
     },
     function(rows, cb) {
       //check columns
       var table_name = table.split('.')[1];
-      var sql = "SELECT COLUMN_NAME as col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + opt.source + "' AND TABLE_NAME='" + table_name + "'";
+      var sql = 'SELECT COLUMN_NAME as col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=\'' + opt.source + '\' AND TABLE_NAME=\'' + table_name + '\'';
       db.query(sql, function(err, result) {
         if (err) return cb('SELECT COLUMN_NAME err: ' + err);
         var cols = [];
         result.forEach(function(row) {
           cols.push(row.col);
-        })
+        });
         cb(null, rows, cols);
-      })
+      });
     }
   ], function(err, rows, columns) {
     db.end(function(err) {
       if (err) moduleCallback(err);
-    })
+    });
     if (err) {
       log.error(err);
       return moduleCallback(err);
     }
     log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
-  })
+  });
 };

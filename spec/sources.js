@@ -27,7 +27,7 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
 
     var table = getOneTable(source);
 
-    it("Should run a bridge", function(done) {
+    it('Should run a bridge', function(done) {
       bridge(config, {
         source: source,
         destination: 'mssql',
@@ -35,69 +35,51 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
         task: true,
         update: false,
         table: table
-      }, function(err, response) {
+      }, function(err) {
         if (err) return done(new Error(err.toString()));
         done();
-      })
-    })
+      });
+    });
   });
-  //quit
-  return;
-}
+} else {
 
 
-// all sources
-describe('Testing all sources', function() {
-  var sources = require('../bin/list-src')(config);
-  beforeEach(function(done) {
-    /*  this.timeout(5000);
-      npmls(function(err, pkgs) {
-        if (err) return console.error(err);
-        var srcs = fs.readdirSync(config.dirs.sources).filter(function(v) {
-          return v.indexOf('.') !== 0;
-        });
-        var keys = Object.keys(pkgs.dependencies);
-        keys.forEach(function(k) {
-          if (k.indexOf('databridge-source-') !== -1)
-            srcs.push(k.split('databridge-source-')[1]);
-        })
-        sources = srcs;
-        done();
-      });*/
-    done();
-  });
+  // all sources
+  describe('Testing all sources', function() {
+    var sources = require('../bin/list-src')(config);
 
-  it('found some', function() {
-    assert(sources.length !== 0, JSON.stringify(sources));
-  });
+    it('found some', function() {
+      assert(sources.length !== 0, JSON.stringify(sources));
+    });
 
-  describe('Checking them now', function() {
-    it('Sets them up', function() {
-      async.each(sources, function(file, callback) {
-        describe('Checking source ' + file, function() {
-          //at least 30 seconds
-          this.timeout(30000);
+    describe('Checking them now', function() {
+      it('Sets them up', function() {
+        async.each(sources, function(file) {
+          describe('Checking source ' + file, function() {
+            //at least 30 seconds
+            this.timeout(30000);
 
-          //remove file extension
-          var source = removeFileExtension(file);
+            //remove file extension
+            var source = removeFileExtension(file);
 
-          var table = getOneTable(source);
+            var table = getOneTable(source);
 
-          it("Should run a bridge", function(done) {
-            bridge(config, {
-              source: source,
-              destination: 'mssql',
-              binds: true,
-              task: true,
-              update: false,
-              table: table
-            }, function(err, response) {
-              if (err) return done(new Error(err.toString()));
-              done();
+            it('Should run a bridge', function(done) {
+              bridge(config, {
+                source: source,
+                destination: 'mssql',
+                binds: true,
+                task: true,
+                update: false,
+                table: table
+              }, function(err) {
+                if (err) return done(new Error(err.toString()));
+                done();
+              });
             });
           });
         });
       });
     });
   });
-});
+}

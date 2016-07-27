@@ -13,8 +13,7 @@ module.exports = function(opt, columns, moduleCallback) {
     keys = [],
     split = require('split'),
     opfile = opt.opfile,
-    log = opt.log,
-    timer = opt.timer;
+    log = opt.log;
 
   for (var i = 0; i < columns.length; i++) {
     keys.push(columns[i].name);
@@ -28,7 +27,7 @@ module.exports = function(opt, columns, moduleCallback) {
       mkdirp(opt.cfg.dirs.output + 'json/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
-      })
+      });
     },
     function(cb) {
       log.log('Transforming data from opfile to json.');
@@ -60,18 +59,18 @@ module.exports = function(opt, columns, moduleCallback) {
       };
       tab2JSONStream.on('error', function(err) {
         cb(err);
-      })
+      });
       var opfileRStream = opfile.createReadStream();
       var outputJSONStream = fs.createWriteStream(opt.cfg.dirs.output + 'json/' + dir + '/' + table + '.json');
       outputJSONStream.on('error', function(err) {
         cb(err);
-      })
+      });
       outputJSONStream.on('finish', function() {
         fs.appendFile(opt.cfg.dirs.output + 'json/' + dir + '/' + table + '.json', ']', function(err) {
           if (err) return cb(err);
           cb(null, rowsProcessed);
         });
-      })
+      });
       outputJSONStream.write('[');
       opfileRStream.pipe(split()).pipe(tab2JSONStream).pipe(outputJSONStream);
 
@@ -79,5 +78,5 @@ module.exports = function(opt, columns, moduleCallback) {
   ], function(err, rows) {
     if (err) return moduleCallback(err);
     moduleCallback(null, rows, keys);
-  })
-}
+  });
+};

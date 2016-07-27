@@ -23,14 +23,14 @@ module.exports = function(opt, moduleCallback) {
             if ((Number(dtdir) - Number(opt.days)) >= Number(files[i].replace(/-/g, ''))) {
               dirCount++;
               try {
-                rimraf.sync(opt.dirs.logs + files[i])
+                rimraf.sync(opt.dirs.logs + files[i]);
               } catch (e) {
                 cb(e);
-              };
+              }
             }
           }
           cb(null);
-        })
+        });
       },
       function(cb) {
         //delete any extra output files
@@ -40,17 +40,17 @@ module.exports = function(opt, moduleCallback) {
             if (files[i] == '.gitignore') continue;
             opCount++;
             try {
-              rimraf.sync(opt.dirs.output + files[i])
+              rimraf.sync(opt.dirs.output + files[i]);
             } catch (e) {
               cb(e);
             }
           }
           cb(null);
-        })
+        });
       }
     ],
     function(err) {
       if (err) return moduleCallback(err);
-      if (typeof(moduleCallback) === 'function') moduleCallback(null, 'Deleted ' + dirCount + ' log directories that were older than ' + opt.days + ' days and ' + opCount + ' leftover output files.')
-    })
-}
+      if (typeof(moduleCallback) === 'function') moduleCallback(null, 'Deleted ' + dirCount + ' log directories that were older than ' + opt.days + ' days and ' + opCount + ' leftover output files.');
+    });
+};

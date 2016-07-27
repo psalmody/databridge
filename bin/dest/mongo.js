@@ -1,10 +1,8 @@
 //insert data into MongoDB
 module.exports = function(opt, columns, moduleCallback) {
 
-  var fs = require('fs'),
-    async = require('async');
-
-  var client = require('mongodb').MongoClient,
+  var async = require('async'),
+    client = require('mongodb').MongoClient,
     creds = require(opt.cfg.dirs.creds + 'mongo'),
     db,
     collection,
@@ -27,7 +25,7 @@ module.exports = function(opt, columns, moduleCallback) {
           db = database;
           log.group('MongoDB').log('Connected');
           cb(null);
-        })
+        });
       },
       function(cb) {
         //sometimes only insert, don't delete data
@@ -41,15 +39,15 @@ module.exports = function(opt, columns, moduleCallback) {
         }).toArray(function(err, collections) {
           if (err) return cb(err);
           if (collections.length) {
-            db.collection(collectionName).drop(function(err, results) {
+            db.collection(collectionName).drop(function(err) {
               if (err) return cb(err);
               log.log('Deleted old collection.');
               cb(null);
-            })
+            });
           } else {
-            cb(null)
+            cb(null);
           }
-        })
+        });
       },
       function(cb) {
         //create colleciton (if not already existing)
@@ -58,7 +56,7 @@ module.exports = function(opt, columns, moduleCallback) {
           collection = coll;
           log.log('Created collection (if not existing) ' + collectionName);
           cb(null);
-        })
+        });
       },
       function(cb) {
         //insert data one row at a time
@@ -105,19 +103,19 @@ module.exports = function(opt, columns, moduleCallback) {
           //skip blank lines
           if (data.length !== columns.length) return callback();
           //console.log(doc);
-          collection.insertOne(doc, function(err, result) {
+          collection.insertOne(doc, function(err) {
             if (err) throw err;
             rowCount++;
             callback();
           });
 
-        }
+        };
         mongoWriteStream.on('error', function(err) {
           cb(err);
         });
         mongoWriteStream.on('finish', function() {
           cb(null, rowCount, indexes);
-        })
+        });
         var opfileRStream = opfile.createReadStream();
         opfileRStream.pipe(split()).pipe(mongoWriteStream);
       },
@@ -127,23 +125,22 @@ module.exports = function(opt, columns, moduleCallback) {
           log.log('makeIndex: ' + i);
           var ndex = {};
           ndex[i] = 1;
-          collection.createIndex(ndex, null, function(err, results) {
+          collection.createIndex(ndex, null, function(err) {
             if (err) return callback(err);
             callback(null);
-          })
+          });
         }
         //TODO not making indexes?? WHY??
-        async.map(indexes, makeIndex, function(err, results) {
+        async.map(indexes, makeIndex, function(err) {
           if (err) return cb(err);
-
           cb(null, rowCount);
-        })
+        });
       },
       function(rowCount, cb) {
         collection.count(function(err, count) {
           log.log('Success! Inserted ' + rowCount + ' documents. MongoDB says ' + databaseName + '.' + collectionName + ' now has ' + count + ' docs.');
           cb(null, count);
-        })
+        });
       }
     ],
     function(err, rows) {
@@ -155,6 +152,6 @@ module.exports = function(opt, columns, moduleCallback) {
       if (err) return moduleCallback(err);
       log.group('Finished destination').log(timer.str());
       moduleCallback(null, rows, cols);
-    })
+    });
 
-}
+};

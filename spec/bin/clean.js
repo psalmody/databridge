@@ -1,9 +1,8 @@
-var assert = require('chai').assert;
-var fs = require('fs');
-var mkdirp = require('mkdirp');
-var async = require('async');
-var config = require('../../config.json');
-var clean = require('../../bin/clean');
+var assert = require('chai').assert,
+  fs = require('fs'),
+  mkdirp = require('mkdirp'),
+  config = require('../../config.json'),
+  clean = require('../../bin/clean');
 
 var dt = new Date(),
   dtdir = dt.getFullYear() + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + ('0' + dt.getDate()).slice(-2);
@@ -17,13 +16,13 @@ var dirs = [
 ];
 
 var logs = [
-  logDir + "test.log.txt",
-  dirs[0] + "/test.log.txt"
+  logDir + 'test.log.txt',
+  dirs[0] + '/test.log.txt'
 ];
 
 var outputs = [
-  outputDir + "test.dat",
-  dirs[1] + "/test.csv"
+  outputDir + 'test.dat',
+  dirs[1] + '/test.csv'
 ];
 
 describe('Creating temp dirs', function() {
@@ -33,9 +32,9 @@ describe('Creating temp dirs', function() {
         if (err) return done(err);
         done();
       });
-    })
-  })
-})
+    });
+  });
+});
 
 describe('Creating temp logs', function() {
   logs.forEach(function(log) {
@@ -45,9 +44,9 @@ describe('Creating temp logs', function() {
       var f = fs.statSync(file);
       assert(f.isFile());
       done();
-    })
-  })
-})
+    });
+  });
+});
 
 describe('Creating temp output files', function() {
   outputs.forEach(function(log) {
@@ -56,8 +55,8 @@ describe('Creating temp output files', function() {
       var f = fs.statSync(log);
       assert(f.isFile());
       done();
-    })
-  })
+    });
+  });
 });
 
 describe('Trying to clean files', function() {
@@ -69,8 +68,8 @@ describe('Trying to clean files', function() {
       if (err) return done(err);
       console.log(res);
       done();
-    })
-  })
+    });
+  });
 });
 
 describe('They are actually gone', function() {
@@ -82,7 +81,7 @@ describe('They are actually gone', function() {
       } catch (e) {
         done();
       }
-    })
+    });
   });
 
   outputs.forEach(function(file) {
@@ -93,6 +92,6 @@ describe('They are actually gone', function() {
       } catch (e) {
         done();
       }
-    })
-  })
-})
+    });
+  });
+});

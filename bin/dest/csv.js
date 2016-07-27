@@ -26,7 +26,7 @@ module.exports = function(opt, columns, moduleCallback) {
       mkdirp(opt.cfg.dirs.output + 'csv/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
-      })
+      });
     },
     function(cb) {
       log.log('Streaming from opfile to new csv file...');
@@ -37,33 +37,33 @@ module.exports = function(opt, columns, moduleCallback) {
       //streaming data from outputFile to CSV
       var tab2CommaStream = new Stream.Transform();
       tab2CommaStream._transform = function(chunk, encoding, callback) {
-          if (chunk.toString().trim() == '') {
-            this.push('');
-            return callback();
-          }
-          if (!first) rowsProcessed++;
-          if (first) {
-            columns = chunk.toString().replace(/,|_IND/g, '').split('\t');
-            first = false;
-          }
-          var data = chunk.toString().replace(/,|_IND/g, '').replace(/\t/g, ',');
-          this.push(data + '\n');
-          callback();
+        if (chunk.toString().trim() == '') {
+          this.push('');
+          return callback();
         }
-        //pipe data
+        if (!first) rowsProcessed++;
+        if (first) {
+          columns = chunk.toString().replace(/,|_IND/g, '').split('\t');
+          first = false;
+        }
+        var data = chunk.toString().replace(/,|_IND/g, '').replace(/\t/g, ',');
+        this.push(data + '\n');
+        callback();
+      };
+      //pipe data
       var opfileRStream = opfile.createReadStream();
       var outputCSVStream = fs.createWriteStream(opt.cfg.dirs.output + 'csv/' + dir + '/' + table + '.csv');
       outputCSVStream.on('error', function(err) {
         cb(err);
-      })
+      });
       outputCSVStream.on('finish', function() {
         cb(null, rowsProcessed, columns);
-      })
+      });
       opfileRStream.pipe(split()).pipe(tab2CommaStream).pipe(outputCSVStream);
     }
   ], function(err, rows, columns) {
     if (err) return moduleCallback(err);
     log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
-  })
-}
+  });
+};

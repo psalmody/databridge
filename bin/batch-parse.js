@@ -11,17 +11,16 @@ module.exports = function(batchName, batchFile) {
     if (Object.keys(b).indexOf('task') === -1) b.task = true;
     b.batch = batchName;
     var fn = (function() {
-      var options = Object.create(b);
       return function(responses, cb) {
         bridge(config, b, function(err, response) {
           if (err) return cb(err);
           //push clean version (no methods) of response
           responses.push(response.strip());
           cb(null, responses);
-        })
-      }
+        });
+      };
     })(b);
     bridges.push(fn);
-  })
+  });
   return bridges;
-}
+};

@@ -11,20 +11,17 @@ module.exports = function(opt, moduleCallback) {
     opfile = opt.opfile,
     log = opt.log,
     timer = opt.timer,
-    allBinds = opt.cfg.defaultBindVars,
     bindQuery = require(opt.bin + 'bind-query'),
-    query = fs.readFileSync(opt.cfg.dirs.input + opt.source + '/' + table + '.sql', 'utf-8'),
-    binds = {};
+    query = fs.readFileSync(opt.cfg.dirs.input + opt.source + '/' + table + '.sql', 'utf-8');
 
   async.waterfall([
     function(cb) {
       log.group('MySQL').log('Processing query ' + table);
-      var defs = (typeof(opt.binds) !== 'undefined') ? true : false;
       bindQuery(query, opt, function(err, sql, binds) {
         log.group('Binds').log(JSON.stringify(binds));
         if (err) return cb(err);
         cb(null, sql);
-      })
+      });
     },
     function(sql, cb) {
       log.group('MySQL').log('Running query from MySQL');
@@ -42,7 +39,7 @@ module.exports = function(opt, moduleCallback) {
         })
         .on('result', function(row) {
           var vals = [];
-          for (key in row) {
+          for (var key in row) {
             vals.push(row[key]);
           }
           rowsProcessed++;
@@ -52,7 +49,7 @@ module.exports = function(opt, moduleCallback) {
           opfileWriteStream.end();
           log.log('Rows: ' + rowsProcessed);
           cb(null, rowsProcessed, columns);
-        })
+        });
     },
     function(rows, columns, cb) {
       var colstring = columns.join('\t') + '\n';
@@ -60,18 +57,18 @@ module.exports = function(opt, moduleCallback) {
         if (err) return cb(err);
         log.log('prependFile columns');
         cb(null, rows, columns);
-      })
+      });
     }
   ], function(err, rows, columns) {
     db.end(function(err) {
       if (err) return moduleCallback(err);
-    })
+    });
     if (err) {
       log.error(err);
       return moduleCallback(err);
     }
     log.group('Finished source').log(timer.str());
     moduleCallback(null, rows, columns);
-  })
+  });
 
-}
+};

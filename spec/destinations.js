@@ -28,7 +28,7 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
 
     var table = getOneTable('mssql');
 
-    it("Should run a bridge", function(done) {
+    it('Should run a bridge', function(done) {
       bridge(config, {
         source: 'mssql',
         destination: destination,
@@ -36,83 +36,61 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
         task: true,
         update: false,
         table: table
-      }, function(err, response) {
+      }, function(err) {
         if (err) return done(new Error(err.toString()));
         done();
       });
     });
   });
-  //quit
-  return;
-};
+} else {
 
-//all destinations
+  //all destinations
+  describe('Testing all destinations', function() {
+    var destinations = require('../bin/list-dest')(config);
 
+    it('found some', function() {
+      assert(destinations.length !== 0, JSON.stringify(destinations));
+    });
 
-describe('Testing all destinations', function() {
-  var destinations = require('../bin/list-dest')(config);;
+    describe('Checking them now ', function() {
+      it('Sets them up', function() {
+        async.each(destinations, function(file) {
+          describe('Checking destination ' + file, function() {
+            //at least 30 seconds
+            this.timeout(30000);
 
-  beforeEach(function(done) {
-    /*this.timeout(5000);
-    var dests = require('./bin/list-dest')(config);
-    npmls(function(err, pkgs) {
-      if (err) return console.error(err);
-      var dests = fs.readdirSync(config.dirs.destinations).filter(function(v) {
-        return v.indexOf('.') !== 0;
-      });
-      var keys = Object.keys(pkgs.dependencies);
-      keys.forEach(function(k) {
-        if (k.indexOf('databridge-destination-') !== -1)
-          dests.push(k.split('databridge-destination-')[1]);
-      })
-      destinations = dests;
+            //remove file extension
+            var destination = removeFileExtension(file);
 
-    });*/
-    done();
-  });
+            //which table?
+            var tableDir = fs.readdirSync(config.dirs.input + 'mssql');
+            var tables = tableDir.filter(function(value) {
+              if (value.indexOf('.') == 0) return false;
+              return true;
+            });
 
-  it('found some', function() {
-    assert(destinations.length !== 0, JSON.stringify(destinations));
-  });
+            var table = removeFileExtension(tables[0]);
 
-  describe('Checking them now ', function() {
-    it('Sets them up', function() {
-      async.each(destinations, function(file, callback) {
-        describe('Checking destination ' + file, function() {
-          //at least 30 seconds
-          this.timeout(30000);
-
-          //remove file extension
-          var destination = removeFileExtension(file);
-
-          //which table?
-          var tableDir = fs.readdirSync(config.dirs.input + 'mssql');
-          var tables = tableDir.filter(function(value) {
-            if (value.indexOf('.') == 0) return false;
-            return true;
-          });
-
-          var table = removeFileExtension(tables[0]);
-
-          it("Should run a bridge", function(done) {
-            var options = {
-              source: 'mssql',
-              destination: destination,
-              binds: true,
-              task: true,
-              update: false,
-              table: table
-            };
-            bridge(config, options, function(err, response) {
-              if (err) return done(new Error(err.toString()));
-              done();
+            it('Should run a bridge', function(done) {
+              var options = {
+                source: 'mssql',
+                destination: destination,
+                binds: true,
+                task: true,
+                update: false,
+                table: table
+              };
+              bridge(config, options, function(err) {
+                if (err) return done(new Error(err.toString()));
+                done();
+              });
             });
           });
-        });
 
-      }, function(err) {
-        if (err) return assert(err);
+        }, function(err) {
+          if (err) return assert(err);
+        });
       });
     });
   });
-});
+}

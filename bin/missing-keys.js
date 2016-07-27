@@ -14,4 +14,4 @@ module.exports = function missingKeys(obj, arr) {
     if (typeof(obj[arr[i]]) == 'undefined') missing.push(arr[i]);
   }
   return missing.length ? missing : false;
-}
+};

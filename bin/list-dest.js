@@ -14,7 +14,7 @@ module.exports = function(cfg) {
 
   a.forEach(function(v) {
     if (s.indexOf(v !== -1)) s.push(noExt(v));
-  })
+  });
 
   return (s);
-}
+};

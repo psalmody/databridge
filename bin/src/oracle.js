@@ -9,11 +9,7 @@ module.exports = function(opt, moduleCallback) {
     table = opt.table,
     log = opt.log,
     stringify = require('csv-stringify'),
-    allBinds = opt.cfg.defaultBindVars,
     bindQuery = require(opt.bin + 'bind-query'),
-    query = '',
-    binds = {},
-    oracle,
     opfile = opt.opfile,
     timer = opt.timer;
 
@@ -25,16 +21,16 @@ module.exports = function(opt, moduleCallback) {
           if (err) return cb(err);
           oracle = conn;
           cb(null);
-        })
+        });
       },
       //read query
       function(cb) {
         var f = opt.cfg.dirs.input + opt.source + '/' + table + '.sql';
         log.log(f);
         fs.readFile(f, 'utf8', function(err, data) {
-          if (err) return cb("fs readFile error on input query: " + err);
+          if (err) return cb('fs readFile error on input query: ' + err);
           cb(null, data);
-        })
+        });
       },
       //format query and prompt for binds
       function(data, cb) {
@@ -44,7 +40,7 @@ module.exports = function(opt, moduleCallback) {
             if (err) return cb(err);
             log.group('Binds').log(JSON.stringify(binds));
             cb(null, sql);
-          })
+          });
         } catch (e) {
           console.trace(e);
         }
@@ -56,7 +52,7 @@ module.exports = function(opt, moduleCallback) {
           resultSet: true,
           prefetchRows: 10000
         }, function(err, results) {
-          if (err) return cb("oracle SELECT query error: " + err);
+          if (err) return cb('oracle SELECT query error: ' + err);
           var columnDefs = results.metaData,
             rowsProcessed = 0,
             columns = [];
@@ -73,15 +69,15 @@ module.exports = function(opt, moduleCallback) {
 
           function processResultSet() {
             results.resultSet.getRows(500, function(err, rows) {
-              if (err) return cb("oracle resultSet.getRows() error: " + err);
+              if (err) return cb('oracle resultSet.getRows() error: ' + err);
               if (rows.length) {
                 rowsProcessed += rows.length;
                 stringify(rows, {
                   delimiter: '\t'
                 }, function(err, csv) {
-                  if (err) return cb("csv-stringify error: " + err);
+                  if (err) return cb('csv-stringify error: ' + err);
                   opfile.append(csv, function(err) {
-                    if (err) return cb("fs.writeFile error: " + err);
+                    if (err) return cb('fs.writeFile error: ' + err);
                     processResultSet(); //try to get more rows from the result set
                   });
                 });
@@ -98,17 +94,19 @@ module.exports = function(opt, moduleCallback) {
               });
 
             });
-          };
+          }
 
 
-        })
+        });
       }
     ],
     function(err, rows, columns) {
       if (err) {
         log.error(err);
         try {
-          oracle.release(function(err) {});
+          oracle.release(function() {
+            return;
+          });
         } catch (e) {
           log.error(e);
         }
@@ -116,5 +114,5 @@ module.exports = function(opt, moduleCallback) {
       }
       log.group('Finished source').log(timer.str());
       moduleCallback(null, rows, columns);
-    })
-}
+    });
+};

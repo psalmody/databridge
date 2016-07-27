@@ -26,7 +26,8 @@
     "service-start": "pm2 start pm2.json",
     "service-stop": "pm2 stop pm2.json",
     "service-restart": "pm2 restart pm2.json",
-    "postinstall": "node setup"
+    "postinstall": "node setup",
+    "lint": "eslint -c .eslintrc.js **/*.js"
   },
   "author": "Michael A Smith @psalmody <psalmody@gmail.com> (http://psalmody.net)",
   "license": "MIT",
@@ -53,6 +54,7 @@
     "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-jsbeautifier": "^0.2.12",
+    "grunt-lineending": "^1.0.0",
     "grunt-prettify": "^0.4.0"
   }
 }

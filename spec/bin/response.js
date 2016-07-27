@@ -79,7 +79,7 @@ describe('Testing bin\\response module', function() {
   });
   it('gave a columns error', function() {
     var check = res.check();
-    assert(check[0] == 'Column mismatch.', "Bad error: " + JSON.stringify(check));
+    assert(check[0] == 'Column mismatch.', 'Bad error: ' + JSON.stringify(check));
   });
   it('reset', function() {
     assert(reset());
@@ -96,7 +96,7 @@ describe('Testing bin\\response module', function() {
   });
   it('gave a rows error', function() {
     var check = res.check();
-    assert(check[0] == 'Row mismatch.', "Bad error: " + JSON.stringify(check));
+    assert(check[0] == 'Row mismatch.', 'Bad error: ' + JSON.stringify(check));
   });
   it('gave a rows error when update and column returned less than source', function() {
     //reset with update true
@@ -111,6 +111,6 @@ describe('Testing bin\\response module', function() {
     res.source.respond('fine', 20, ['a', 'b', 'c']);
     res.destination.respond('fine', 40, ['a', 'b', 'c']);
     var check = res.check();
-    assert(check === null, 'Bad response from check: ' + JSON.stringify(check))
+    assert(check === null, 'Bad response from check: ' + JSON.stringify(check));
   });
-})
+});

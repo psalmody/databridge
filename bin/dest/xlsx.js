@@ -9,7 +9,6 @@ module.exports = function(opt, columns, moduleCallback) {
     mkdirp = require('mkdirp'),
     log = opt.log,
     opfile = opt.opfile,
-    timer = opt.timer,
     rowsProcessed = 0;
 
   //setup workbook and columns
@@ -29,7 +28,7 @@ module.exports = function(opt, columns, moduleCallback) {
   worksheet.addRow(firstRow);
   worksheet.getRow(1).font = {
     bold: true
-  }
+  };
 
   async.waterfall([
     //mkdirp
@@ -38,18 +37,18 @@ module.exports = function(opt, columns, moduleCallback) {
       mkdirp(opt.cfg.dirs.output + 'xlsx/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
-      })
+      });
     },
     //read data
     function(cb) {
       log.log('Reading data....');
       fs.readFile(opfile.filename, 'utf-8', function(err, data) {
         if (err) return cb(err);
-        var data = data.split('\n');
+        data = data.split('\n');
         data.shift();
-        log.log('')
+        log.log('');
         cb(null, data);
-      })
+      });
     },
     function(data, cb) {
       log.log('Split data into ' + data.length + ' rows and writing to workbook.');
@@ -58,7 +57,7 @@ module.exports = function(opt, columns, moduleCallback) {
         if (!first) rowsProcessed++;
         if (first) first = false;
         worksheet.addRow(row.split('\t'));
-      })
+      });
       cb(null);
     },
     //write xlsx file
@@ -66,7 +65,7 @@ module.exports = function(opt, columns, moduleCallback) {
       workbook.xlsx.writeFile(filename).then(function() {
         log.log('Created workbook ' + filename);
         cb(null);
-      })
+      });
     }
   ], function(err) {
     if (err) return moduleCallback(err);
@@ -74,5 +73,5 @@ module.exports = function(opt, columns, moduleCallback) {
     var cols = worksheet.getRow(1).values;
     cols.shift();
     moduleCallback(null, rowsProcessed, cols);
-  })
-}
+  });
+};
