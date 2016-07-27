@@ -1,6 +1,6 @@
 {
   "name": "databridge",
-  "version": "1.1.1-beta",
+  "version": "1.1.2-beta",
   "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",
   "keywords": [
     "data",
@@ -38,6 +38,8 @@
     "colors": "^1.1.2",
     "commander": "^2.9.0",
     "csv-stringify": "^1.0.4",
+    "databridge-destination-csv": "^1.0.1-beta",
+    "databridge-source-oracle": "^1.0.1-beta",
     "exceljs": "^0.2.11",
     "graceful-fs": "^4.1.4",
     "mkdirp": "^0.5.1",

@@ -13,7 +13,7 @@ deployment-specific data handling.
 Clone the project:
 
 ```shell
-git clone https://gitlab.com/databridge/databridge.git
+git clone https://github.com/psalmody/databridge.git
 npm install
 ```
 
