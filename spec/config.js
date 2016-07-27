@@ -43,8 +43,8 @@ describe('Testing config.json', function() {
     if (typeof(cfg.schedule) == 'undefined') return assert(true);
     try {
       var pm2cfg = require('../pm2.json');
-    } catch(e) {
-      assert(false,'Couldn\'t find file pm2.json. '+e.toString())
+    } catch (e) {
+      assert(false, 'Couldn\'t find file pm2.json. ' + e.toString())
     }
     var p = pm2cfg.apps[0];
     var logdir = p.out_file.split('/').slice(0, -1).join('/');
