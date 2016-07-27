@@ -25,7 +25,6 @@ var cfg = {
   "defaultBindVars": {},
   "schedule": dirname + "/local/schedule.json",
   "service": {
-    "name": "dataBridgeDev",
     "log": dirname + "/local/logs/schedule.log.txt"
   }
 };
@@ -131,7 +130,7 @@ async.waterfall([
   function(cb) {
     //prompt for scheduler setup
     prompt.message = colors.green('  Scheduler');
-    console.log('Would you to setup configuration for the scheduler service?')
+    console.log('Would you to setup configuration for the scheduler pm2/service?')
     var schPrompt = {
       properties: {
         sch: {
@@ -160,10 +159,6 @@ async.waterfall([
           default: defaultdir + 'schedule.json',
           description: colors.green("Location of schedule job file")
         },
-        service: {
-          default: cfg.service.name,
-          description: colors.green('System service name')
-        },
         log: {
           default: cfg.dirs.logs + 'schedule.log.txt',
           description: colors.green('Service log file')
@@ -174,7 +169,6 @@ async.waterfall([
     prompt.get(schPrompt, function(err, results) {
       if (err) return cb(err);
       cfg.schedule = results.schedule;
-      cfg.service.name = results.service;
       cfg.service.log = results.log;
       cb(null);
     });
