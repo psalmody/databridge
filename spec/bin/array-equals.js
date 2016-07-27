@@ -7,10 +7,10 @@ var b = ['a', 'b', 'c', 'd', 1, 2, 3, 4];
 var c = ['a', 'b', 'c', 'd', 1, 2, 3];
 var d = ['a', 't', 'c', 'd', 1, 2];
 var e = {
-  "test": true
+  'test': true
 };
 var f = 3;
-var g = "testingString";
+var g = 'testingString';
 
 describe('Testing arrayEquals module', function() {
   it('Returns true for equal arrays', function() {
@@ -30,5 +30,5 @@ describe('Testing arrayEquals module', function() {
   });
   it('Returns false if comparing number to array', function() {
     assert(arrayEquals(a, f) == false);
-  })
-})
+  });
+});

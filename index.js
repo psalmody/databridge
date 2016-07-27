@@ -4,73 +4,47 @@
  */
 
 var program = require('./bin/cli'),
-  async = require('async'),
   colors = require('colors'),
   fs = require('fs'),
   bridge = require('./bin/bridge'),
   missingKeys = require('./bin/missing-keys'),
-  pkg = require('./package'),
   runBridges = require('./bin/bridge-runner'),
   config = require('./config.json'),
-  sources = fs.readdirSync(config.dirs.sources),
-  destinations = fs.readdirSync(config.dirs.destinations),
-  batches = fs.readdirSync(config.dirs.batches),
-  removeFileExtension = require('./bin/string-utilities').removeFileExtension,
-  npmls = require('./bin/npm-ls');
+  removeFileExtension = require('./bin/string-utilities').removeFileExtension;
 
 //show valid tables
 if (missingKeys(program, ['source', 'table', 'show']) == false) {
   fs.readdir(config.dirs.input + program.source, function(err, files) {
-    if (err) return cb(err);
+    if (err) return console.error(err);
     console.log('Valid tables for ' + program.source + ':');
     files.forEach(function(file) {
       console.log('  ' + removeFileExtension(file));
-    })
-  })
-  return;
+    });
+  });
 }
 //show valid sources
 else if (missingKeys(program, ['source', 'show']) == false) {
-  npmls(function(err, pkgs) {
-    //console.log(pkgs.dependencies);
-    for (key in pkgs.dependencies) {
-      if (key.indexOf('databridge-source-') !== -1) {
-        var s = key.split('databridge-source-')[1];
-        sources.push(s);
-      }
-    }
-    sources.sort();
-    console.log('Valid sources:');
-    sources.forEach(function(source) {
-      console.log('  ' + removeFileExtension(source))
-    })
-  })
-  return;
+  var srcs = require('./bin/list-src')(config);
+  console.log('Valid sources:');
+  srcs.forEach(function(v) {
+    console.log('  ' + v);
+  });
 }
 //show valid destinations
 else if (missingKeys(program, ['destination', 'show']) == false) {
-  npmls(function(err, pkgs) {
-    for (key in pkgs.dependencies) {
-      if (key.indexOf('databridge-destination-') !== -1) {
-        var d = key.split('databridge-destination-')[1];
-        destinations.push(d);
-      }
-    }
-    destinations.sort();
-    console.log('Valid destinations:');
-    destinations.forEach(function(destination) {
-      console.log('  ' + removeFileExtension(destination));
-    })
-  })
-  return;
+  var dests = require('./bin/list-dest')(config);
+  console.log('Valid destinations:');
+  dests.forEach(function(v) {
+    console.log('  ' + v);
+  });
 }
 //show valid batches
 else if (missingKeys(program, ['batch', 'show']) == false) {
+  var batches = fs.readdirSync(config.dirs.batches);
   console.log('Valid batches:');
   batches.forEach(function(batch) {
     console.log('  ' + removeFileExtension(batch));
-  })
-  return;
+  });
 }
 //run batch if specified
 else if (missingKeys(program, ['batch']) == false) {
@@ -84,7 +58,6 @@ else if (missingKeys(program, ['batch']) == false) {
     }
     if (config.logto == 'console') console.log(responses);
   });
-  //})
 } else {
   //otherwise, run bridge once
   //only source / destination are required - each source module should throw
@@ -108,8 +81,8 @@ else if (missingKeys(program, ['batch']) == false) {
       //push clean version (no methods) of response
       responses.push(response.strip());
       cb(null, responses);
-    })
-  }], function(err, responses) {
+    });
+  }], function(err) {
     if (err) {
       console.error(colors.red(err));
       program.help();

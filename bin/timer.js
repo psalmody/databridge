@@ -4,7 +4,7 @@
  */
 var Timer = function() {
   this.s = Date.now();
-}
+};
 
 function seconds(t) {
   return (t / 1000).toFixed(2);
@@ -23,11 +23,11 @@ Timer.prototype.min = function() {
 };
 
 Timer.prototype.str = function() {
-  return "Since timer start: " + this.sec() + " seconds / " + this.min() + " minutes.";
-}
+  return 'Since timer start: ' + this.sec() + ' seconds / ' + this.min() + ' minutes.';
+};
 
 Timer.prototype.start = function() {
-  return timer.s.toString();
-}
+  return this.s.toString();
+};
 
 module.exports = Timer;

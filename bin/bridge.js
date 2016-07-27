@@ -6,11 +6,12 @@ module.exports = function(config, opt, moduleCallback) {
   //setup timer and define shortcuts for log/error
   var async = require('async'),
     missingKeys = require('./missing-keys'),
-    fs = require('fs'),
     colParser = require('./col-parser'),
     Spinner = require('cli-spinner').Spinner,
-    spinner = new Spinner('processing... %s'),
     outputFile = require('./output-file'),
+    source,
+    destination,
+    err,
     Timer = require('./timer');
 
 
@@ -36,25 +37,25 @@ module.exports = function(config, opt, moduleCallback) {
 
   //try to require source -- npm installed first
   try {
-    source = require('databridge-source-' + opt.source);
+    source = require('./src/' + opt.source);
   } catch (e) {
     //try to require source from local module
     try {
       source = require(opt.cfg.dirs.sources + opt.source);
     } catch (e2) {
-      var err = '\n  ' + e.toString() + '\n  ' + e2.toString();
+      err = '\n  ' + e.toString() + '\n  ' + e2.toString();
       return moduleCallback('Invalid source.' + err);
     }
   }
   //try to require destination
   try {
-    destination = require('databridge-destination-' + opt.destination);
+    destination = require('./dest/' + opt.destination);
   } catch (e) {
     //try to require destination from local module
     try {
       destination = require(opt.cfg.dirs.destinations + opt.destination);
     } catch (e2) {
-      var err = '\n  ' + e.toString() + '\n  ' + e2.toString();
+      err = '\n  ' + e.toString() + '\n  ' + e2.toString();
       return moduleCallback('Invalid destination.' + err);
     }
   }
@@ -66,7 +67,7 @@ module.exports = function(config, opt, moduleCallback) {
         if (err) return moduleCallback(err);
         opt.opfile = opfile;
         cb(null);
-      })
+      });
     },
     //run source
     function(cb) {
@@ -82,7 +83,7 @@ module.exports = function(config, opt, moduleCallback) {
           }
           response.source.respond('ok', rows, columns);
           cb(null);
-        })
+        });
       } catch (e) {
         console.trace(e);
       }
@@ -92,7 +93,7 @@ module.exports = function(config, opt, moduleCallback) {
       colParser(opt.opfile, function(err, parsedCols) {
         if (err) return cb(err);
         cb(null, parsedCols);
-      })
+      });
     },
     function(parsedCols, cb) {
       response.destination.start();
@@ -104,20 +105,20 @@ module.exports = function(config, opt, moduleCallback) {
         }
         response.destination.respond('ok', rows, columns);
         cb(null);
-      })
+      });
     }
   ], function(err) {
     opt.log.group('Bridge').log('Finished a bridge');
     //try and clean up the output file and stop spinner
 
     try {
-      opfile.clean();
+      opt.opfile.clean();
     } catch (e) {
       if (typeof(opfile) !== 'undefined') opt.log.error(e);
     }
     //error handling
     if (err) {
-      opt.log.error(err)
+      opt.log.error(err);
       opt.log.error(opt.timer.str());
       return moduleCallback(err);
     }
@@ -128,5 +129,5 @@ module.exports = function(config, opt, moduleCallback) {
     opt.log.log(JSON.stringify(response.strip(), null, 2));
     if (opt.spinner) opt.spinner.stop(true);
     return moduleCallback(response.check(), response);
-  })
-}
+  });
+};

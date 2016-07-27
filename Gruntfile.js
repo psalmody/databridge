@@ -4,7 +4,7 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
-    "jsbeautifier": {
+    'jsbeautifier': {
       src: projectFiles,
       options: {
         js: {
@@ -19,11 +19,23 @@ module.exports = function(grunt) {
       options: {
         livereload: true
       }
+    },
+    lineending: {
+      dist: {
+        options: {
+          overwrite: true,
+          eol: 'lf'
+        },
+        files: {
+          '': projectFiles
+        }
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-jsbeautifier');
+  grunt.loadNpmTasks('grunt-lineending');
 
 
 

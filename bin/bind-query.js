@@ -3,7 +3,6 @@ module.exports = function(query, opt, moduleCallback) {
   var missingKeys = require('./missing-keys');
 
   //read query, check binds, prompt or use defBinds
-
   var qBinds = [],
     //remove comments
     sql = query.replace(/\/\*[.\s\S]*?\*\/|--.*?[\n\r]/g, ''),
@@ -13,9 +12,10 @@ module.exports = function(query, opt, moduleCallback) {
     bindPattern = /[:].[A-Za-z_0-9]+(?=([^']*'[^']*')*[^']*$)/g,
     //extend config binds with any attached to opt
     defBinds = Object.assign({}, opt.cfg.defaultBindVars, opt.binds),
-    spinner = opt.spinner;
+    spinner = opt.spinner,
+    result;
 
-  while (result = bindPattern.exec(sql)) {
+  while ((result = bindPattern.exec(sql))) {
     var r = result[0].replace(':', '');
     if (qBinds.indexOf(r) == -1) qBinds.push(r);
   }
@@ -27,7 +27,7 @@ module.exports = function(query, opt, moduleCallback) {
     for (var i = 0; i < qBinds.length; i++) {
       try {
         //try replacing all binds with default
-        query = query.replace(new RegExp(':' + qBinds[i], "g"), binds[qBinds[i]]);
+        query = query.replace(new RegExp(':' + qBinds[i], 'g'), binds[qBinds[i]]);
       } catch (e) {
         return moduleCallback('Problem finding bind for "' + r + '"' + e);
       }
@@ -36,9 +36,11 @@ module.exports = function(query, opt, moduleCallback) {
   }
 
   //check to see if ALL binds are present in defBinds AND opt.binds is present
-  if (opt.binds && missingKeys(defBinds, qBinds) == false)
-  //return formatted query
-    return moduleCallback(null, replaceBinds(sql, defBinds), defBinds);
+  if (opt.binds && missingKeys(defBinds, qBinds) == false) {
+    //return formatted query
+    var q = replaceBinds(sql, defBinds);
+    return moduleCallback(null, q, defBinds);
+  }
 
   //if not using defBinds, prompt
   var prompt = require('prompt'),
@@ -55,14 +57,14 @@ module.exports = function(query, opt, moduleCallback) {
     prompts.properties[qBinds[i]] = {
       default: defBinds[qBinds[i]],
       description: colors.green(qBinds[i])
-    }
+    };
   }
 
   if (spinner) spinner.stop(true);
   prompt.start();
-  prompt.get(prompts, function(err, result) {
+  prompt.get(prompts, function(err, res) {
     if (err) return moduleCallback(err);
     if (spinner) spinner.start();
-    moduleCallback(null, replaceBinds(sql, result), result);
+    moduleCallback(null, replaceBinds(sql, res), res);
   });
-}
+};

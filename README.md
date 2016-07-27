@@ -1,6 +1,10 @@
+[![Github All Releases](https://img.shields.io/github/downloads/psalmody/databridge/total.svg?maxAge=2592000?style=flat-square)](https://github.com/psalmody/databridge)
+[![GitHub stars](https://img.shields.io/github/stars/psalmody/databridge.svg?style=social&label=Star&maxAge=2592000?style=flat-square)]()
+[![Twitter Follow](https://img.shields.io/twitter/follow/psalmody.svg?style=social&label=Follow&maxAge=2592000?style=flat-square)]()
+
 # DataBridge
 
-A framework for automated and programatic data transfer. Separate source
+A framework for automated and programmatic data transfer. Separate source
 and destination modules allow for a high degree of customization and
 deployment-specific data handling.
 
@@ -17,12 +21,6 @@ Open a terminal/command prompt in the new directory and run the install script. 
 
 ```shell
 node setup
-```
-
-Install source/destination modules as needed. [Search GitLab](https://gitlab.com/search?search=databridge) or [search NPM](https://www.npmjs.com/search?q=databridge) for all source/destination modules.
-
-```shell
-npm install databridge-source-mssql
 ```
 
 Put data files or queries in `config.dirs.input` in a directory named after the source.
@@ -83,7 +81,7 @@ mocha spec\sources --one=mysql
 In project directory at command-line:
 
 ```shell
-node app --help
+node index --help
 ```
 
 ## Bridge module
@@ -143,15 +141,18 @@ column name.
 
 ## Running as a Service
 
-Uses `config.schedule` file and can setup service.
-
-### Setup
-
-In project directory at command-line:
+Uses `config.schedule` file and can setup service. Requires [pm2](http://pm2.keymetrics.io/) installed globally `npm install -g pm2`.
 
 ```shell
-node bin/schedule --help
+# start pm2 service
+npm run service-start
+# restart pm2
+npm run service-restart
+# stop pm2
+npm run service-stop
 ```
+
+It is possible to [run pm2 at startup](http://pm2.keymetrics.io/docs/usage/startup/).
 
 ### Schedule Configuration
 

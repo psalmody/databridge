@@ -9,10 +9,9 @@ module.exports = function(opt) {
   var fs = require('graceful-fs'),
     mkdirp = require('mkdirp');
   //if batch, put logs inside additional folder to keep them together
-  var batch = typeof(opt.batch) == 'undefined' ? '' : opt.batch + '/';
-  var table = opt.table;
-  var log = new Object();
-  var spinner = opt.spinner;
+  var batch = typeof(opt.batch) == 'undefined' ? '' : opt.batch + '/',
+    table = opt.table,
+    log = new Object();
   //log group is prepended to every log call
   log.g = '';
   //log folder settings
@@ -28,7 +27,7 @@ module.exports = function(opt) {
     if (err) return console.error(err);
     //log command line call
     fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');
-  })
+  });
 
 
 
@@ -38,7 +37,7 @@ module.exports = function(opt) {
       fs.appendFileSync(log.filename, dt.toString() + '\n');
       first = false;
     }
-    fs.appendFileSync(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + "\n");
+    fs.appendFileSync(log.filename, 'Error! ' + log.g + ': ' + JSON.stringify(err, null, 2) + '\n');
     return log;
   };
 
@@ -48,7 +47,7 @@ module.exports = function(opt) {
       fs.appendFileSync(log.filename, dt.toString() + '\n');
       first = false;
     }
-    fs.appendFileSync(log.filename, log.g + ': ' + msg + "\n");
+    fs.appendFileSync(log.filename, log.g + ': ' + msg + '\n');
     return log;
   };
 
@@ -56,8 +55,8 @@ module.exports = function(opt) {
   log.group = function(str) {
     log.g = str;
     return log;
-  }
+  };
 
   return log;
 
-}
+};

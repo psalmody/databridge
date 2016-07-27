@@ -3,8 +3,7 @@
  * output file and return them as column definitions.
  */
 module.exports = function(opfile, callback) {
-  var fs = require('fs'),
-    columns = [];
+  var columns = [];
 
   //try and parse SQL data type from javascript data type
   function getType(c, o) {
@@ -38,8 +37,8 @@ module.exports = function(opfile, callback) {
         name: name,
         type: getType(name, d[i]),
         index: ndex
-      })
+      });
     }
     callback(null, columns);
-  })
-}
+  });
+};

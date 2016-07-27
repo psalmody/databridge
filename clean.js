@@ -14,16 +14,20 @@ program.version(pkg.version)
   .usage('[options] <keywords>')
   .option('-d, --days <n>', 'Keep logs/output files older than <n> days. Use 0 to delete all. Default is 7 days.', parseInt)
   .parse(process.argv);
+
 var days = typeof(program.days) == 'undefined' ? 7 : program.days;
 
 //setup options
 var opts = {
   days: days,
   dirs: config.dirs
-}
+};
 
 //run cleanup
 cleaner(opts, function(err, res) {
-  if (err) return console.log(colors.red(err));
+  if (err) {
+    console.log(colors.red(err));
+    return;
+  }
   console.log(res);
-})
+});

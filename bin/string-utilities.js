@@ -9,4 +9,4 @@ function removeFileExtension(str) {
 
 module.exports = {
   removeFileExtension: removeFileExtension
-}
+};
