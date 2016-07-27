@@ -23,9 +23,9 @@
     "test": "mocha spec --recursive",
     "start": "node app",
     "clean": "node bin/clean",
-    "service-start": "pm2 start bin\\schedule.js",
-    "service-stop": "pm2 stop schedule",
-    "service-restart": "pm2 restart schedule"
+    "service-start": "pm2 start pm2.json",
+    "service-stop": "pm2 stop pm2.json",
+    "service-restart": "pm2 restart pm2.json"
   },
   "author": "Michael A Smith @psalmody <psalmody@gmail.com> (http://psalmody.net)",
   "license": "MIT",
