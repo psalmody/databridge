@@ -1,6 +1,6 @@
 {
   "name": "databridge",
-  "version": "1.0.4-beta",
+  "version": "1.1.0-beta",
   "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",
   "keywords": [
     "data",
