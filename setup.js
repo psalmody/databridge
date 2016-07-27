@@ -28,19 +28,19 @@ var cfg = {
 
 var pm2cfg = {
   "apps": [{
-      "name": "databridge",
-      "script": "bin/schedule.js",
-      "watch": ["bin/schedule.js", "pm2.json"],
-      "env": {
-        "NODE_ENV": "development",
-      },
-      "env_production": {
-        "NODE_ENV": "production"
-      },
-      "error_file": dirname + "/local/logs/schedule.log",
-      "out_file": dirname + "/local/logs/schedule.log",
-      "log_date_format": "YYYY-MM-DD HH:mm:ss Z"
-    }]
+    "name": "databridge",
+    "script": "bin/schedule.js",
+    "watch": ["bin/schedule.js", "pm2.json"],
+    "env": {
+      "NODE_ENV": "development",
+    },
+    "env_production": {
+      "NODE_ENV": "production"
+    },
+    "error_file": dirname + "/local/logs/schedule.log",
+    "out_file": dirname + "/local/logs/schedule.log",
+    "log_date_format": "YYYY-MM-DD HH:mm:ss Z"
+  }]
 }
 
 function addTrailingSlash(s) {
