@@ -3,3 +3,4 @@ npm-debug.log
 temp.js
 config.json
 temp*
+pm2.json
