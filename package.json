@@ -42,6 +42,7 @@
     "databridge-source-oracle": "^1.0.1-beta",
     "exceljs": "^0.2.11",
     "graceful-fs": "^4.1.4",
+    "inquirer": "^1.1.2",
     "mkdirp": "^0.5.1",
     "mongodb": "^2.2.4",
     "mssql": "^3.3.0",
