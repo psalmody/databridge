@@ -32,7 +32,6 @@ module.exports = function(opt, columns, moduleCallback) {
     //connect
     function(cb) {
       mssql.connect(creds).then(function() {
-        log.group('mssql').log('connected to mssql');
         cb(null);
       }).catch(function(err) {
         cb(err);
@@ -44,7 +43,6 @@ module.exports = function(opt, columns, moduleCallback) {
         .Request()
         .query('if not exists(select * from sys.databases where name = \'' + db + '\') create database ' + db)
         .then(function() {
-          log.log('created database (if not exists)');
           cb(null);
         }).catch(function(err) {
           cb(err);
@@ -56,7 +54,6 @@ module.exports = function(opt, columns, moduleCallback) {
         .Request()
         .query('USE ' + db + '; IF (SCHEMA_ID(\'' + schema + '\') IS NULL ) BEGIN EXEC (\'CREATE SCHEMA [' + schema + '] AUTHORIZATION [dbo]\') END')
         .then(function() {
-          log.log('created schema ' + schema + ' (if not exists)');
           cb(null);
         }).catch(function(err) {
           cb(err);
@@ -65,12 +62,10 @@ module.exports = function(opt, columns, moduleCallback) {
     //drop table if exists
     function(cb) {
       if (opt.update) {
-        log.log('Insert only - not dropping table.');
         return cb(null); //don't drop table if update option
       }
       var sql = 'USE ' + db + '; IF OBJECT_ID(\'' + table + '\') IS NOT NULL DROP TABLE ' + table;
       new mssql.Request().query(sql).then(function() {
-        log.log('dropped table (if exists)');
         cb(null);
       }).catch(function(err) {
         cb(err);
@@ -79,11 +74,8 @@ module.exports = function(opt, columns, moduleCallback) {
     //create table
     function(cb) {
       if (opt.update) return cb(null); //don't drop table if update option
-      log.group('Table setup').log('creating table');
       var sql = sqlTable();
-      log.log(sql);
       new mssql.Request().query('USE ' + db + ';' + sql).then(function() {
-        log.log('Created table');
         cb(null);
       }).catch(function(err) {
         cb(err);
@@ -93,7 +85,6 @@ module.exports = function(opt, columns, moduleCallback) {
     function(cb) {
       var sql = 'USE ' + db + '; BULK INSERT ' + table + ' FROM \'' + opfile.filename + '\' WITH ( FIELDTERMINATOR=\'\t\', ROWTERMINATOR=\'\n\', FIRSTROW=2)';
       new mssql.Request().query(sql).then(function() {
-        log.log('BULK INSERT successful.');
         cb(null);
       }).catch(function(err) {
         cb(err);
@@ -102,7 +93,6 @@ module.exports = function(opt, columns, moduleCallback) {
     //check number of inserted rows
     function(cb) {
       new mssql.Request().query('USE ' + db + '; SELECT count(*) as rows FROM ' + table).then(function(recordset) {
-        log.log('imported ' + recordset[0].rows);
         cb(null, recordset[0].rows);
       }).catch(function(err) {
         cb(err);
@@ -130,7 +120,6 @@ module.exports = function(opt, columns, moduleCallback) {
       log.error(e);
     }
     if (err) return moduleCallback(err);
-    log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
   });
 };

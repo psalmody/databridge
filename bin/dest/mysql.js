@@ -34,7 +34,6 @@ module.exports = function(opt, columns, moduleCallback) {
     //drop existing table
     function(cb) {
       if (opt.update) {
-        log.log('Insert only - not dropping table.');
         return cb(null); //don't drop table if update option
       }
       db.query('DROP TABLE IF EXISTS ' + table, function(err) {
@@ -45,9 +44,7 @@ module.exports = function(opt, columns, moduleCallback) {
     //create new table
     function(cb) {
       if (opt.update) return cb(null); //don't drop table if update option
-      log.group('Table setup').log('Dropped table, setting new.');
       var sql = sqlTable();
-      log.log(sql);
       db.query(sql, function(err) {
         if (err) return cb(err);
         cb(null);
@@ -91,7 +88,6 @@ module.exports = function(opt, columns, moduleCallback) {
     function(cb) {
       db.query('SELECT count(*) as rows FROM ' + table, function(err, result) {
         if (err) return cb('SELECT COUNT(*) err: ' + err);
-        log.log('Successfully loaded ' + result[0].rows + ' rows into MySQL.');
         cb(null, result[0].rows);
       });
     },
@@ -116,7 +112,6 @@ module.exports = function(opt, columns, moduleCallback) {
       log.error(err);
       return moduleCallback(err);
     }
-    log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
   });
 };

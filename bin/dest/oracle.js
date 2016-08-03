@@ -39,7 +39,6 @@ module.exports = function(opt, columns, moduleCallback) {
     //drop table if exists
     function(cb) {
       if (opt.update) {
-        log.log('Insert only - not dropping table.');
         return cb(null);
       }
       oracle.execute('DROP TABLE ' + table, [], function(err, results) {
@@ -124,7 +123,6 @@ module.exports = function(opt, columns, moduleCallback) {
       log.error(e);
     }
     if (err) return moduleCallback(err);
-    log.group('Finished destiantion').log(timer.str());
     moduleCallback(null, resRows, resColumns);
   })
 }
