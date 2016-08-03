@@ -30,7 +30,7 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
     it('Should run a bridge', function(done) {
       bridge(config, {
         source: source,
-        destination: 'mssql',
+        destination: 'csv',
         binds: true,
         task: true,
         update: false,
@@ -67,7 +67,7 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
             it('Should run a bridge', function(done) {
               bridge(config, {
                 source: source,
-                destination: 'mssql',
+                destination: 'csv',
                 binds: true,
                 task: true,
                 update: false,

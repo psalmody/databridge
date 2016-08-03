@@ -77,4 +77,5 @@ module.exports = function(opt, moduleCallback) {
       moduleCallback(null, FILE);
     });
   });
+  return FILE;
 };

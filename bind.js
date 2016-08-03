@@ -44,14 +44,14 @@ var main = function() {
         console.log('No option specified.');
     }
   });
-}
+};
 
 var list = function() {
   console.log('Listing all binds:');
   var l = binds.list();
   Object.keys(l).forEach(function(k) {
     console.log('  ', k, ': ', l[k]);
-  })
+  });
 };
 
 var add = function() {
@@ -74,7 +74,7 @@ var add = function() {
         name: 'confirm',
         message: 'This variable exists. Overwrite?',
         default: false
-      }]
+      }];
       inquirer.prompt(q2s).then(function(a2) {
         if (a2.confirm) {
           binds.add(a.key, a.value, true);
@@ -82,12 +82,12 @@ var add = function() {
         } else {
           console.log('Aborted.');
         }
-      })
+      });
     } else {
       binds.add(a.key, a.value);
       console.log('Added bind variable', a.key, 'with value', a.value, '.');
     }
-  })
+  });
 };
 
 var change = function() {
@@ -104,13 +104,13 @@ var change = function() {
       name: 'val',
       message: 'Enter the bind variable value',
       default: binds.getValue(a.bind)
-    }]
+    }];
     inquirer.prompt(q2).then(function(a2) {
       console.log(a2);
-      var r = binds.add(a.bind, a2.val, true);
+      binds.add(a.bind, a2.val, true);
       console.log('Changed bind variable "' + a.bind + '" to "' + a2.val + '".');
-    })
-  })
+    });
+  });
 };
 
 var remove = function() {
@@ -133,8 +133,8 @@ var remove = function() {
       return;
     }
     binds.remove(a.bind);
-    console.log('Removed bind variable', a.bind)
-  })
+    console.log('Removed bind variable', a.bind);
+  });
 };
 
 main();

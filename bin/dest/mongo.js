@@ -23,14 +23,12 @@ module.exports = function(opt, columns, moduleCallback) {
         client.connect(creds + databaseName, function(err, database) {
           if (err) return cb(err);
           db = database;
-          log.group('MongoDB').log('Connected');
           cb(null);
         });
       },
       function(cb) {
         //sometimes only insert, don't delete data
         if (opt.update) {
-          log.log('Insert only - not dropping existing data.');
           return cb(null);
         }
         //delete old data
@@ -41,7 +39,6 @@ module.exports = function(opt, columns, moduleCallback) {
           if (collections.length) {
             db.collection(collectionName).drop(function(err) {
               if (err) return cb(err);
-              log.log('Deleted old collection.');
               cb(null);
             });
           } else {
@@ -54,7 +51,6 @@ module.exports = function(opt, columns, moduleCallback) {
         db.createCollection(collectionName, function(err, coll) {
           if (err) return cb(err);
           collection = coll;
-          log.log('Created collection (if not existing) ' + collectionName);
           cb(null);
         });
       },
@@ -122,7 +118,6 @@ module.exports = function(opt, columns, moduleCallback) {
       function(rowCount, indexes, cb) {
         //create indexes
         function makeIndex(i, callback) {
-          log.log('makeIndex: ' + i);
           var ndex = {};
           ndex[i] = 1;
           collection.createIndex(ndex, null, function(err) {
@@ -138,7 +133,6 @@ module.exports = function(opt, columns, moduleCallback) {
       },
       function(rowCount, cb) {
         collection.count(function(err, count) {
-          log.log('Success! Inserted ' + rowCount + ' documents. MongoDB says ' + databaseName + '.' + collectionName + ' now has ' + count + ' docs.');
           cb(null, count);
         });
       }
@@ -150,7 +144,6 @@ module.exports = function(opt, columns, moduleCallback) {
         return moduleCallback(e);
       }
       if (err) return moduleCallback(err);
-      log.group('Finished destination').log(timer.str());
       moduleCallback(null, rows, cols);
     });
 

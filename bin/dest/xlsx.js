@@ -33,7 +33,6 @@ module.exports = function(opt, columns, moduleCallback) {
   async.waterfall([
     //mkdirp
     function(cb) {
-      log.group('XLSX Destination').log('Creating directory for output in ' + opt.cfg.dirs.output + 'xlsx/' + dir);
       mkdirp(opt.cfg.dirs.output + 'xlsx/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
@@ -41,17 +40,14 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //read data
     function(cb) {
-      log.log('Reading data....');
       fs.readFile(opfile.filename, 'utf-8', function(err, data) {
         if (err) return cb(err);
         data = data.split('\n');
         data.shift();
-        log.log('');
         cb(null, data);
       });
     },
     function(data, cb) {
-      log.log('Split data into ' + data.length + ' rows and writing to workbook.');
       var first = true;
       data.forEach(function(row) {
         if (!first) rowsProcessed++;
@@ -63,7 +59,6 @@ module.exports = function(opt, columns, moduleCallback) {
     //write xlsx file
     function(cb) {
       workbook.xlsx.writeFile(filename).then(function() {
-        log.log('Created workbook ' + filename);
         cb(null);
       });
     }

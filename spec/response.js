@@ -13,7 +13,7 @@ function reset(up) {
     }
   };
   if (up) opt.update = true;
-  res = require('../../bin/response')(opt);
+  res = require('../bin/response')(opt);
   return true;
 }
 
