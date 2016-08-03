@@ -1,14 +1,10 @@
-var assert = require('chai').assert,
-  async = require('async');
-var bridge = require('../bin/bridge');
-var fs = require('fs');
+var async = require('async');
 var config = require('../config.json');
 var outputFile = require('../bin/output-file');
 var opt = {
   cfg: config,
   table: 'MOCK_DATA'
 };
-var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var destinations = require('../bin/list-dest')(config);
 var colParser = require('../bin/col-parser');
 var columns;
@@ -21,7 +17,6 @@ describe('Run all destinations with MOCK_DATA', function() {
   it('Overrides opfile without error', function(done) {
     outputFile(opt, function(err, op) {
       opt.opfile = op;
-      var r = null;
       //force to use MOCK_DATA as output-ed data
       opt.opfile.filename = __dirname.replace(/\\/g, '/') + '/assets/MOCK_DATA.txt';
       opt.opfile.twoLines(function(err, data) {
@@ -42,7 +37,7 @@ describe('Run all destinations with MOCK_DATA', function() {
       var cols = ['id', 'first_name', 'last_name', 'email', 'gender', 'ip_address', 'testing_GPA', 'testing_DATE', 'testing_TIMESTAMP', 'testing_DEC'];
       response.source.respond('ok', 1000, cols);
       done();
-    })
+    });
   });
   it('Runs every destination.', function() {
     async.each(destinations, function(dest) {
@@ -54,7 +49,7 @@ describe('Run all destinations with MOCK_DATA', function() {
             if (err) return done(err);
             response.destination.respond('ok', rows, columns);
             done(response.check());
-          })
+          });
         });
       });
     });

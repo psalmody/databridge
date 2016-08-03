@@ -30,7 +30,7 @@ describe('Testing config.json query binds', function() {
 
   it('Should remove bind.', function() {
     bind.remove(newBind);
-    cfg2 = JSON.parse(fs.readFileSync('config.json'));
+    var cfg2 = JSON.parse(fs.readFileSync('config.json'));
     assert(typeof(cfg2.defaultBindVars[newBind]) == 'undefined');
   });
 
