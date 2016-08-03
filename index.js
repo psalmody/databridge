@@ -84,6 +84,8 @@ else if (missingKeys(program, ['batch']) == false) {
     });
   }], function(err) {
     if (err) {
+      process.stdout.clearLine();
+      process.stdout.cursorTo(0);
       console.error(colors.red(err));
       program.help();
       return;
