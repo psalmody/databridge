@@ -1,96 +1,62 @@
 var assert = require('chai').assert,
   async = require('async');
-
 var bridge = require('../bin/bridge');
 var fs = require('fs');
 var config = require('../config.json');
-
-//change to file log for cleaner output
-config.logto = 'file';
-
+var outputFile = require('../bin/output-file');
+var opt = {
+  cfg: config,
+  table: 'MOCK_DATA'
+};
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
+var destinations = require('../bin/list-dest')(config);
+var colParser = require('../bin/col-parser');
+var columns;
+var Timer = require('../bin/timer');
+opt.log = require('../bin/log-dev')(Object.assign({}, config, opt));
+opt.timer = new Timer();
+var response = require('../bin/response')(Object.assign({}, config, opt));
 
-function getOneTable(src) {
-  var dir = fs.readdirSync(config.dirs.input + src);
-  var tables = dir.filter(function(v) {
-    if (v.indexOf('.') == 0) return false;
-    return true;
-  });
-  return removeFileExtension(tables[0]);
-}
-
-//if --destination passed, only test one
-//if --one= passed, only test one
-if (process.argv.join(' ').indexOf('--one=') !== -1) {
-  var destination = process.argv.join(' ').split('--one=')[1].split(' ')[0].replace(/-/g, '');
-  describe('Checking only one destination: ' + destination, function() {
-    this.timeout(30000);
-
-    var table = getOneTable('mssql');
-
-    it('Should run a bridge', function(done) {
-      bridge(config, {
-        source: 'mssql',
-        destination: destination,
-        binds: true,
-        task: true,
-        update: false,
-        table: table
-      }, function(err) {
-        if (err) return done(new Error(err.toString()));
+describe('Run all destinations with MOCK_DATA', function() {
+  it('Overrides opfile without error', function(done) {
+    outputFile(opt, function(err, op) {
+      opt.opfile = op;
+      var r = null;
+      //force to use MOCK_DATA as output-ed data
+      opt.opfile.filename = __dirname.replace(/\\/g, '/') + '/assets/MOCK_DATA.txt';
+      opt.opfile.twoLines(function(err, data) {
+        if (err) return done(err);
+        var test2Lines = [
+          'id_IND\tfirst_name\tlast_name\temail\tgender\tip_address\ttesting_GPA\ttesting_DATE\ttesting_TIMESTAMP\ttesting_DEC',
+          '1\tEmily\tFisher\tefisher0@google.de\tFemale\t161.31.81.163\t89.64\t11/15/2015\t1/29/2016\t89.62'
+        ];
+        if (data[0] !== test2Lines[0] || data[1] !== test2Lines[1]) return done(new Error('Data returned by opfile.twoLines() did not match MOCK_DATA.'));
         done();
       });
     });
   });
-} else {
-
-  //all destinations
-  describe('Testing all destinations', function() {
-    var destinations = require('../bin/list-dest')(config);
-
-    it('found some', function() {
-      assert(destinations.length !== 0, JSON.stringify(destinations));
-    });
-
-    describe('Checking them now ', function() {
-      it('Sets them up', function() {
-        async.each(destinations, function(file) {
-          describe('Checking destination ' + file, function() {
-            //at least 30 seconds
-            this.timeout(30000);
-
-            //remove file extension
-            var destination = removeFileExtension(file);
-
-            //which table?
-            var tableDir = fs.readdirSync(config.dirs.input + 'mssql');
-            var tables = tableDir.filter(function(value) {
-              if (value.indexOf('.') == 0) return false;
-              return true;
-            });
-
-            var table = removeFileExtension(tables[0]);
-
-            it('Should run a bridge', function(done) {
-              var options = {
-                source: 'mssql',
-                destination: destination,
-                binds: true,
-                task: true,
-                update: false,
-                table: table
-              };
-              bridge(config, options, function(err) {
-                if (err) return done(new Error(err.toString()));
-                done();
-              });
-            });
-          });
-
-        }, function(err) {
-          if (err) return assert(err);
+  it('Parsed columns without error', function(done) {
+    colParser(opt.opfile, function(err, parsedCols) {
+      if (err) return done(err);
+      columns = parsedCols;
+      var cols = ['id', 'first_name', 'last_name', 'email', 'gender', 'ip_address', 'testing_GPA', 'testing_DATE', 'testing_TIMESTAMP', 'testing_DEC'];
+      response.source.respond('ok', 1000, cols);
+      done();
+    })
+  });
+  it('Runs every destination.', function() {
+    async.each(destinations, function(dest) {
+      describe('Checking ' + dest, function() {
+        this.timeout(30000);
+        var destination = require('../bin/dest/' + dest);
+        it('Ran destination ' + dest, function(done) {
+          destination(opt, columns, function(err, rows, columns) {
+            if (err) return done(err);
+            response.destination.respond('ok', rows, columns);
+            done(response.check());
+          })
         });
       });
     });
   });
-}
+});
