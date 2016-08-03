@@ -1,6 +1,7 @@
 module.exports = function(opt, columns, moduleCallback) {
 
   var mssql = require('mssql'),
+    readline = require('readline'),
     creds = require(opt.cfg.dirs.creds + 'mssql'),
     async = require('async'),
     log = opt.log,
@@ -89,9 +90,36 @@ module.exports = function(opt, columns, moduleCallback) {
         cb(err);
       });
     },
-    //insert data with BULK INSERT - way faster
+    //create insert statement
     function(cb) {
-      var sql = 'USE ' + db + '; BULK INSERT ' + table + ' FROM \'' + opfile.filename + '\' WITH ( FIELDTERMINATOR=\'\t\', ROWTERMINATOR=\'\n\', FIRSTROW=2)';
+      var sql = 'INSERT INTO ' + table + ' ';
+      var cs = [];
+      var first = true;
+      columns.forEach(function(c) {
+        cs.push(c.name);
+      });
+      sql += ' ( ' + cs.join(', ') + ' ) VALUES ';
+      var lineReader = readline.createInterface({
+        input: opfile.createReadStream()
+      });
+      lineReader.on('error', function(err) {
+        return cb(err);
+      });
+      var insertLines = [];
+      lineReader.on('line', function(line) {
+        if (first) {
+          first = false;
+        } else {
+          insertLines.push(' ( "' + line.split('\t').join('", "') + '")');
+        }
+      });
+      lineReader.on('close', function() {
+        sql += insertLines.join(',');
+        cb(null, sql);
+      });
+    },
+    //insert
+    function(sql, cb) {
       new mssql.Request().query(sql).then(function() {
         log.log('BULK INSERT successful.');
         cb(null);
