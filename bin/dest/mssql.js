@@ -113,7 +113,6 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //insert
     function(sql, cb) {
-      require('fs').writeFileSync('temp.txt', sql);
       new mssql.Request().query(sql).then(function() {
         cb(null);
       }).catch(function(err) {

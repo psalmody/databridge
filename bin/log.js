@@ -35,8 +35,6 @@ module.exports = function(opt) {
     fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');
   });
 
-
-
   //log.error - includes Error! at beginning
   log.error = function(err) {
     if (first) {

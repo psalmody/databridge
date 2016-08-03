@@ -87,7 +87,7 @@ if (process.argv.join(' ').indexOf('--no-run') == -1) {
     it('Runs the batch without error.', function(done) {
       var runBridges = require('../bin/bridge-runner');
       runBridges(bridges, function(err) {
-        if (err) return done(err);
+        if (err) return done(new Error(err));
         done();
       });
     });

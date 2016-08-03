@@ -92,6 +92,7 @@ module.exports = function(config, opt, moduleCallback) {
             return cb(err);
           }
           response.source.respond('ok', rows, columns);
+          if (rows == 0) return cb('No data returned from source.');
           cb(null);
         });
       } catch (e) {
