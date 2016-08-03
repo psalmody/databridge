@@ -11,6 +11,7 @@ var columns;
 var Timer = require('../bin/timer');
 opt.log = require('../bin/log-dev')(Object.assign({}, config, opt));
 opt.timer = new Timer();
+opt.source = 'DB_TEST';
 var response = require('../bin/response')(Object.assign({}, config, opt));
 
 describe('Run all destinations with MOCK_DATA', function() {
@@ -25,7 +26,6 @@ describe('Run all destinations with MOCK_DATA', function() {
           'id_IND\tfirst_name\tlast_name\temail\tgender\tip_address\ttesting_GPA\ttesting_DATE\ttesting_TIMESTAMP\ttesting_DEC',
           '1\tEmily\tFisher\tefisher0@google.de\tFemale\t161.31.81.163\t89.64\t11/15/2015\t1/29/2016\t89.62'
         ];
-        console.log(test2Lines, data);
         if (data[0] !== test2Lines[0] || data[1] !== test2Lines[1]) return done(new Error('Data returned by opfile.twoLines() did not match MOCK_DATA.'));
         done();
       });
@@ -47,7 +47,7 @@ describe('Run all destinations with MOCK_DATA', function() {
         var destination = require('../bin/dest/' + dest);
         it('Ran destination ' + dest, function(done) {
           destination(opt, columns, function(err, rows, columns) {
-            if (err) return done(err);
+            if (err) return done(new Error(err));
             response.destination.respond('ok', rows, columns);
             var res = response.check();
             if (res === null) return done();
