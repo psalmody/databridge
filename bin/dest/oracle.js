@@ -19,11 +19,8 @@ module.exports = function(opt, columns, moduleCallback) {
       ndxs = [];
     for (var i = 0; i < columns.length; i++) {
       cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ');
-      if (columns[i].index) ndxs.push(' INDEX ' + columns[i].name + ' (' + columns[i].name + ') ');
     }
-    var sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ');
-    if (ndxs.length) sql += ', ' + ndxs.join(',');
-    sql += ' )';
+    var sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )';
     return sql;
   };
 
@@ -51,7 +48,6 @@ module.exports = function(opt, columns, moduleCallback) {
     function(cb) {
       if (opt.update) return cb(null); //don't drop table if update
       var sql = sqlTable();
-      console.log(sql);
       oracle.execute(sql, [], function(err, results) {
         if (err) return cb(err);
         cb(null);
@@ -75,7 +71,9 @@ module.exports = function(opt, columns, moduleCallback) {
         if (first) {
           first = false;
         } else {
-          sql += ' INTO ' + table + ' ( ' + cs.join(', ') + ' ) VALUES ( \'' + line.split('\t').join('\', \'') + '\' ) ';
+          var l = ' INTO ' + table + ' ( ' + cs.join(', ') + ' ) VALUES ( \'' + line.split('\t').join('\', \'') + '\' ) ';
+          var lf = l.replace(/(\'[0-9]+\/[0-9]+\/[0-9]+\')/g, "TO_DATE($1, 'MM/DD/YYYY')");
+          sql += lf;
         }
       });
       lineReader.on('close', function() {
@@ -85,17 +83,35 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //run query
     function(sql, cb) {
+      require('fs').writeFileSync('temp.txt', sql);
       oracle.execute(sql, [], function(err, results) {
         if (err) return cb(err);
         cb(null);
       })
+    },
+    //indexes
+    function(cb) {
+      var ndx = [];
+      columns.forEach(function(c) {
+        if (c.index) ndx.push(c.name);
+      });
+      async.each(ndx, function(n, cb2) {
+        var sql = 'CREATE INDEX ind_' + n + ' ON ' + table + '(' + n + ')';
+        oracle.execute(sql, [], function(err, results) {
+          if (err) return cb2(err);
+          cb2(null);
+        });
+      }, function(err) {
+        if (err) return cb(err);
+        cb(null);
+      });
     },
     //check number of inserted rows
     function(cb) {
       var sql = 'SELECT COUNT(*) AS RS FROM ' + table;
       oracle.execute(sql, [], function(err, results) {
         if (err) return cb(err);
-        rows = results.rows[0][0];
+        resRows = results.rows[0][0];
         cb(null);
       })
     },
@@ -103,7 +119,12 @@ module.exports = function(opt, columns, moduleCallback) {
     function(cb) {
       var schema = table.split('.')[0];
       var tableName = table.split('.')[1];
-      var sql = "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '" + tableName + "' AND OWNER = '" + schema + "'";
+      var sql;
+      if (table.split('.').length > 1) {
+        sql = "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '" + tableName + "' AND OWNER = '" + schema + "'";
+      } else {
+        sql = "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '" + table + "'";
+      };
       oracle.execute(sql, [], function(err, results) {
         if (err) return cb(err);
         results.rows.forEach(function(v) {
