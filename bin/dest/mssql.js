@@ -10,7 +10,6 @@ module.exports = function(opt, columns, moduleCallback) {
 
   var db = opt.source,
     //use default dbo unless schema in filenamenode_modules
-
     table = opt.table.indexOf('.') > -1 ? opt.table : 'dbo.' + opt.table,
     schema = table.split('.')[0];
 
@@ -35,7 +34,7 @@ module.exports = function(opt, columns, moduleCallback) {
       mssql.connect(creds).then(function() {
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Connect error: ' + err);
       });
     },
     //create database if necessary
@@ -46,7 +45,7 @@ module.exports = function(opt, columns, moduleCallback) {
         .then(function() {
           cb(null);
         }).catch(function(err) {
-          cb(err);
+          cb('Create db error: ' + err);
         });
     },
     //create schema if necessary
@@ -57,7 +56,7 @@ module.exports = function(opt, columns, moduleCallback) {
         .then(function() {
           cb(null);
         }).catch(function(err) {
-          cb(err);
+          cb('Create schema error: ' + err);
         });
     },
     //drop table if exists
@@ -69,7 +68,7 @@ module.exports = function(opt, columns, moduleCallback) {
       new mssql.Request().query(sql).then(function() {
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Drop table error: ' + err);
       });
     },
     //create table
@@ -79,12 +78,12 @@ module.exports = function(opt, columns, moduleCallback) {
       new mssql.Request().query('USE ' + db + ';' + sql).then(function() {
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Create table error: ' + err);
       });
     },
     //create insert statement
     function(cb) {
-      var sql = 'INSERT INTO ' + table + ' ';
+      var sql = 'USE ' + db + '; INSERT INTO ' + table + ' ';
       var cs = [];
       var first = true;
       columns.forEach(function(c) {
@@ -95,14 +94,16 @@ module.exports = function(opt, columns, moduleCallback) {
         input: opfile.createReadStream()
       });
       lineReader.on('error', function(err) {
-        return cb(err);
+        return cb('Readline error: ' + err);
       });
       var insertLines = [];
       lineReader.on('line', function(line) {
         if (first) {
           first = false;
         } else {
-          insertLines.push(' ( "' + line.split('\t').join('", "') + '")');
+          var l = " ('" + line.split("\t").join("', '") + "') ";
+          l = l.replace(/\'\'/g, "NULL").replace(/(\'[0-9]+\.[0-9]+\'|\'[0-9]\')/g, '$1');
+          insertLines.push(l);
         }
       });
       lineReader.on('close', function() {
@@ -112,10 +113,11 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //insert
     function(sql, cb) {
+      require('fs').writeFileSync('temp.txt', sql);
       new mssql.Request().query(sql).then(function() {
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Insert values error: ' + err);
       });
     },
     //check number of inserted rows
@@ -123,7 +125,7 @@ module.exports = function(opt, columns, moduleCallback) {
       new mssql.Request().query('USE ' + db + '; SELECT count(*) as rows FROM ' + table).then(function(recordset) {
         cb(null, recordset[0].rows);
       }).catch(function(err) {
-        cb(err);
+        cb('Check row number error: ' + err);
       });
     },
     function(rows, cb) {
