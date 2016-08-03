@@ -26,7 +26,6 @@ module.exports = function(opt, moduleCallback) {
       //read query
       function(cb) {
         var f = opt.cfg.dirs.input + opt.source + '/' + table + '.sql';
-        log.log(f);
         fs.readFile(f, 'utf8', function(err, data) {
           if (err) return cb('fs readFile error on input query: ' + err);
           cb(null, data);
@@ -34,11 +33,9 @@ module.exports = function(opt, moduleCallback) {
       },
       //format query and prompt for binds
       function(data, cb) {
-        log.group('Setup').log('Processing query ' + table);
         try {
           bindQuery(data, opt, function(err, sql, binds) {
             if (err) return cb(err);
-            log.group('Binds').log(JSON.stringify(binds));
             cb(null, sql);
           });
         } catch (e) {
@@ -47,7 +44,6 @@ module.exports = function(opt, moduleCallback) {
       },
       //run query
       function(sql, cb) {
-        log.group('oracle').log('Selecting data from oracle');
         oracle.execute(sql, [], {
           resultSet: true,
           prefetchRows: 10000
@@ -93,19 +89,12 @@ module.exports = function(opt, moduleCallback) {
                 return;
               }
 
-              log.log('Finish processing ' + rowsProcessed + ' rows');
-              log.log(timer.str());
-
               results.resultSet.close(function(err) {
                 if (err) return cb('Closing resultSet error: ' + err);
                 cb(null, rowsProcessed, columns);
-
               });
-
             });
           }
-
-
         });
       }
     ],
@@ -121,7 +110,6 @@ module.exports = function(opt, moduleCallback) {
         }
         return moduleCallback(err);
       }
-      log.group('Finished source').log(timer.str());
       moduleCallback(null, rows, columns);
     });
 };

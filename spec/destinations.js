@@ -12,6 +12,7 @@ var Timer = require('../bin/timer');
 opt.log = require('../bin/log-dev')(Object.assign({}, config, opt));
 opt.timer = new Timer();
 opt.source = 'DB_TEST';
+config.logto = 'test';
 var response = require('../bin/response')(Object.assign({}, config, opt));
 
 describe('Run all destinations with MOCK_DATA', function() {

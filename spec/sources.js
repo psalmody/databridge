@@ -1,11 +1,7 @@
 var async = require('async');
-
 var bridge = require('../bin/bridge');
 var fs = require('fs');
 var config = require('../config.json');
-//change to file log for cleaner test output
-config.logto = 'file';
-
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var assert = require('chai').assert;
 
@@ -18,6 +14,7 @@ function getOneTable(src) {
   return removeFileExtension(tables[0]);
 }
 
+config.logto = 'test';
 
 //if --one= passed, only test one
 if (process.argv.join(' ').indexOf('--one=') !== -1) {
@@ -42,8 +39,6 @@ if (process.argv.join(' ').indexOf('--one=') !== -1) {
     });
   });
 } else {
-
-
   // all sources
   describe('Testing all sources', function() {
     var sources = require('../bin/list-src')(config);

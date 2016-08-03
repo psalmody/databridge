@@ -27,7 +27,17 @@ module.exports = function(config, opt, moduleCallback) {
     return s;
   })();
   //setup log
-  opt.log = (opt.cfg.logto == 'console') ? require('./log-dev')(opt) : require('./log')(opt);
+  switch(opt.cfg.logto) {
+      case 'console':
+        opt.log = require('./log-dev')(opt);
+        break;
+      case 'file':
+        opt.log = require('./log')(opt);
+        break;
+      case 'test':
+        opt.log = require('./log-test')(opt);
+        break;
+  }
 
   //setup response object
   var response = require(opt.bin + 'response')(opt);
@@ -108,9 +118,7 @@ module.exports = function(config, opt, moduleCallback) {
       });
     }
   ], function(err) {
-    opt.log.group('Bridge').log('Finished a bridge');
     //try and clean up the output file and stop spinner
-
     try {
       opt.opfile.clean();
     } catch (e) {
