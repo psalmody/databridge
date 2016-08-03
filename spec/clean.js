@@ -1,7 +1,7 @@
 var assert = require('chai').assert,
   fs = require('fs'),
   mkdirp = require('mkdirp'),
-  config = require('../config.json'),
+  config = Object.assign({}, require('../config.json')),
   clean = require('../bin/clean');
 
 var dt = new Date(),

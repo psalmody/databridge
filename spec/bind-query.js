@@ -1,6 +1,6 @@
 var assert = require('chai').assert,
   bindQuery = require('../bin/bind-query'),
-  config = require('../config.json'),
+  config = Object.assign({}, require('../config.json')),
   Spinner = require('cli-spinner').Spinner,
   spinner = new Spinner('processing... %s');
 

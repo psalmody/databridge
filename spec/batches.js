@@ -1,6 +1,6 @@
 var assert = require('chai').assert,
   fs = require('fs'),
-  config = require('../config.json'),
+  config = Object.assign({}, require('../config.json')),
   async = require('async'),
   parseBatch = require('../bin/batch-parse');
 

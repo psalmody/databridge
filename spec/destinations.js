@@ -1,5 +1,5 @@
 var async = require('async');
-var config = require('../config.json');
+var config = Object.assign({}, require('../config.json'));
 var outputFile = require('../bin/output-file');
 var opt = {
   cfg: config,

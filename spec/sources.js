@@ -1,7 +1,7 @@
 var async = require('async');
 var bridge = require('../bin/bridge');
 var fs = require('fs');
-var config = require('../config.json');
+var config = Object.assign({}, require('../config.json'));
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var assert = require('chai').assert;
 
