@@ -59,7 +59,7 @@ module.exports = function(opt, moduleCallback) {
           vals.push(row[key]);
         }
         rowsProcessed++;
-        opfileWStream.write(vals.join('\t') + '\n');
+        opfileWStream.write(vals.join('\t').replace(/\n|\r/g,'') + '\n');
 
       });
       request.on('error', function(err) {
