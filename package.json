@@ -20,7 +20,7 @@
   "bugs": "https://github.com/psalmody/databridge/issues",
   "main": "index.js",
   "scripts": {
-    "test": "mocha spec --recursive",
+    "test": "mocha spec",
     "start": "node app",
     "clean": "node bin/clean",
     "service-start": "pm2 start pm2.json",
