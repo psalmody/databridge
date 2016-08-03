@@ -83,7 +83,6 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //run query
     function(sql, cb) {
-      require('fs').writeFileSync('temp.txt', sql);
       oracle.execute(sql, [], function(err, results) {
         if (err) return cb(err);
         cb(null);
