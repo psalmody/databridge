@@ -72,7 +72,16 @@ module.exports = function(opt, moduleCallback) {
               if (err) return cb('oracle resultSet.getRows() error: ' + err);
               if (rows.length) {
                 rowsProcessed += rows.length;
-                stringify(rows, {
+                var rs = [];
+                rows.forEach(function(r) {
+                  var s = [];
+                  r.forEach(function(t) {
+                    t = (typeof(t) == 'string') ? t.replace(/\n|\r/g, '') : t;
+                    s.push(t);
+                  });
+                  rs.push(s);
+                });
+                stringify(rs, {
                   delimiter: '\t'
                 }, function(err, csv) {
                   if (err) return cb('csv-stringify error: ' + err);
