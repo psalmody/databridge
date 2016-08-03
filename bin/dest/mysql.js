@@ -1,6 +1,7 @@
 module.exports = function(opt, columns, moduleCallback) {
 
   var mysql = require('mysql'),
+    readline = require('readline'),
     mySqlCreds = require(opt.cfg.dirs.creds + 'mysql'),
     db = mysql.createConnection(mySqlCreds),
     async = require('async'),
@@ -54,10 +55,35 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //load data into table
     function(cb) {
-      log.log('Loading data in opfile to MySQL');
-      var sql = 'LOAD DATA INFILE \'' + opfile.filename + '\' INTO TABLE ' + table + ' FIELDS TERMINATED BY \'\t\' ENCLOSED BY \'"\' LINES TERMINATED BY \'\n\' IGNORE 1 LINES ';
+      var sql = 'INSERT INTO ' + table + ' ';
+      var cs = [];
+      var first = true;
+      columns.forEach(function(c) {
+        cs.push(c.name);
+      });
+      sql += ' ( ' + cs.join(', ') + ' ) VALUES ';
+      var lineReader = readline.createInterface({
+        input: opfile.createReadStream()
+      });
+      lineReader.on('error', function(err) {
+        return cb(err);
+      });
+      var insertLines = [];
+      lineReader.on('line', function(line) {
+        if (first) {
+          first = false;
+        } else {
+          insertLines.push(' ( "' + line.split('\t').join('", "') + '")');
+        }
+      });
+      lineReader.on('close', function() {
+        sql += insertLines.join(',');
+        cb(null, sql);
+      });
+    },
+    function(sql, cb) {
       db.query(sql, function(err) {
-        if (err) return cb('Load data infile error: ' + err);
+        if (err) return cb('Insert data error: ' + err);
         cb(null);
       });
     },
