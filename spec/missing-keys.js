@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
 
-var missingKeys = require('../../bin/missing-keys');
+var missingKeys = require('../bin/missing-keys');
 
 var obj = {
   'one': 1,

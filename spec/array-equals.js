@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
 
-var arrayEquals = require('../../bin/array-equals');
+var arrayEquals = require('../bin/array-equals');
 
 var a = ['a', 'b', 'c', 'd', 1, 2, 3, 4];
 var b = ['a', 'b', 'c', 'd', 1, 2, 3, 4];
