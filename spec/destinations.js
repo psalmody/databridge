@@ -48,7 +48,9 @@ describe('Run all destinations with MOCK_DATA', function() {
           destination(opt, columns, function(err, rows, columns) {
             if (err) return done(err);
             response.destination.respond('ok', rows, columns);
-            done(response.check());
+            var res = response.check();
+            if (res === null) return done();
+            done(new Error(res));
           });
         });
       });
