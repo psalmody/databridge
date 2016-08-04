@@ -15,10 +15,11 @@
     "MySQL",
     "csv",
     "xlsx",
-    "excel"
+    "excel",
+    "sql server"
   ],
   "bugs": "https://github.com/psalmody/databridge/issues",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "mocha spec",
     "start": "node app",
