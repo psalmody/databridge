@@ -43,7 +43,7 @@ describe('Testing output-file', function() {
     opfile.twoLines(function(e, two) {
       if (e) return done(new Error(e));
       var lines = appendJson.split('\n');
-      assert(lines[0] == two[0] && lines[1] == two[1], 'Lines do not match. Expected:\n' + lines[0] + '\n'+ lines[1] + '\nReturned:\n' + two[0] + '\n' + two[1]);
+      assert(lines[0] == two[0] && lines[1] == two[1], 'Lines do not match. Expected:\n' + lines[0] + '\n' + lines[1] + '\nReturned:\n' + two[0] + '\n' + two[1]);
       done();
     });
   });
