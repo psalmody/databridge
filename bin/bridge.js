@@ -27,16 +27,16 @@ module.exports = function(config, opt, moduleCallback) {
     return s;
   })();
   //setup log
-  switch(opt.cfg.logto) {
-      case 'console':
-        opt.log = require('./log-dev')(opt);
-        break;
-      case 'file':
-        opt.log = require('./log')(opt);
-        break;
-      case 'test':
-        opt.log = require('./log-test')(opt);
-        break;
+  switch (opt.cfg.logto) {
+    case 'console':
+      opt.log = require('./log-dev')(opt);
+      break;
+    case 'file':
+      opt.log = require('./log')(opt);
+      break;
+    case 'test':
+      opt.log = require('./log-test')(opt);
+      break;
   }
 
   //setup response object

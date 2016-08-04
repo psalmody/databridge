@@ -1,8 +1,7 @@
 var assert = require('chai').assert,
   fs = require('fs'),
   config = Object.assign({}, require('../config.json')),
-  async = require('async'),
-  parseBatch = require('../bin/batch-parse');
+  async = require('async');
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 
@@ -12,7 +11,7 @@ var batches = fs.readdirSync(config.dirs.batches);
 
 //first test batches for required settings
 //and existing localSources/localDestinations/tables
-async.each(fs.readdirSync(config.dirs.batches), function(file) {
+async.each(batches, function(file) {
   var batch = removeFileExtension(file);
   describe('Checking batch ' + batch, function() {
     it('Contains source and destination and those localSources/localDestinations are installed.', function(done) {

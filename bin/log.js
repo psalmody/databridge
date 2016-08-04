@@ -23,7 +23,7 @@ module.exports = function(opt) {
   var filename = opt.cfg.dirs.logs + dir + '/' + batch + table + '.' + Math.round(Date.now() / 1000) + '.log.txt';
   var c = 0;
   //check if that file exists
-  while(fs.existsSync(filename)) {
+  while (fs.existsSync(filename)) {
     filename = filename.split('.log.txt')[0] + '-' + c + '.log.txt';
   }
   log.filename = filename;

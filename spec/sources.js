@@ -26,7 +26,7 @@ describe('Testing all sources', function() {
           it('Should run a bridge', function(done) {
             var testing = removeFileExtension(file);
             var source = require('../bin/src/' + testing);
-            var dirname = __dirname.replace(/\\/g,'/');
+            var dirname = __dirname.replace(/\\/g, '/');
             var opt = {
               cfg: {
                 dirs: {
