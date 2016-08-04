@@ -9,7 +9,7 @@ var destinations = require('../bin/list-dest')(config);
 var colParser = require('../bin/col-parser');
 var columns;
 var Timer = require('../bin/timer');
-opt.log = require('../bin/log-dev')(Object.assign({}, config, opt));
+opt.log = require('../bin/log-test')(Object.assign({}, config, opt));
 opt.timer = new Timer();
 opt.source = 'DB_TEST';
 config.logto = 'test';
