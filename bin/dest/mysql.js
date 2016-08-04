@@ -7,8 +7,7 @@ module.exports = function(opt, columns, moduleCallback) {
     async = require('async'),
     table = opt.source + '.' + opt.table.replace(/\./g, '_'),
     opfile = opt.opfile,
-    log = opt.log,
-    timer = opt.timer;
+    log = opt.log;
 
   function sqlTable() {
     var cols = [],

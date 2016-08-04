@@ -1,5 +1,5 @@
 //testing log - only output errors
-module.exports = function(opt) {
+module.exports = function() {
   var log = new Object();
   log.g = '';
   log.filename = false;
@@ -7,11 +7,11 @@ module.exports = function(opt) {
     console.error(err);
     return log;
   };
-  log.log = function(msg) {
+  log.log = function() {
     return log;
   };
-  log.group = function(str) {
+  log.group = function() {
     return log;
   };
   return log;
-}
+};

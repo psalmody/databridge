@@ -8,8 +8,6 @@ module.exports = function(opt, columns, moduleCallback) {
     collection,
     Stream = require('stream'),
     split = require('split'),
-    log = opt.log,
-    timer = opt.timer,
     opfile = opt.opfile,
     cols = [];
 

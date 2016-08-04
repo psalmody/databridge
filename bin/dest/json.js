@@ -12,8 +12,7 @@ module.exports = function(opt, columns, moduleCallback) {
     Stream = require('stream'),
     keys = [],
     split = require('split'),
-    opfile = opt.opfile,
-    log = opt.log;
+    opfile = opt.opfile;
 
   for (var i = 0; i < columns.length; i++) {
     keys.push(columns[i].name);

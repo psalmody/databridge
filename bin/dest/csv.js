@@ -14,9 +14,7 @@ module.exports = function(opt, columns, moduleCallback) {
     async = require('async'),
     Stream = require('stream'),
     split = require('split'),
-    log = opt.log,
-    opfile = opt.opfile,
-    timer = opt.timer;
+    opfile = opt.opfile;
 
   async.waterfall([
     function(cb) {

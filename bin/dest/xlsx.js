@@ -7,7 +7,6 @@ module.exports = function(opt, columns, moduleCallback) {
     Excel = require('exceljs'),
     async = require('async'),
     mkdirp = require('mkdirp'),
-    log = opt.log,
     opfile = opt.opfile,
     rowsProcessed = 0;
 
