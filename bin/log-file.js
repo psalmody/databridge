@@ -5,7 +5,7 @@
 
 
 //production log
-module.exports = function(opt) {
+module.exports = function(opt, fileExistsCallback) {
   var fs = require('graceful-fs'),
     mkdirp = require('mkdirp');
   //if batch, put logs inside additional folder to keep them together
@@ -26,6 +26,7 @@ module.exports = function(opt) {
   while (fs.existsSync(filename)) {
     filename = filename.split('.log.txt')[0] + '-' + c + '.log.txt';
   }
+  log.batch = batch;
   log.filename = filename;
 
   //use mkdirp to make log folders recursively if not existing
@@ -33,6 +34,7 @@ module.exports = function(opt) {
     if (err) return console.error(err);
     //log command line call
     fs.appendFileSync(log.filename, process.argv.join(' ') + '\n');
+    if (typeof(fileExistsCallback) === 'function') fileExistsCallback();
   });
 
   //log.error - includes Error! at beginning
