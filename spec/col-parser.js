@@ -1,6 +1,5 @@
 var colParser = require('../bin/col-parser');
 var fs = require('fs');
-var async = require('async');
 var assert = require('chai').assert;
 var dirname = __dirname.replace(/\\/g, '/') + '/';
 var opfile = {
@@ -14,45 +13,45 @@ var opfile = {
 };
 
 var expect = [{
-  "name": "id",
-  "type": "VARCHAR(255) NULL",
-  "index": true
+  'name': 'id',
+  'type': 'VARCHAR(255) NULL',
+  'index': true
 }, {
-  "name": "first_name",
-  "type": "VARCHAR(255) NULL",
-  "index": false
+  'name': 'first_name',
+  'type': 'VARCHAR(255) NULL',
+  'index': false
 }, {
-  "name": "last_name",
-  "type": "VARCHAR(255) NULL",
-  "index": false
+  'name': 'last_name',
+  'type': 'VARCHAR(255) NULL',
+  'index': false
 }, {
-  "name": "email",
-  "type": "VARCHAR(255) NULL",
-  "index": false
+  'name': 'email',
+  'type': 'VARCHAR(255) NULL',
+  'index': false
 }, {
-  "name": "gender",
-  "type": "VARCHAR(255) NULL",
-  "index": false
+  'name': 'gender',
+  'type': 'VARCHAR(255) NULL',
+  'index': false
 }, {
-  "name": "ip_address",
-  "type": "VARCHAR(255) NULL",
-  "index": false
+  'name': 'ip_address',
+  'type': 'VARCHAR(255) NULL',
+  'index': false
 }, {
-  "name": "testing_GPA",
-  "type": "DECIMAL(8,2) NULL",
-  "index": false
+  'name': 'testing_GPA',
+  'type': 'DECIMAL(8,2) NULL',
+  'index': false
 }, {
-  "name": "testing_DATE",
-  "type": "DATE NULL",
-  "index": false
+  'name': 'testing_DATE',
+  'type': 'DATE NULL',
+  'index': false
 }, {
-  "name": "testing_TIMESTAMP",
-  "type": "DATE NULL",
-  "index": false
+  'name': 'testing_TIMESTAMP',
+  'type': 'DATE NULL',
+  'index': false
 }, {
-  "name": "testing",
-  "type": "VARCHAR(255) NULL",
-  "index": false
+  'name': 'testing',
+  'type': 'VARCHAR(255) NULL',
+  'index': false
 }];
 
 describe('Testing colParser', function() {
