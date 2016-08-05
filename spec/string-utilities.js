@@ -20,4 +20,30 @@ describe('Testing string-utilities', function() {
       }, Error, 'Parameter');
     });
   });
+  describe('Testing cdDotDot', function() {
+    var cdd = stringUtilities.cdDotDot;
+    var path = require('path');
+    var expect = path.normalize(__dirname + '/../').replace(/\\/g, '/');
+    it('Returns error for nonexistent filename or directory.', function() {
+      var r = cdd(expect + '/asldkfjaklsdfjlaksjfklasjdflkasdjf/');
+      assert(r instanceof Error, 'Error not returned. Returned instead: ' + typeof(r));
+    });
+    it('Returns forward slash directories.', function() {
+      var r = cdd('c:\\www\\databridge');
+      assert(!(r instanceof Error), r.toString());
+      assert(r.indexOf('\\') == -1, r);
+    });
+    it('Bumps up one directory when given filename.', function() {
+      var r = cdd(expect + 'spec/string-utilities.js');
+      assert(r === expect, r);
+    });
+    it('Bumps up one directory when given dir w/ trailing slash.', function() {
+      var r = cdd(expect + 'spec/');
+      assert(r === expect, r);
+    });
+    it('Bumps up one directory when given dir w/o trailing slash.', function() {
+      var r = cdd(expect + 'spec');
+      assert(r === expect, r);
+    });
+  });
 });
