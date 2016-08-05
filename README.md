@@ -1,3 +1,4 @@
+[![npm](https://img.shields.io/npm/dt/databridge.svg?maxAge=2592000)](https://www.npmjs.com/package/databridge)
 [![Github All Releases](https://img.shields.io/github/downloads/psalmody/databridge/total.svg?maxAge=2592000?style=flat-square)](https://github.com/psalmody/databridge)
 [![GitHub stars](https://img.shields.io/github/stars/psalmody/databridge.svg?style=social&label=Star&maxAge=2592000?style=flat-square)](https://github.com/psalmody/databridge)
 [![Twitter Follow](https://img.shields.io/twitter/follow/psalmody.svg?style=social&label=Follow&maxAge=2592000?style=flat-square)](https://twitter.com/psalmody)
