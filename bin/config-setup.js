@@ -80,11 +80,12 @@ module.exports = function(dir, o, p, t) {
     });
     if (typeof(config.defaultBindVars) == 'undefined') return 'defaultBindVars not defined.';
     if (typeof(config.logto) == 'undefined') return 'logto not defined.';
+    if (['console','file'].indexOf(config.logto) === -1) return 'logto type ' + config.logto + 'is not allowed. File or console only.';
     if (typeof(config.schedule) == 'undefined') return 'schedule not defined.';
-    if (!fs.lstatSync(config.schedule).isFile()) return 'schedule file not a valid file at ' + config.schedule;
+    if (!fs.existsSync(config.schedule) || !fs.lstatSync(config.schedule).isFile()) return 'schedule file not a valid file at ' + config.schedule;
     var pm2 = pm2cfg.apps[0];
-    if (!fs.lstatSync(cdd(pm2.out_file)).isDirectory()) return 'pm2 error file directory not exist at ' + cdDotDot(pm2.out_file);
-    if (!fs.lstatSync(cdd(pm2.error_file)).isDirectory()) return 'pm2 error file directory not exist at ' + cdDotDot(pm2.error_file);
+    if (!fs.existsSync(cdd(pm2.out_file)) || !fs.lstatSync(cdd(pm2.out_file)).isDirectory()) return 'pm2 out file directory not exist at ' + cdd(pm2.out_file);
+    if (!fs.existsSync(cdd(pm2.error_file)) || !fs.lstatSync(cdd(pm2.error_file)).isDirectory()) return 'pm2 error file directory not exist at ' + cdd(pm2.error_file);
     return true;
   };
 
