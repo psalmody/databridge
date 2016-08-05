@@ -8,7 +8,6 @@ module.exports = function(opt, moduleCallback) {
     log = opt.log,
     bindQuery = require(opt.bin + 'bind-query'),
     opfile = opt.opfile,
-    timer = opt.timer,
     prependFile = require('prepend-file');
 
   async.waterfall([
@@ -27,7 +26,7 @@ module.exports = function(opt, moduleCallback) {
     },
     //format query and bind variables
     function(data, cb) {
-      bindQuery(data, opt, function(err, sql, binds) {
+      bindQuery(data, opt, function(err, sql) {
         if (err) return cb(err);
         cb(null, sql);
       });
@@ -54,8 +53,7 @@ module.exports = function(opt, moduleCallback) {
           vals.push(row[key]);
         }
         rowsProcessed++;
-        opfileWStream.write(vals.join('\t').replace(/\n|\r/g,'') + '\n');
-
+        opfileWStream.write(vals.join('\t').replace(/\n|\r/g, '') + '\n');
       });
       request.on('error', function(err) {
         cb(err);

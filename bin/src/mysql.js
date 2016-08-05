@@ -10,13 +10,12 @@ module.exports = function(opt, moduleCallback) {
     table = opt.table,
     opfile = opt.opfile,
     log = opt.log,
-    timer = opt.timer,
     bindQuery = require(opt.bin + 'bind-query'),
     query = fs.readFileSync(opt.cfg.dirs.input + opt.source + '/' + table + '.sql', 'utf-8');
 
   async.waterfall([
     function(cb) {
-      bindQuery(query, opt, function(err, sql, binds) {
+      bindQuery(query, opt, function(err, sql) {
         if (err) return cb(err);
         cb(null, sql);
       });

@@ -1,80 +1,81 @@
 var async = require('async');
-var bridge = require('../bin/bridge');
 var fs = require('fs');
 var config = Object.assign({}, require('../config.json'));
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var assert = require('chai').assert;
-
-function getOneTable(src) {
-  var dir = fs.readdirSync(config.dirs.input + src);
-  var tables = dir.filter(function(v) {
-    if (v.indexOf('.') == 0) return false;
-    return true;
-  });
-  return removeFileExtension(tables[0]);
-}
+var outputFile = require('../bin/output-file');
+var mkdirp = require('mkdirp');
 
 config.logto = 'test';
 
-//if --one= passed, only test one
-if (process.argv.join(' ').indexOf('--one=') !== -1) {
-  var source = process.argv.join(' ').split('--one=')[1].split(' ')[0].replace(/-/g, '');
-  describe('Checking only one source: ' + source, function() {
-    this.timeout(30000);
+// all sources
+describe('Testing all sources', function() {
+  var sources = require('../bin/list-src')(config);
 
-    var table = getOneTable(source);
-
-    it('Should run a bridge', function(done) {
-      bridge(config, {
-        source: source,
-        destination: 'csv',
-        binds: true,
-        task: true,
-        update: false,
-        table: table
-      }, function(err) {
-        if (err) return done(new Error(err.toString()));
-        done();
-      });
-    });
+  it('found some', function() {
+    assert(sources.length !== 0, JSON.stringify(sources));
   });
-} else {
-  // all sources
-  describe('Testing all sources', function() {
-    var sources = require('../bin/list-src')(config);
 
-    it('found some', function() {
-      assert(sources.length !== 0, JSON.stringify(sources));
-    });
+  describe('Checking them now', function() {
+    it('Sets them up', function() {
+      async.each(sources, function(file) {
+        describe('Checking source ' + file, function() {
+          //at least 30 seconds
+          this.timeout(30000);
 
-    describe('Checking them now', function() {
-      it('Sets them up', function() {
-        async.each(sources, function(file) {
-          describe('Checking source ' + file, function() {
-            //at least 30 seconds
-            this.timeout(30000);
+          it('Should run a bridge', function(done) {
+            var testing = removeFileExtension(file);
+            var source = require('../bin/src/' + testing);
+            var dirname = __dirname.replace(/\\/g, '/');
+            var opt = {
+              cfg: {
+                dirs: {
+                  output: dirname + '/assets/',
+                  input: dirname + '/assets/',
+                  creds: config.dirs.creds
+                }
+              },
+              bin: dirname + '/../bin/',
+              table: 'source_' + testing,
+              log: require('../bin/log-test')(),
+              source: testing
+            };
 
-            //remove file extension
-            var source = removeFileExtension(file);
-
-            var table = getOneTable(source);
-
-            it('Should run a bridge', function(done) {
-              bridge(config, {
-                source: source,
-                destination: 'csv',
-                binds: true,
-                task: true,
-                update: false,
-                table: table
-              }, function(err) {
-                if (err) return done(new Error(err.toString()));
-                done();
-              });
+            async.waterfall([
+              function(cb) {
+                mkdirp(opt.cfg.dirs.output, function(err) {
+                  if (err) return cb(err);
+                  assert(fs.existsSync(opt.cfg.dirs.output), 'Output folder not created. ' + opt.cfg.dirs.output);
+                  cb(null);
+                });
+              },
+              function(cb) {
+                outputFile(opt, function(err, opfile) {
+                  if (err) return cb(err);
+                  opt.opfile = opfile;
+                  cb(null);
+                });
+              },
+              function(cb) {
+                source(opt, function(err, rows, cs) {
+                  if (err) return cb(err);
+                  cb(null, rows, cs);
+                });
+              }
+            ], function(err, rows, cs) {
+              try {
+                opt.opfile.clean();
+              } catch (e) {
+                return done(e);
+              }
+              if (err) return done(new Error(err));
+              assert(rows == 2, '2 rows were not returned. Rows returned: ' + rows);
+              assert(cs[0] == 'ONE' && cs[1] == 'TWO' && cs[2] == 'THREE' && cs[3] == 'FOUR', 'Column names did not match. Source returned: ' + cs.toString());
+              done();
             });
           });
         });
       });
     });
   });
-}
+});

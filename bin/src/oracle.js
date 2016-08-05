@@ -10,8 +10,7 @@ module.exports = function(opt, moduleCallback) {
     log = opt.log,
     stringify = require('csv-stringify'),
     bindQuery = require(opt.bin + 'bind-query'),
-    opfile = opt.opfile,
-    timer = opt.timer;
+    opfile = opt.opfile;
 
 
   async.waterfall([
@@ -34,7 +33,7 @@ module.exports = function(opt, moduleCallback) {
       //format query and prompt for binds
       function(data, cb) {
         try {
-          bindQuery(data, opt, function(err, sql, binds) {
+          bindQuery(data, opt, function(err, sql) {
             if (err) return cb(err);
             cb(null, sql);
           });

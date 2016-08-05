@@ -7,7 +7,6 @@ module.exports = function(opt, columns, moduleCallback) {
     opfile = opt.opfile,
     table = opt.table,
     log = opt.log,
-    timer = opt.timer,
     resRows,
     resColumns = [],
     oracle;
@@ -15,14 +14,13 @@ module.exports = function(opt, columns, moduleCallback) {
   oracledb.autoCommit = true;
 
   function sqlTable() {
-    var cols = [],
-      ndxs = [];
+    var cols = [];
     for (var i = 0; i < columns.length; i++) {
       cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ');
     }
     var sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )';
     return sql;
-  };
+  }
 
   async.waterfall([
     //connect
@@ -31,14 +29,14 @@ module.exports = function(opt, columns, moduleCallback) {
         if (err) return cb(err);
         oracle = conn;
         cb(null);
-      })
+      });
     },
     //drop table if exists
     function(cb) {
       if (opt.update) {
         return cb(null);
       }
-      oracle.execute('DROP TABLE ' + table, [], function(err, results) {
+      oracle.execute('DROP TABLE ' + table, [], function(err) {
         //we expect an error if this is a new table
         if (err instanceof Error && err.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + err);
         cb(null);
@@ -48,7 +46,7 @@ module.exports = function(opt, columns, moduleCallback) {
     function(cb) {
       if (opt.update) return cb(null); //don't drop table if update
       var sql = sqlTable();
-      oracle.execute(sql, [], function(err, results) {
+      oracle.execute(sql, [], function(err) {
         if (err) return cb(err);
         cb(null);
       });
@@ -72,7 +70,7 @@ module.exports = function(opt, columns, moduleCallback) {
           first = false;
         } else {
           var l = ' INTO ' + table + ' ( ' + cs.join(', ') + ' ) VALUES ( \'' + line.split('\t').join('\', \'') + '\' ) ';
-          var lf = l.replace(/(\'[0-9]+\/[0-9]+\/[0-9]+\')/g, "TO_DATE($1, 'MM/DD/YYYY')");
+          var lf = l.replace(/(\'[0-9]+\/[0-9]+\/[0-9]+\')/g, 'TO_DATE($1, \'MM/DD/YYYY\')');
           sql += lf;
         }
       });
@@ -83,10 +81,10 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //run query
     function(sql, cb) {
-      oracle.execute(sql, [], function(err, results) {
+      oracle.execute(sql, [], function(err) {
         if (err) return cb(err);
         cb(null);
-      })
+      });
     },
     //indexes
     function(cb) {
@@ -96,7 +94,7 @@ module.exports = function(opt, columns, moduleCallback) {
       });
       async.each(ndx, function(n, cb2) {
         var sql = 'CREATE INDEX ind_' + n + ' ON ' + table + '(' + n + ')';
-        oracle.execute(sql, [], function(err, results) {
+        oracle.execute(sql, [], function(err) {
           if (err) return cb2(err);
           cb2(null);
         });
@@ -112,7 +110,7 @@ module.exports = function(opt, columns, moduleCallback) {
         if (err) return cb(err);
         resRows = results.rows[0][0];
         cb(null);
-      })
+      });
     },
     //check columns
     function(cb) {
@@ -120,17 +118,17 @@ module.exports = function(opt, columns, moduleCallback) {
       var tableName = table.split('.')[1];
       var sql;
       if (table.split('.').length > 1) {
-        sql = "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '" + tableName + "' AND OWNER = '" + schema + "'";
+        sql = 'SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = \'' + tableName + '\' AND OWNER = \'' + schema + '\'';
       } else {
-        sql = "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '" + table + "'";
-      };
+        sql = 'SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = \'' + table + '\'';
+      }
       oracle.execute(sql, [], function(err, results) {
         if (err) return cb(err);
         results.rows.forEach(function(v) {
           resColumns.push(v);
         });
         cb(null);
-      })
+      });
     }
   ], function(err) {
     //disconnect
@@ -138,11 +136,11 @@ module.exports = function(opt, columns, moduleCallback) {
       oracle.close(function(err) {
         if (err) log.error(err);
         return;
-      })
+      });
     } catch (e) {
       log.error(e);
     }
     if (err) return moduleCallback(err);
     moduleCallback(null, resRows, resColumns);
-  })
-}
+  });
+};

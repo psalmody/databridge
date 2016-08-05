@@ -1,8 +1,7 @@
 var assert = require('chai').assert,
   fs = require('fs'),
   config = Object.assign({}, require('../config.json')),
-  async = require('async'),
-  parseBatch = require('../bin/batch-parse');
+  async = require('async');
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 
@@ -12,7 +11,7 @@ var batches = fs.readdirSync(config.dirs.batches);
 
 //first test batches for required settings
 //and existing localSources/localDestinations/tables
-async.each(fs.readdirSync(config.dirs.batches), function(file) {
+async.each(batches, function(file) {
   var batch = removeFileExtension(file);
   describe('Checking batch ' + batch, function() {
     it('Contains source and destination and those localSources/localDestinations are installed.', function(done) {
@@ -69,27 +68,3 @@ async.each(fs.readdirSync(config.dirs.batches), function(file) {
 
   });
 });
-
-
-if (process.argv.join(' ').indexOf('--no-run') == -1) {
-  //then run one batch
-  var batch = batches[batches.length - 1];
-  var batchSettings = require(config.dirs.batches + batch);
-  describe('Running last batch in directory: ' + batch, function() {
-    //this could take a couple of minutes at least
-    this.timeout(120000);
-    var bridges = parseBatch('testBatch', config.dirs.batches + batch);
-    it('Generates same number of bridges as batch settings.', function(done) {
-      assert(batchSettings.length == bridges.length, 'Length of batches and generated bridges does not match. Batches: ' + batchSettings.length + ', bridges: ' + bridges.length);
-      done();
-    });
-
-    it('Runs the batch without error.', function(done) {
-      var runBridges = require('../bin/bridge-runner');
-      runBridges(bridges, function(err) {
-        if (err) return done(new Error(err));
-        done();
-      });
-    });
-  });
-}

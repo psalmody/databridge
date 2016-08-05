@@ -5,8 +5,7 @@ module.exports = function(opt, columns, moduleCallback) {
     creds = require(opt.cfg.dirs.creds + 'mssql'),
     async = require('async'),
     log = opt.log,
-    opfile = opt.opfile,
-    timer = opt.timer;
+    opfile = opt.opfile;
 
   var db = opt.source,
     //use default dbo unless schema in filenamenode_modules
@@ -25,8 +24,6 @@ module.exports = function(opt, columns, moduleCallback) {
     sql += ' )';
     return sql;
   }
-
-  ///var log = console;
 
   async.waterfall([
     //connect
@@ -101,8 +98,8 @@ module.exports = function(opt, columns, moduleCallback) {
         if (first) {
           first = false;
         } else {
-          var l = " ('" + line.split("\t").join("', '") + "') ";
-          l = l.replace(/\'\'/g, "NULL").replace(/(\'[0-9]+\.[0-9]+\'|\'[0-9]\')/g, '$1');
+          var l = ' (\'' + line.split('\t').join('\', \'') + '\') ';
+          l = l.replace(/\'\'/g, 'NULL').replace(/(\'[0-9]+\.[0-9]+\'|\'[0-9]\')/g, '$1');
           insertLines.push(l);
         }
       });
