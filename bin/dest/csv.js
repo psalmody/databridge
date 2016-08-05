@@ -14,22 +14,16 @@ module.exports = function(opt, columns, moduleCallback) {
     async = require('async'),
     Stream = require('stream'),
     split = require('split'),
-    log = opt.log,
-    opfile = opt.opfile,
-    timer = opt.timer;
-
-  log.group('CSV Output').log('Copying file from opfile tmp to output/csv/' + dir + '/' + table + '.csv');
+    opfile = opt.opfile;
 
   async.waterfall([
     function(cb) {
-      log.log('Creating directory');
       mkdirp(opt.cfg.dirs.output + 'csv/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
       });
     },
     function(cb) {
-      log.log('Streaming from opfile to new csv file...');
       var rowsProcessed = 0;
       //get columns
       var first = true;
@@ -63,7 +57,6 @@ module.exports = function(opt, columns, moduleCallback) {
     }
   ], function(err, rows, columns) {
     if (err) return moduleCallback(err);
-    log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
   });
 };

@@ -38,7 +38,8 @@ schedules.forEach(function(sched) {
               if (err) return console.error(err);
             });
           } catch (e) {
-            console.log('Error in single bridge:', e);
+            console.log('Error in single bridge:');
+            console.trace(e);
           }
 
           break;

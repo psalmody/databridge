@@ -8,20 +8,17 @@ module.exports = function(opt, moduleCallback) {
     log = opt.log,
     bindQuery = require(opt.bin + 'bind-query'),
     opfile = opt.opfile,
-    timer = opt.timer,
     prependFile = require('prepend-file');
 
   async.waterfall([
     function(cb) {
       mssql.connect(creds).then(function() {
-        log.group('mssql').log('connected to mssql');
         cb(null);
       }).catch(function(err) {
         cb(err);
       });
     },
     function(cb) {
-      log.group('readquery');
       fs.readFile(opt.cfg.dirs.input + opt.source + '/' + table + '.sql', 'utf-8', function(err, data) {
         if (err) return cb('fs readFile error on input query: ' + err);
         cb(null, data);
@@ -29,16 +26,13 @@ module.exports = function(opt, moduleCallback) {
     },
     //format query and bind variables
     function(data, cb) {
-      log.group('Setup').log('Processing query ' + table);
-      bindQuery(data, opt, function(err, sql, binds) {
-        log.group('Binds').log(JSON.stringify(binds));
+      bindQuery(data, opt, function(err, sql) {
         if (err) return cb(err);
         cb(null, sql);
       });
     },
     //run query
     function(sql, cb) {
-      log.group('mssql').log('Running query from MSSQL');
       var request = new mssql.Request();
 
       var columns = '';
@@ -59,15 +53,13 @@ module.exports = function(opt, moduleCallback) {
           vals.push(row[key]);
         }
         rowsProcessed++;
-        opfileWStream.write(vals.join('\t') + '\n');
-
+        opfileWStream.write(vals.join('\t').replace(/\n|\r/g, '') + '\n');
       });
       request.on('error', function(err) {
         cb(err);
       });
       request.on('done', function() {
         opfileWStream.end();
-        log.log('Rows: ' + rowsProcessed);
         cb(null, rowsProcessed, columns);
       });
     },
@@ -75,7 +67,6 @@ module.exports = function(opt, moduleCallback) {
     function(rows, columns, cb) {
       prependFile(opfile.filename, columns, function(err) {
         if (err) return cb(err);
-        log.log('prependFile columns');
         cb(null, rows, columns.replace(/\n/g, '').split('\t'));
       });
     }
@@ -89,7 +80,6 @@ module.exports = function(opt, moduleCallback) {
       log.error(err);
       return moduleCallback(err);
     }
-    log.group('Finished source').log(timer.str());
     moduleCallback(null, rows, columns);
   });
 };

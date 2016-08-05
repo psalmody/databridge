@@ -6,7 +6,6 @@ module.exports = function(opt) {
     log = new Object(),
     colors = require('colors');
 
-  console.log('Development log in use.');
   log.g = '';
   log.filename = false;
   log.error = function(err) {

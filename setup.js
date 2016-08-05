@@ -205,5 +205,5 @@ async.waterfall([
 ], function(err) {
   if (err) return console.error(colors.red(err));
   console.log(colors.green('Success!'), 'Created config file at ' + filename);
-  console.log('Recommend testing config file with:\n\n  mocha spec\\config');
+  console.log('Recommend testing config file with:\n\n  mocha spec/config');
 });

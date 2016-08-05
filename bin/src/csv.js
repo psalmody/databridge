@@ -8,7 +8,6 @@ module.exports = function(opt, moduleCallback) {
     file = opt.table,
     filename = opt.cfg.dirs.input + 'csv/' + file + '.csv',
     log = opt.log,
-    timer = opt.timer,
     opfile = opt.opfile;
 
   async.waterfall([
@@ -59,7 +58,6 @@ module.exports = function(opt, moduleCallback) {
       log.error(err);
       return moduleCallback(err);
     }
-    log.group('Finished source').log(timer.str());
     moduleCallback(null, rows, columns);
   });
 

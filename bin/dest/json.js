@@ -12,25 +12,20 @@ module.exports = function(opt, columns, moduleCallback) {
     Stream = require('stream'),
     keys = [],
     split = require('split'),
-    opfile = opt.opfile,
-    log = opt.log;
+    opfile = opt.opfile;
 
   for (var i = 0; i < columns.length; i++) {
     keys.push(columns[i].name);
   }
 
-  log.group('JSON Output').log('Copying file (and transformining) to output/json/' + dir + '/' + table + '.json');
-
   async.waterfall([
     function(cb) {
-      log.log('Making directory for json output.');
       mkdirp(opt.cfg.dirs.output + 'json/' + dir, function(err) {
         if (err) return cb(err);
         cb(null);
       });
     },
     function(cb) {
-      log.log('Transforming data from opfile to json.');
       var first = true;
       var second = true;
       var rowsProcessed = 0;

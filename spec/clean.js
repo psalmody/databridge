@@ -1,8 +1,8 @@
 var assert = require('chai').assert,
   fs = require('fs'),
   mkdirp = require('mkdirp'),
-  config = require('../../config.json'),
-  clean = require('../../bin/clean');
+  config = Object.assign({}, require('../config.json')),
+  clean = require('../bin/clean');
 
 var dt = new Date(),
   dtdir = dt.getFullYear() + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + ('0' + dt.getDate()).slice(-2);

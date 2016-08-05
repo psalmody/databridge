@@ -1,15 +1,14 @@
 module.exports = function(opt, columns, moduleCallback) {
 
   var mssql = require('mssql'),
+    readline = require('readline'),
     creds = require(opt.cfg.dirs.creds + 'mssql'),
     async = require('async'),
     log = opt.log,
-    opfile = opt.opfile,
-    timer = opt.timer;
+    opfile = opt.opfile;
 
   var db = opt.source,
     //use default dbo unless schema in filenamenode_modules
-
     table = opt.table.indexOf('.') > -1 ? opt.table : 'dbo.' + opt.table,
     schema = table.split('.')[0];
 
@@ -26,16 +25,13 @@ module.exports = function(opt, columns, moduleCallback) {
     return sql;
   }
 
-  ///var log = console;
-
   async.waterfall([
     //connect
     function(cb) {
       mssql.connect(creds).then(function() {
-        log.group('mssql').log('connected to mssql');
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Connect error: ' + err);
       });
     },
     //create database if necessary
@@ -44,10 +40,9 @@ module.exports = function(opt, columns, moduleCallback) {
         .Request()
         .query('if not exists(select * from sys.databases where name = \'' + db + '\') create database ' + db)
         .then(function() {
-          log.log('created database (if not exists)');
           cb(null);
         }).catch(function(err) {
-          cb(err);
+          cb('Create db error: ' + err);
         });
     },
     //create schema if necessary
@@ -56,56 +51,77 @@ module.exports = function(opt, columns, moduleCallback) {
         .Request()
         .query('USE ' + db + '; IF (SCHEMA_ID(\'' + schema + '\') IS NULL ) BEGIN EXEC (\'CREATE SCHEMA [' + schema + '] AUTHORIZATION [dbo]\') END')
         .then(function() {
-          log.log('created schema ' + schema + ' (if not exists)');
           cb(null);
         }).catch(function(err) {
-          cb(err);
+          cb('Create schema error: ' + err);
         });
     },
     //drop table if exists
     function(cb) {
       if (opt.update) {
-        log.log('Insert only - not dropping table.');
         return cb(null); //don't drop table if update option
       }
       var sql = 'USE ' + db + '; IF OBJECT_ID(\'' + table + '\') IS NOT NULL DROP TABLE ' + table;
       new mssql.Request().query(sql).then(function() {
-        log.log('dropped table (if exists)');
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Drop table error: ' + err);
       });
     },
     //create table
     function(cb) {
       if (opt.update) return cb(null); //don't drop table if update option
-      log.group('Table setup').log('creating table');
       var sql = sqlTable();
-      log.log(sql);
       new mssql.Request().query('USE ' + db + ';' + sql).then(function() {
-        log.log('Created table');
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Create table error: ' + err);
       });
     },
-    //insert data with BULK INSERT - way faster
+    //create insert statement
     function(cb) {
-      var sql = 'USE ' + db + '; BULK INSERT ' + table + ' FROM \'' + opfile.filename + '\' WITH ( FIELDTERMINATOR=\'\t\', ROWTERMINATOR=\'\n\', FIRSTROW=2)';
+      var sql = 'USE ' + db + '; INSERT INTO ' + table + ' ';
+      var cs = [];
+      var first = true;
+      columns.forEach(function(c) {
+        cs.push(c.name);
+      });
+      sql += ' ( ' + cs.join(', ') + ' ) VALUES ';
+      var lineReader = readline.createInterface({
+        input: opfile.createReadStream()
+      });
+      lineReader.on('error', function(err) {
+        return cb('Readline error: ' + err);
+      });
+      var insertLines = [];
+      lineReader.on('line', function(line) {
+        if (first) {
+          first = false;
+        } else {
+          var l = ' (\'' + line.split('\t').join('\', \'') + '\') ';
+          l = l.replace(/\'\'/g, 'NULL').replace(/(\'[0-9]+\.[0-9]+\'|\'[0-9]\')/g, '$1');
+          insertLines.push(l);
+        }
+      });
+      lineReader.on('close', function() {
+        sql += insertLines.join(',');
+        cb(null, sql);
+      });
+    },
+    //insert
+    function(sql, cb) {
       new mssql.Request().query(sql).then(function() {
-        log.log('BULK INSERT successful.');
         cb(null);
       }).catch(function(err) {
-        cb(err);
+        cb('Insert values error: ' + err);
       });
     },
     //check number of inserted rows
     function(cb) {
       new mssql.Request().query('USE ' + db + '; SELECT count(*) as rows FROM ' + table).then(function(recordset) {
-        log.log('imported ' + recordset[0].rows);
         cb(null, recordset[0].rows);
       }).catch(function(err) {
-        cb(err);
+        cb('Check row number error: ' + err);
       });
     },
     function(rows, cb) {
@@ -127,10 +143,9 @@ module.exports = function(opt, columns, moduleCallback) {
     try {
       mssql.close();
     } catch (e) {
-      console.error(e);
+      log.error(e);
     }
     if (err) return moduleCallback(err);
-    log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
   });
 };

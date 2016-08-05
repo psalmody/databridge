@@ -1,13 +1,13 @@
 module.exports = function(opt, columns, moduleCallback) {
 
   var mysql = require('mysql'),
+    readline = require('readline'),
     mySqlCreds = require(opt.cfg.dirs.creds + 'mysql'),
     db = mysql.createConnection(mySqlCreds),
     async = require('async'),
     table = opt.source + '.' + opt.table.replace(/\./g, '_'),
     opfile = opt.opfile,
-    log = opt.log,
-    timer = opt.timer;
+    log = opt.log;
 
   function sqlTable() {
     var cols = [],
@@ -33,7 +33,6 @@ module.exports = function(opt, columns, moduleCallback) {
     //drop existing table
     function(cb) {
       if (opt.update) {
-        log.log('Insert only - not dropping table.');
         return cb(null); //don't drop table if update option
       }
       db.query('DROP TABLE IF EXISTS ' + table, function(err) {
@@ -44,9 +43,7 @@ module.exports = function(opt, columns, moduleCallback) {
     //create new table
     function(cb) {
       if (opt.update) return cb(null); //don't drop table if update option
-      log.group('Table setup').log('Dropped table, setting new.');
       var sql = sqlTable();
-      log.log(sql);
       db.query(sql, function(err) {
         if (err) return cb(err);
         cb(null);
@@ -54,10 +51,35 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //load data into table
     function(cb) {
-      log.log('Loading data in opfile to MySQL');
-      var sql = 'LOAD DATA INFILE \'' + opfile.filename + '\' INTO TABLE ' + table + ' FIELDS TERMINATED BY \'\t\' ENCLOSED BY \'"\' LINES TERMINATED BY \'\n\' IGNORE 1 LINES ';
+      var sql = 'INSERT INTO ' + table + ' ';
+      var cs = [];
+      var first = true;
+      columns.forEach(function(c) {
+        cs.push(c.name);
+      });
+      sql += ' ( ' + cs.join(', ') + ' ) VALUES ';
+      var lineReader = readline.createInterface({
+        input: opfile.createReadStream()
+      });
+      lineReader.on('error', function(err) {
+        return cb(err);
+      });
+      var insertLines = [];
+      lineReader.on('line', function(line) {
+        if (first) {
+          first = false;
+        } else {
+          insertLines.push(' ( "' + line.split('\t').join('", "') + '")');
+        }
+      });
+      lineReader.on('close', function() {
+        sql += insertLines.join(',');
+        cb(null, sql);
+      });
+    },
+    function(sql, cb) {
       db.query(sql, function(err) {
-        if (err) return cb('Load data infile error: ' + err);
+        if (err) return cb('Insert data error: ' + err);
         cb(null);
       });
     },
@@ -65,7 +87,6 @@ module.exports = function(opt, columns, moduleCallback) {
     function(cb) {
       db.query('SELECT count(*) as rows FROM ' + table, function(err, result) {
         if (err) return cb('SELECT COUNT(*) err: ' + err);
-        log.log('Successfully loaded ' + result[0].rows + ' rows into MySQL.');
         cb(null, result[0].rows);
       });
     },
@@ -90,7 +111,6 @@ module.exports = function(opt, columns, moduleCallback) {
       log.error(err);
       return moduleCallback(err);
     }
-    log.group('Finished destination').log(timer.str());
     moduleCallback(null, rows, columns);
   });
 };

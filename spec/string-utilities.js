@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var stringUtilities = require('../../bin/string-utilities');
+var stringUtilities = require('../bin/string-utilities');
 
 describe('Testing string-utilities', function() {
   describe('Testing removeFileExtension', function() {

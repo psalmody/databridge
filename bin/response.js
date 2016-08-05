@@ -53,7 +53,7 @@ module.exports = function(opt) {
       if (typeof(obj.destination.columns) == 'undefined') return ['Destination didn\'t respond with any columns.', obj.destination.name];
       var sCol = obj.source.columns.join('').replace(/_IND| |_DEC/gi, '');
       var dCol = obj.destination.columns.join('').replace(/_IND| |_DEC/gi, '');
-      if (sCol !== dCol) return ['Column mismatch.', obj.source.columns, obj.destination.columns];
+      if (sCol.toUpperCase() !== dCol.toUpperCase()) return ['Column mismatch.', obj.source.columns, obj.destination.columns];
       if (opt.update && (obj.source.rows > obj.destination.rows)) return ['Update specified but destination says it has less rows than source.', obj.source.rows, obj.destination.rows];
       if (typeof(opt.update) == 'undefined' && obj.source.rows !== obj.destination.rows) return ['Row mismatch.', obj.source.rows, obj.destination.rows];
       //if no problems, return true
