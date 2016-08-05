@@ -46,7 +46,6 @@
     "mssql": "^3.3.0",
     "mysql": "^2.11.1",
     "node-schedule": "^1.1.1",
-    "oracledb": "^1.10.1",
     "prompt": "^1.0.0",
     "rimraf": "^2.5.4",
     "split": "^1.0.0"

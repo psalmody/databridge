@@ -10,42 +10,7 @@ deployment-specific data handling.
 
 ## Installation
 
-Clone the project and install / run setup:
-
-```shell
-git clone https://github.com/psalmody/databridge.git
-cd databridge
-npm install
-```
-
-Put data files or queries in `config.dirs.input` in a directory named after the source.
-
-E.g. `<...>/local/mssql/query.sql`
-
-## Configuration Defaults
-
-```js
-{
-  "dirs": {
-    "batches": "c:/databridge/local/batches/",
-    "creds": "c:/databridge/local/creds/",
-    "destinations": "c:/databridge/local/destinations/",
-    "input": "c:/databridge/local/input/",
-    "logs": "c:/databridge/local/logs/",
-    "output": "c:/databridge/local/output/",
-    "sources": "c:/databridge/local/sources/"
-  },
-  "logto": "console", //console or file
-  "defaultBindVars": {
-    ... //system-wide defaults for query bind variables
-  },
-  "schedule": "c:/databridge/local/schedule.json",
-  "service": {
-    "name": "dataBridge", //name of the service
-    "log": "c:/databridge/local/logs/schedule.log.txt"
-  }
-}
-```
+See [INSTALL](https://github.com/psalmody/databridge/blob/master/INSTALL.md).
 
 ## <a name="clusage"></a> Command-Line Usage
 
