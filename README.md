@@ -18,7 +18,8 @@ See [INSTALL](https://github.com/psalmody/databridge/blob/master/INSTALL.md).
 Run bridge or batch. In project directory at command-line:
 
 ```shell
-node . --help
+node app --help
+npm start -- --help
 ```
 
 Re-setup:
