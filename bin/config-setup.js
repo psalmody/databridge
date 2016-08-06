@@ -12,10 +12,10 @@ module.exports = function(dir, o, p, t) {
 
   var cleanDir = function(d) {
     return path.normalize(d).replace(/\\|\/\//g, '/');
-  }
+  };
 
   //file append for testing
-  var t = (typeof(t) == 'undefined') ? '' : t;
+  t = (typeof(t) == 'undefined') ? '' : t;
 
   //default config options
   var defaultCfg = {
@@ -58,12 +58,12 @@ module.exports = function(dir, o, p, t) {
   var save = function() {
     try {
       fs.writeFileSync(dirname + '/' + t + 'config.json', JSON.stringify(config, null, 2));
-    } catch(e) {
+    } catch (e) {
       return e;
     }
     try {
       fs.writeFileSync(dirname + '/' + t + 'pm2.json', JSON.stringify(pm2cfg, null, 2));
-    } catch(e) {
+    } catch (e) {
       return e;
     }
     return true;
@@ -80,7 +80,7 @@ module.exports = function(dir, o, p, t) {
     });
     if (typeof(config.defaultBindVars) == 'undefined') return 'defaultBindVars not defined.';
     if (typeof(config.logto) == 'undefined') return 'logto not defined.';
-    if (['console','file'].indexOf(config.logto) === -1) return 'logto type ' + config.logto + 'is not allowed. File or console only.';
+    if (['console', 'file'].indexOf(config.logto) === -1) return 'logto type ' + config.logto + 'is not allowed. File or console only.';
     if (typeof(config.schedule) == 'undefined') return 'schedule not defined.';
     if (!fs.existsSync(config.schedule) || !fs.lstatSync(config.schedule).isFile()) return 'schedule file not a valid file at ' + config.schedule;
     var pm2 = pm2cfg.apps[0];
@@ -94,5 +94,5 @@ module.exports = function(dir, o, p, t) {
     pm2Config: pm2cfg,
     save: save,
     valid: valid
-  }
-}
+  };
+};

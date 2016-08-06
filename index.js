@@ -14,6 +14,6 @@ db.list = {
   dest: require('./bin/list-dest'),
   tables: require('./bin/list-tables'),
   batches: require('./bin/list-batches')
-}
+};
 
 module.exports = db;

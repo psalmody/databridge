@@ -5,12 +5,10 @@
 
 var program = require('./bin/cli'),
   colors = require('colors'),
-  fs = require('fs'),
   bridge = require('./bin/bridge'),
   missingKeys = require('./bin/missing-keys'),
   runBridges = require('./bin/bridge-runner'),
-  config = require('./config.json'),
-  removeFileExtension = require('./bin/string-utilities').removeFileExtension;
+  config = require('./config.json');
 
 //show valid tables
 if (missingKeys(program, ['source', 'table', 'show']) == false) {
@@ -20,7 +18,7 @@ if (missingKeys(program, ['source', 'table', 'show']) == false) {
     tables.forEach(function(t) {
       console.log('    ' + t);
     });
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
 }

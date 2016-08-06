@@ -26,8 +26,8 @@ describe('Test config setup methods.', function() {
   });
   it('Saves config files and they match returned config.', function() {
     newCfg.save();
-    var newConfigFile = fs.readFileSync('./t-config.json','utf8').replace(/\n/g, '');
-    var newPm2File = fs.readFileSync('./t-pm2.json','utf8').replace(/\n/g, '');
+    var newConfigFile = fs.readFileSync('./t-config.json', 'utf8').replace(/\n/g, '');
+    var newPm2File = fs.readFileSync('./t-pm2.json', 'utf8').replace(/\n/g, '');
     var jsonNewCfg = JSON.stringify(newCfg.config, null, 2).replace(/\n/g, '');
     var jsonNewPm2 = JSON.stringify(newCfg.pm2Config, null, 2).replace(/\n/g, '');
     assert(jsonNewCfg === newConfigFile, 'New config file does not match generated file. Expected:\n' + jsonNewCfg + '\nReturned:\n' + newConfigFile);
@@ -35,7 +35,7 @@ describe('Test config setup methods.', function() {
     fs.unlinkSync('./t-config.json');
     fs.unlinkSync('./t-pm2.json');
     assert(!fs.existsSync('./t-config.json'), 'Could not clean up test config.json.');
-    assert(!fs.existsSync('./t-pm2.json'), 'Could not clean up test pm2.json.')
+    assert(!fs.existsSync('./t-pm2.json'), 'Could not clean up test pm2.json.');
   });
 
 });

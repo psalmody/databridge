@@ -31,7 +31,10 @@ var questions = [{
 
 inquirer.prompt(questions).then(function(a) {
   var binds = (fs.existsSync('./config.json')) ? require('./config').defaultBindVars : {};
-  var config = configSetup(a.defaultDir, {logto: a.logto, defaultBindVars: binds});
+  var config = configSetup(a.defaultDir, {
+    logto: a.logto,
+    defaultBindVars: binds
+  });
   var v = config.valid();
   if (v === true) {
     var r = config.save();

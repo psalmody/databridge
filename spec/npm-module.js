@@ -25,7 +25,7 @@ describe('Testing databridge module exposure', function() {
   it('list src/dest/tables/batches', function() {
     assert(typeof(db.list) !== 'undefined', 'list not defined');
     assert(typeof(db.list) == 'object', 'list not an object');
-    var lists = ['src','dest','tables','batches'];
+    var lists = ['src', 'dest', 'tables', 'batches'];
     lists.forEach(function(l) {
       assert(typeof(db.list[l]) !== 'undefined', 'list.' + l + ' not defined');
       assert(typeof(db.list[l]) == 'function', 'list.' + l + ' not a function');

@@ -8,4 +8,4 @@ module.exports = function() {
     arr.push(noExt(f));
   });
   return arr;
-}
+};

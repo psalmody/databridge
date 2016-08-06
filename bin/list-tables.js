@@ -9,4 +9,4 @@ module.exports = function(source) {
     arr.push(noExt(f));
   });
   return arr;
-}
+};
