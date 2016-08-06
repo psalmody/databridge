@@ -3,7 +3,7 @@ var program = require('commander'),
 
 var newline = '\n                                 ';
 program.version(pkg.version)
-  .usage('[options]')
+  .usage('[options] or npm start -- [options]')
   .option('-s, --source [source]', 'Specify source from bin/sources/. ')
   .option('-t, --table [table]', 'Specify query or input file name (no file extension). ' + newline + 'Try: -s <source> -h for a list of inputs.')
   .option('-d, --destination [destination]', 'Specify destination from bin/destinations/. ')
@@ -11,7 +11,7 @@ program.version(pkg.version)
   .option('-b, --binds', 'Use default binds from input/binds.js rather than prompting ' + newline + '(applies to some sources only).')
   .option('-k, --task', 'This command is a schedule task or piping to output file.' + newline + 'Don\'t generate processing spinner.')
   .option('-c, --batch [batch]', 'Run json [batch] from batches/')
-  .option('-u, --update', 'Update table (insert data only) don\'t overwrite ' + newline + 'existing table or update table structure (for database destinations).')
+  .option('-u, --update', 'Update table (insert data only) don\'t overwrite ' + newline + 'existing table or update table structure ' + newline + '(for database destinations).')
   .on('--help', function() {
     console.log('  Examples: ');
     console.log('');
@@ -19,7 +19,7 @@ program.version(pkg.version)
     console.log('    > node app -s oracle -t employees -d mysql');
     console.log('');
     console.log('    Show all valid sources:');
-    console.log('    > node app -hs');
+    console.log('    > npm start -- -hs');
     console.log('');
     console.log('    Show all valid destinations:');
     console.log('    > node app -hd');
