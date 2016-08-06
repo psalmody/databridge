@@ -1,6 +1,6 @@
 {
   "name": "databridge",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",
   "keywords": [
     "data",
@@ -15,7 +15,8 @@
     "MySQL",
     "csv",
     "xlsx",
-    "excel"
+    "excel",
+    "sql server"
   ],
   "bugs": "https://github.com/psalmody/databridge/issues",
   "main": "index.js",
