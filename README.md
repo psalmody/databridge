@@ -13,6 +13,19 @@ deployment-specific data handling.
 
 See [INSTALL](https://github.com/psalmody/databridge/blob/master/INSTALL.md).
 
+## Node usage
+
+```shell
+npm install databridge --save
+```
+
+In node:
+```
+var databridge = require('databridge');
+```
+
+See `index.js` for exposed models.
+
 ## <a name="clusage"></a> Command-Line Usage
 
 Run bridge or batch. In project directory at command-line:
