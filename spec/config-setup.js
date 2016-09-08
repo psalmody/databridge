@@ -1,7 +1,7 @@
 var cdDotDot = require('../bin/string-utilities').cdDotDot;
 var assert = require('chai').assert;
 var fs = require('fs');
-var config = JSON.parse(fs.readFileSync('../config.json'));
+var config = JSON.parse(fs.readFileSync('config.json'));
 var setup = require('../bin/config-setup');
 var defaultDir = cdDotDot(config.dirs.batches);
 var newCfg = setup(defaultDir, undefined, undefined, 't-');
