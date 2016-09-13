@@ -83,6 +83,7 @@ module.exports = function(opt, columns, moduleCallback) {
       var sql = 'USE ' + db + '; INSERT INTO ' + table + ' ';
       var cs = [];
       var first = true;
+      var counter = 0;
       columns.forEach(function(c) {
         cs.push(c.name);
       });
@@ -104,16 +105,26 @@ module.exports = function(opt, columns, moduleCallback) {
         }
       });
       lineReader.on('close', function() {
-        sql += insertLines.join(',');
-        cb(null, sql);
+        cb(null, sql, insertLines);
       });
     },
-    //insert
-    function(sql, cb) {
-      new mssql.Request().query(sql).then(function() {
+    //insert lines
+    function(sql, lines, cb) {
+      var batchCount = Math.ceil(lines.length/500);
+      var arr = [];
+      for(var i=0; i<batchCount; i++) {
+        arr.push(i+1);
+      }
+      async.map(arr, function(i, callback) {
+        var stmt = sql + lines.slice(i*500-500,i*500).join(', ');
+        new mssql.Request().query(stmt).then(function() {
+          callback(null);
+        }).catch(function(err) {
+          callback('Insert values error: ' + err);
+        });
+      }, function(err) {
+        if (err) return cb(err);
         cb(null);
-      }).catch(function(err) {
-        cb('Insert values error: ' + err);
       });
     },
     //check number of inserted rows
