@@ -87,11 +87,7 @@ else if (missingKeys(program, ['batch']) == false) {
       process.stdout.clearLine();
       process.stdout.cursorTo(0);
       console.error(colors.red(err));
-      program.help();
       return;
     }
-    //only echo responses with development
-    //TODO handle logging only this way #3 #4
-    //if (config.logto == 'console') console.log(responses);
   });
 }
