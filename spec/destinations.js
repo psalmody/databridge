@@ -41,7 +41,7 @@ describe('Run all destinations with MOCK_DATA', function() {
       done();
     });
   });
-  it('Runs every destination.', function() {
+  it('Runs every destination', function() {
     async.each(destinations, function(dest) {
       describe('Checking ' + dest, function() {
         this.timeout(30000);
