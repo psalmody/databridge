@@ -99,7 +99,7 @@ module.exports = function(opt, columns, moduleCallback) {
         if (first) {
           first = false;
         } else {
-          var l = ' (\'' + line.split('\t').join('\', \'') + '\') ';
+          var l = ' (\'' + line.replace(/\'/g,'').split('\t').join('\', \'') + '\') ';
           l = l.replace(/\'\'/g, 'NULL').replace(/(\'[0-9]+\.[0-9]+\'|\'[0-9]\')/g, '$1');
           insertLines.push(l);
         }
