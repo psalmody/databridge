@@ -29,7 +29,7 @@ describe('Testing string-utilities', function() {
       assert(r instanceof Error, 'Error not returned. Returned instead: ' + typeof(r));
     });
     it('Returns forward slash directories.', function() {
-      var r = cdd('c:\\www\\databridge');
+      var r = cdd(__dirname.replace(/\//g,'\\'));
       assert(!(r instanceof Error), r.toString());
       assert(r.indexOf('\\') == -1, r);
     });
