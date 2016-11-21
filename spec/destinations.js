@@ -27,7 +27,7 @@ describe('Run all destinations with MOCK_DATA', function() {
           'id_IND\tfirst_name\tlast_name\temail\tgender\tip_address\ttesting_GPA\ttesting_DATE\ttesting_TIMESTAMP\ttesting_DEC',
           '1\tEmily\tFisher\tefisher0@google.de\tFemale\t161.31.81.163\t89.64\t11/15/2015\t1/29/2016\t89.62'
         ];
-        if (data[0] !== test2Lines[0] || data[1] !== test2Lines[1]) return done(new Error('Data returned by opfile.twoLines() did not match MOCK_DATA.'));
+        if (data[0] !== test2Lines[0] || data[1] !== test2Lines[1]) return done(new Error('Data returned by opfile.twoLines() did not match MOCK_DATA.\n' + data.toString() + test2Lines.toString()));
         done();
       });
     });
@@ -41,7 +41,7 @@ describe('Run all destinations with MOCK_DATA', function() {
       done();
     });
   });
-  it('Runs every destination.', function() {
+  it('Runs every destination', function() {
     async.each(destinations, function(dest) {
       describe('Checking ' + dest, function() {
         this.timeout(30000);

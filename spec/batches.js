@@ -5,9 +5,15 @@ var assert = require('chai').assert,
 
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 
-var localSources = fs.readdirSync(config.dirs.sources);
-var localDestinations = fs.readdirSync(config.dirs.destinations);
-var batches = fs.readdirSync(config.dirs.batches);
+var localSources = fs.readdirSync(config.dirs.sources).filter(function(f) {
+  return f.indexOf('.') !== 0;
+});
+var localDestinations = fs.readdirSync(config.dirs.destinations).filter(function(f) {
+  return f.indexOf('.') !== 0;
+});
+var batches = fs.readdirSync(config.dirs.batches).filter(function(f) {
+  return f.indexOf('.') !== 0;
+});
 
 //first test batches for required settings
 //and existing localSources/localDestinations/tables

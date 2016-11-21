@@ -37,7 +37,7 @@ module.exports = function(opt, moduleCallback) {
         }
         //TODO only replace , outside "" using some kind
         // of regex like /(,)(?=(?:[^"]|"[^"]*")*$)/g
-        var data = chunk.toString().replace(/,/g, '\t').replace(/\r/g, '');
+        var data = chunk.toString().replace(/,/g, '\t').replace(/\r|\'/g, '');
         this.push(data + '\n');
         done();
       };

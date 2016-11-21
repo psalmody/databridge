@@ -6,7 +6,7 @@ var opfile = {
   twoLines: function(callback) {
     fs.readFile(dirname + 'assets/MOCK_DATA.txt', 'utf-8', function(err, data) {
       if (err) return callback(err);
-      var two = data.split('\n').slice(0, 2);
+      var two = data.replace(/\r/g,'').split('\n').slice(0, 2);
       callback(null, two);
     });
   }

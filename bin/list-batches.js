@@ -3,7 +3,9 @@ module.exports = function() {
   var config = require('../config');
   var noExt = require('./string-utilities').removeFileExtension;
   var arr = [];
-  var files = fs.readdirSync(config.dirs.batches);
+  var files = fs.readdirSync(config.dirs.batches).filter(function(f) {
+    return f.indexOf('.') !== 0;
+  });
   files.forEach(function(f) {
     arr.push(noExt(f));
   });
