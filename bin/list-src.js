@@ -3,8 +3,12 @@
  */
 module.exports = function(cfg) {
   var fs = require('fs'),
-    i = fs.readdirSync('./bin/src'),
-    l = fs.readdirSync(cfg.dirs.sources);
+    i = fs.readdirSync('./bin/src').filter(function(f) {
+      return f.indexOf('.') !== 0;
+    }),
+    l = fs.readdirSync(cfg.dirs.sources).filter(function(f) {
+      return f.indexOf('.') !== 0;
+    });
 
   var noExt = require('./string-utilities').removeFileExtension;
 
