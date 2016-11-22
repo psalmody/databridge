@@ -144,6 +144,10 @@ Example `schedule.json` file:
   "source": "xlsx",
   "destination": "mssql",
   "table": "employees.ferpa_certified"
+}, {
+  "type": "script",
+  "name": "name of script inside input directory, file extension",
+  "cron": "0 1 * * *"
 }]
 ```
 
