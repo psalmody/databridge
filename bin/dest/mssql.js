@@ -83,7 +83,6 @@ module.exports = function(opt, columns, moduleCallback) {
       var sql = 'USE ' + db + '; INSERT INTO ' + table + ' ';
       var cs = [];
       var first = true;
-      var counter = 0;
       columns.forEach(function(c) {
         cs.push(c.name);
       });

@@ -36,9 +36,9 @@ async.each(batches, function(file) {
         //check destination exists
         if (localDestinations.indexOf(bridge.destination + '.js') == -1) {
           //if no local, try requiring
-          try {
-            require('databridge-destination-' + bridge.destination);
-          } catch (e) {
+
+          var destination = fs.existsSync('./bin/dest/' + bridge.destination + '.js') ? require('../bin/dest/' + bridge.destination) : require(config.dirs.destinations + bridge.destination);
+          if (!(destination instanceof Function)) {
             ok = false;
             bad = bridge;
             badIndex = index + ' destination not installed';
@@ -55,15 +55,15 @@ async.each(batches, function(file) {
         //check source exists
         if (localSources.indexOf(bridge.source + '.js') == -1) {
           //if no local, try requiring
-          try {
-            require('databridge-source-' + bridge.source);
-          } catch (e) {
+
+          var source = fs.existsSync('./bin/src/' + bridge.source + '.js') ? require('../bin/src/' + bridge.source) : require(config.dirs.sources + bridge.source);
+          if (!(source instanceof Function))
             ok = false;
-            bad = bridge;
-            badIndex = index + ' source not installed';
-            return false;
-          }
+          bad = bridge;
+          badIndex = index + ' source not installed';
+          return false;
         }
+
 
         return true;
       });

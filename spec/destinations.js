@@ -9,6 +9,7 @@ var destinations = require('../bin/list-dest')(config);
 var colParser = require('../bin/col-parser');
 var columns;
 var Timer = require('../bin/timer');
+var fs = require('fs');
 opt.log = require('../bin/log-test')(Object.assign({}, config, opt));
 opt.timer = new Timer();
 opt.source = 'DB_TEST';
@@ -45,7 +46,7 @@ describe('Run all destinations with MOCK_DATA', function() {
     async.each(destinations, function(dest) {
       describe('Checking ' + dest, function() {
         this.timeout(30000);
-        var destination = require('../bin/dest/' + dest);
+        var destination = fs.existsSync('./bin/dest/'+dest+'.js') ? require('../bin/dest/' + dest) : require(config.dirs.destinations + dest);
         it('Ran destination ' + dest, function(done) {
           destination(opt, columns, function(err, rows, columns) {
             if (err) return done(new Error(err));
