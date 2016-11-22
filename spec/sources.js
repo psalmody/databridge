@@ -25,7 +25,7 @@ describe('Testing all sources', function() {
 
           it('Should run a bridge', function(done) {
             var testing = removeFileExtension(file);
-            var source = require('../bin/src/' + testing);
+            var source = fs.existsSync('./bin/src/'+testing+'.js') ? require('../bin/src/' + testing) : require(config.dirs.sources + testing);
             var dirname = __dirname.replace(/\\/g, '/');
             var opt = {
               cfg: {
