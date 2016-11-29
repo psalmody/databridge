@@ -15,6 +15,9 @@ var batches = fs.readdirSync(config.dirs.batches).filter(function(f) {
   return f.indexOf('.') !== 0;
 });
 
+//don't throw errors if there are no batches setup
+if (batches.length === 0) return;
+
 //first test batches for required settings
 //and existing localSources/localDestinations/tables
 async.each(batches, function(file) {
