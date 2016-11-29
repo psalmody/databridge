@@ -49,6 +49,13 @@ module.exports = function(opt, columns, moduleCallback) {
         cb(null);
       });
     },
+    //sql_mode to blank
+    function(cb) {
+      db.query("SET sql_mode = ''", function(err) {
+        if (err) return cb('SET sql_mode error: ' + err);
+        cb(null);
+      });
+    },
     //load data into table
     function(cb) {
       var sql = 'INSERT INTO ' + table + ' ';
