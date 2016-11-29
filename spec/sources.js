@@ -1,6 +1,7 @@
 var async = require('async');
 var fs = require('fs');
 var config = Object.assign({}, require('../config.json'));
+config.TESTING = true;
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var assert = require('chai').assert;
 var outputFile = require('../bin/output-file');

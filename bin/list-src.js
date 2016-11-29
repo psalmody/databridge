@@ -12,7 +12,7 @@ module.exports = function(cfg) {
 
   var noExt = require('./string-utilities').removeFileExtension;
 
-  var a = i.concat(l);
+  var a = cfg.TESTING == true ? i : i.concat(l);
 
   var s = [];
 
