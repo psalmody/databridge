@@ -1,13 +1,11 @@
 //allows require('databridge') after npm install databridge
 
-var fs = require('fs');
 var db = new Object();
-
 var cfg;
 
 try {
   cfg = require('./config');
-} catch(e) {
+} catch (e) {
   cfg = null;
 }
 

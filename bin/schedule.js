@@ -51,11 +51,11 @@ schedules.forEach(function(sched) {
             script(config, sched, function(err) {
               if (err) return console.error(err);
             });
-          } catch(e) {
+          } catch (e) {
             console.log('Error in script:');
             console.trace(e);
           }
-        break;
+          break;
       }
     });
   } catch (e) {

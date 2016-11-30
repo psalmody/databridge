@@ -19,8 +19,9 @@ module.exports = function(batchName, batchFile) {
     //assume it's a bridge, not a script
     if (Object.keys(b).indexOf('type') === -1) b.type = 'bridge';
     //handle script type
+    var fn;
     if (options.type == 'script') {
-      var fn = (function() {
+      fn = (function() {
         var script = require(config.dirs.input + b.name);
         return function(responses, cb) {
           script(config, b, function(err, response) {
@@ -32,7 +33,7 @@ module.exports = function(batchName, batchFile) {
         };
       })(b);
     } else if (options.type == 'bridge') {
-      var fn = (function() {
+      fn = (function() {
         return function(responses, cb) {
           bridge(config, b, function(err, response) {
             if (err) return cb(err);

@@ -51,7 +51,7 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //sql_mode to blank
     function(cb) {
-      db.query("SET sql_mode = ''", function(err) {
+      db.query('SET sql_mode = \'\'', function(err) {
         if (err) return cb('SET sql_mode error: ' + err);
         cb(null);
       });
