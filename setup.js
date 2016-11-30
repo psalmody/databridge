@@ -38,7 +38,7 @@ inquirer.prompt(questions).then(function(a) {
   var v = config.valid();
   if (v === true) {
     var r = config.save();
-    if (r === true) return console.log('Saved config.');
+    if (r === true) return console.log('\nSaved config.\n\nIf you intend to connect to Oracle database, you can now:\n\n  npm install oracledb\n\nFor more information on oracledb install see:\n  https://github.com/psalmody/databridge/blob/master/INSTALL.md#oracle');
     console.log(r.toString());
   } else {
     console.log('Weird... the config tester said:\n  ' + v);
