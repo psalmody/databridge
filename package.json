@@ -58,6 +58,7 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-jsbeautifier": "^0.2.12",
     "grunt-lineending": "^1.0.0",
-    "grunt-prettify": "^0.4.0"
+    "grunt-prettify": "^0.4.0",
+    "mock-stdin": "^0.3.1"
   }
 }
