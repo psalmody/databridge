@@ -1,6 +1,9 @@
-/**
- * lists installed sources
- */
+ /** 
+  * bin/list-src - lists installed sources
+  *
+  * @param  {object} cfg config.json
+  * @return {array}     available sources
+  */
 module.exports = function(cfg) {
   var fs = require('fs'),
     i = fs.readdirSync('./bin/src').filter(function(f) {

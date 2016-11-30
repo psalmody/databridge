@@ -1,5 +1,8 @@
 /**
- * list installed destinations
+ * bin/list-dest - lists installed destinations
+ *
+ * @param  {object} cfg config.json
+ * @return {array}     available destinations
  */
 module.exports = function(cfg) {
   var fs = require('fs'),

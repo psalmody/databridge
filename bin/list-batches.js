@@ -1,3 +1,8 @@
+/**
+ * bin/list-batches - get list of available batches
+ *
+ * @return {array}  list of available batches
+ */
 module.exports = function() {
   var fs = require('fs');
   var config = require('../config');

@@ -1,4 +1,10 @@
-//batches should return an array of bridge functions to run
+/**
+ * batch-parse - batches should return an array of bridge functions to run
+ *
+ * @param  {string} batchName name of the batch (for logging/output folder)
+ * @param  {string} batchFile path of the json batch file
+ * @return {array}           array of bridge functions to run
+ */
 module.exports = function(batchName, batchFile) {
   var batch = require(batchFile);
   var bridge = require('./bridge');

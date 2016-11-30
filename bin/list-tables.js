@@ -1,3 +1,9 @@
+/**
+ * module - description
+ *
+ * @param  {string} source name of source
+ * @return {array}        all available "tables" for source
+ */
 module.exports = function(source) {
   if (typeof(source) == 'undefined' || source.trim() == '') return 'Error. No source defined.';
   var fs = require('fs');

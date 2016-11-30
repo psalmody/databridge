@@ -1,3 +1,18 @@
+/**
+ * config-setup - Used to setup config file
+ *
+ * @param  {string} dir base directory for local installation files
+ * @param  {object} o   object passed here overrides any defaults
+ * @param  {object} p   used to override standard pm2 log file schedule.log
+ *                      should be object: {error_file: ..., out_file: ...}
+ * @param  {string} t   for mocha tests only
+ * @return {object}     {
+ *                         config: config, //config object
+ *                         pm2Config: pm2cfg, //pm2 config object
+ *                         save: save, //function to save config file
+ *                         valid: valid //function to check if valid config
+ *                      }
+ */
 module.exports = function(dir, o, p, t) {
 
   var path = require('path');
