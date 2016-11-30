@@ -1,11 +1,16 @@
 //allows require('databridge') after npm install databridge
 
-var fs = require('fs');
-
 var db = new Object();
+var cfg;
+
+try {
+  cfg = require('./config');
+} catch (e) {
+  cfg = null;
+}
 
 db.setupConfig = require('./bin/config-setup');
-db.config = (fs.existsSync('./config.json')) ? require('./config') : null;
+db.config = cfg;
 db.bridge = require('./bin/bridge');
 db.batchParse = require('./bin/batch-parse');
 db.bridgeRunner = require('./bin/bridge-runner');

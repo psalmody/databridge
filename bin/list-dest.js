@@ -1,5 +1,8 @@
 /**
- * list installed destinations
+ * bin/list-dest - lists installed destinations
+ *
+ * @param  {object} cfg config.json
+ * @return {array}     available destinations
  */
 module.exports = function(cfg) {
   var fs = require('fs'),
@@ -12,7 +15,7 @@ module.exports = function(cfg) {
 
   var noExt = require('./string-utilities').removeFileExtension;
 
-  var a = i.concat(l);
+  var a = cfg.TESTING == true ? i : i.concat(l);
 
   var s = [];
 

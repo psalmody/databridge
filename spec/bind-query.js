@@ -2,7 +2,8 @@ var assert = require('chai').assert,
   bindQuery = require('../bin/bind-query'),
   config = Object.assign({}, require('../config.json')),
   Spinner = require('cli-spinner').Spinner,
-  spinner = new Spinner('processing... %s');
+  spinner = new Spinner('processing... %s'),
+  stdin = require('mock-stdin').stdin();
 
 //override spinner.start()
 spinner.start = function() {
@@ -53,6 +54,16 @@ describe('Testing bind-query', function() {
   });
   describe('Testing using prompted variables use defaults and bind_variable_two = 2 within 10 seconds.', function() {
     it('Prompts for unfound variables and gives possible default values.', function(done) {
+      //wait for time and enter
+      setTimeout(function() {
+        stdin.send('\n');
+      }, 1000);
+      setTimeout(function() {
+        stdin.send('2\n');
+      }, 1500);
+      setTimeout(function() {
+        stdin.send('\n');
+      }, 2000);
       this.timeout(10000);
       bindQuery(sql, opt2, function(err, newsql) {
         if (err) return assert(false, err);
@@ -63,6 +74,16 @@ describe('Testing bind-query', function() {
   });
   describe('testing using ALL prompted variables no defaults. Enter uno, 2, three within 10 seconds.', function() {
     it('Prompts for variables when none have been provided.', function(done) {
+      //wait for time and enter
+      setTimeout(function() {
+        stdin.send('uno\n');
+      }, 1000);
+      setTimeout(function() {
+        stdin.send('2\n');
+      }, 1500);
+      setTimeout(function() {
+        stdin.send('three\n');
+      }, 2000);
       this.timeout(10000);
       bindQuery(sql, opt3, function(err, newsql) {
         if (err) return assert(false, err);

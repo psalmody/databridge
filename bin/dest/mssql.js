@@ -98,7 +98,7 @@ module.exports = function(opt, columns, moduleCallback) {
         if (first) {
           first = false;
         } else {
-          var l = ' (\'' + line.replace(/\'/g,'').split('\t').join('\', \'') + '\') ';
+          var l = ' (\'' + line.replace(/\'/g, '').split('\t').join('\', \'') + '\') ';
           l = l.replace(/\'\'/g, 'NULL').replace(/(\'[0-9]+\.[0-9]+\'|\'[0-9]\')/g, '$1');
           insertLines.push(l);
         }
@@ -109,13 +109,13 @@ module.exports = function(opt, columns, moduleCallback) {
     },
     //insert lines
     function(sql, lines, cb) {
-      var batchCount = Math.ceil(lines.length/500);
+      var batchCount = Math.ceil(lines.length / 500);
       var arr = [];
-      for(var i=0; i<batchCount; i++) {
-        arr.push(i+1);
+      for (var i = 0; i < batchCount; i++) {
+        arr.push(i + 1);
       }
       async.map(arr, function(i, callback) {
-        var stmt = sql + lines.slice(i*500-500,i*500).join(', ');
+        var stmt = sql + lines.slice(i * 500 - 500, i * 500).join(', ');
         new mssql.Request().query(stmt).then(function() {
           callback(null);
         }).catch(function(err) {

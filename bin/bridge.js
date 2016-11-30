@@ -1,5 +1,11 @@
 /**
- * Bridging between source and destination
+ * bin/bridge - Bridging between source and destination
+ *
+ * @param  {type} config         config.json
+ * @param  {type} opt            option object must contain source/table/destination
+ * @param  {function} moduleCallback  callback when complete passed error/null
+ *                                    and result object
+ * @return {undefined}
  */
 module.exports = function(config, opt, moduleCallback) {
 
@@ -119,6 +125,7 @@ module.exports = function(config, opt, moduleCallback) {
     if (err) {
       opt.log.error(err);
       opt.log.error(opt.timer.str());
+      if (opt.spinner) opt.spinner.stop(true);
       return moduleCallback(err);
     }
     //success! log and return response object

@@ -43,6 +43,19 @@ schedules.forEach(function(sched) {
           }
 
           break;
+        case 'script':
+          dt = new Date().toString();
+          console.log('Starting script ' + sched.name + ' at ' + dt);
+          try {
+            var script = require(config.dirs.input + sched.name);
+            script(config, sched, function(err) {
+              if (err) return console.error(err);
+            });
+          } catch (e) {
+            console.log('Error in script:');
+            console.trace(e);
+          }
+          break;
       }
     });
   } catch (e) {

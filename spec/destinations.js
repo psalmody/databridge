@@ -1,5 +1,6 @@
 var async = require('async');
 var config = Object.assign({}, require('../config.json'));
+config.TESTING = true;
 var outputFile = require('../bin/output-file');
 var opt = {
   cfg: config,
@@ -46,7 +47,7 @@ describe('Run all destinations with MOCK_DATA', function() {
     async.each(destinations, function(dest) {
       describe('Checking ' + dest, function() {
         this.timeout(30000);
-        var destination = fs.existsSync('./bin/dest/'+dest+'.js') ? require('../bin/dest/' + dest) : require(config.dirs.destinations + dest);
+        var destination = fs.existsSync('./bin/dest/' + dest + '.js') ? require('../bin/dest/' + dest) : require(config.dirs.destinations + dest);
         it('Ran destination ' + dest, function(done) {
           destination(opt, columns, function(err, rows, columns) {
             if (err) return done(new Error(err));
