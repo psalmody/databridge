@@ -60,5 +60,4 @@ module.exports = function(opt, moduleCallback) {
     }
     moduleCallback(null, rows, columns);
   });
-
 };
