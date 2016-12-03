@@ -123,7 +123,6 @@ module.exports = function(opt, columns, moduleCallback) {
             callback(null);
           });
         }
-        //TODO not making indexes?? WHY??
         async.map(indexes, makeIndex, function(err) {
           if (err) return cb(err);
           cb(null, rowCount);
