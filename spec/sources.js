@@ -27,6 +27,7 @@ describe('Testing all sources', function() {
           it('Should run a bridge', function(done) {
             var testing = removeFileExtension(file);
             var source = fs.existsSync('./bin/src/' + testing + '.js') ? require('../bin/src/' + testing) : require(config.dirs.sources + testing);
+            var table = (testing == 'mongo') ? 'databridge.MOCK_DATA' : 'source_' + testing;
             var dirname = __dirname.replace(/\\/g, '/');
             var opt = {
               cfg: {
@@ -37,7 +38,7 @@ describe('Testing all sources', function() {
                 }
               },
               bin: dirname + '/../bin/',
-              table: 'source_' + testing,
+              table: table,
               log: require('../bin/log-test')(),
               source: testing
             };
@@ -70,8 +71,13 @@ describe('Testing all sources', function() {
                 return done(e);
               }
               if (err) return done(new Error(err));
-              assert(rows == 2, '2 rows were not returned. Rows returned: ' + rows);
-              assert(cs[0] == 'ONE' && cs[1] == 'TWO' && cs[2] == 'THREE' && cs[3] == 'FOUR', 'Column names did not match. Source returned: ' + cs.toString());
+              if (testing == 'mongo') {
+                assert(rows == 1000, '1000 rows were not returned. Rows returned: ' + rows);
+                assert(cs.join('') == 'id_INDfirst_namelast_nameemailgenderip_addresstesting_GPAtesting_DATEtesting_TIMESTAMPtesting_DEC', 'Column names did not match. Source returned: ' + cs.toString());
+              } else {
+                assert(rows == 2, '2 rows were not returned. Rows returned: ' + rows);
+                assert(cs[0] == 'ONE' && cs[1] == 'TWO' && cs[2] == 'THREE' && cs[3] == 'FOUR', 'Column names did not match. Source returned: ' + cs.toString());
+              }
               done();
             });
           });
