@@ -6,12 +6,11 @@ module.exports = function(opt, moduleCallback) {
     Stream = require('stream'),
     split = require('split'),
     file = opt.table,
-    filename = opt.cfg.dirs.input + 'csv/' + file + '.csv',
+    filename = opt.cfg.dirs.input + 'tsv/' + file + '.txt',
     log = opt.log,
     opfile = opt.opfile;
 
   async.waterfall([
-    //make sure csv has data
     function(cb) {
       fs.stat(filename, function(err, res) {
         if (err) return cb(err);
@@ -19,39 +18,34 @@ module.exports = function(opt, moduleCallback) {
         cb('File has no data or doesn\'t exist');
       });
     },
-    //read data and change to tab-delimited
     function(cb) {
       var rowsProcessed = 0;
       var first = true;
       var columns;
-      //creating through stream to format data
-      var comma2TabStream = new Stream.Transform();
-      comma2TabStream._transform = function(chunk, encoding, done) {
+      var tStream = new Stream.Transform();
+      tStream._transform = function(chunk, encoding, done) {
         //skip blank rows
         if (chunk.toString().trim() == '') return done();
         if (first) {
           first = false;
-          columns = chunk.toString().replace(/\r/g, '').split(',');
+          columns = chunk.toString().replace(/\r/g, '').split('\t');
         } else {
           rowsProcessed++;
         }
-        //TODO only replace , outside "" using some kind
-        // of regex like /(,)(?=(?:[^"]|"[^"]*")*$)/g
-        var data = chunk.toString().replace(/,/g, '\t').replace(/\r|\'/g, '');
+        var data = chunk.toString().replace(/\r/, '');
         this.push(data + '\n');
         done();
       };
       //pipe data from csv to output file
-      var opfileWStream = opfile.createWriteStream();
-      var readCSVStream = fs.createReadStream(filename);
-
-      opfileWStream.on('error', function(err) {
+      var oStream = opfile.createWriteStream();
+      var rStream = fs.createReadStream(filename);
+      oStream.on('error', function(err) {
         cb(err);
       });
-      opfileWStream.on('finish', function() {
+      oStream.on('finish', function() {
         cb(null, rowsProcessed, columns);
       });
-      readCSVStream.pipe(split()).pipe(comma2TabStream).pipe(opfileWStream);
+      rStream.pipe(split()).pipe(tStream).pipe(oStream);
     }
   ], function(err, rows, columns) {
     if (err) {
