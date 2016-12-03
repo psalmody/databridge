@@ -80,6 +80,7 @@ module.exports = function(opt, columns, moduleCallback) {
           //parse types
           for (var i = 0; i < columns.length; i++) {
             //parse data types
+            var name = columns[i].name.replace(/_IND/ig, '');
             if (!isNaN(Number(data[i]))) {
               doc[name] = Number(data[i]);
             } else if (data[i] === 'true') {
