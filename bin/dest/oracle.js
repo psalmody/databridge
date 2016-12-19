@@ -125,7 +125,7 @@ module.exports = function(opt, columns, moduleCallback) {
       oracle.execute(sql, [], function(err, results) {
         if (err) return cb(err);
         results.rows.forEach(function(v) {
-          resColumns.push(v);
+          resColumns.push(v[0]);
         });
         cb(null);
       });
