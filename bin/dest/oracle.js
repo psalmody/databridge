@@ -1,146 +1,158 @@
-module.exports = function(opt, columns, moduleCallback) {
+module.exports = (opt, columns, moduleCallback) => {
 
-  var creds = require(opt.cfg.dirs.creds + 'oracle'),
-    oracledb = require('oracledb'),
-    async = require('async'),
-    readline = require('readline'),
-    opfile = opt.opfile,
-    table = opt.table,
-    log = opt.log,
-    resRows,
-    resColumns = [],
-    oracle;
+  const creds = require(opt.cfg.dirs.creds + 'oracle')
+  const oracledb = require('oracledb')
+  const async = require('async')
+  const readline = require('readline')
+  const opfile = opt.opfile
+  const table = opt.table
+  const log = opt.log
+  let resRows = []
+  let oracle
+  let inputGroups = []
 
-  oracledb.autoCommit = true;
+  oracledb.autoCommit = true
 
   function sqlTable() {
-    var cols = [];
+    let cols = []
     for (var i = 0; i < columns.length; i++) {
-      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ');
+      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ')
     }
-    var sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )';
-    return sql;
+    return 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )'
   }
 
   async.waterfall([
     //connect
-    function(cb) {
-      oracledb.getConnection(creds, function(err, conn) {
-        if (err) return cb(err);
-        oracle = conn;
-        cb(null);
-      });
+    (cb) => {
+      oracledb.getConnection(creds, (e, conn) => {
+        if (e) return cb(e)
+        oracle = conn
+        cb(null)
+      })
     },
-    //drop table if exists
-    function(cb) {
-      if (opt.update) {
-        return cb(null);
+    (cb) => {
+      //drop table if not update
+      if (opt.update) return cb(null)
+      oracle.execute('DROP TABLE ' + table, [], (e) => {
+        if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + e)
+        cb(null)
+      })
+    },
+    (cb) => {
+      //create table
+      if (opt.update) return cb(null)
+      let sql = sqlTable()
+      oracle.execute(sql, [], (e) => {
+        if (e) return cb(e)
+        cb(null)
+      })
+    },
+    (cb) => {
+      let cs = []
+      let first = true
+      columns.forEach((c) => {
+        cs.push(c.name)
+      })
+      //create sql for each into line
+      function lineSQL(l) {
+        let s = ` INTO ${table} ( ${cs.join(', ')} ) VALUES ( '`
+        s += l.split('\t').join('\', \'')
+        s += `' ) `
+        let lf = s.replace(/(\'[0-9]+\/[0-9]+\/[0-9]+\')/g, 'TO_DATE($1, \'MM/DD/YYYY\')')
+        return lf
       }
-      oracle.execute('DROP TABLE ' + table, [], function(err) {
-        //we expect an error if this is a new table
-        if (err instanceof Error && err.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + err);
-        cb(null);
-      });
-    },
-    //create table
-    function(cb) {
-      if (opt.update) return cb(null); //don't drop table if update
-      var sql = sqlTable();
-      oracle.execute(sql, [], function(err) {
-        if (err) return cb(err);
-        cb(null);
-      });
-    },
-    //format query data
-    function(cb) {
-      var sql = 'INSERT ALL ';
-      var cs = [];
-      var first = true;
-      columns.forEach(function(c) {
-        cs.push(c.name);
-      });
-      var lineReader = readline.createInterface({
+      let lineRead = readline.createInterface({
         input: opfile.createReadStream()
-      });
-      lineReader.on('error', function(err) {
-        return cb(err);
-      });
-      lineReader.on('line', function(line) {
-        if (first) {
-          first = false;
-        } else {
-          var l = ' INTO ' + table + ' ( ' + cs.join(', ') + ' ) VALUES ( \'' + line.split('\t').join('\', \'') + '\' ) ';
-          var lf = l.replace(/(\'[0-9]+\/[0-9]+\/[0-9]+\')/g, 'TO_DATE($1, \'MM/DD/YYYY\')');
-          sql += lf;
-        }
-      });
-      lineReader.on('close', function() {
-        sql += ' SELECT * FROM dual ';
-        cb(null, sql);
-      });
+      })
+      lineRead.on('error', (e) => {
+          cb(e)
+        })
+        .on('line', (l) => {
+          //skip first row
+          if (first === true) return first = false
+          resRows.push(lineSQL(l))
+        })
+        .on('close', () => {
+          cb(null)
+        })
     },
-    //run query
-    function(sql, cb) {
-      oracle.execute(sql, [], function(err) {
-        if (err) return cb(err);
-        cb(null);
-      });
+    (cb) => {
+      let i = 0
+      async.whilst(() => {
+        return i < resRows.length
+      }, (callback) => {
+        let j = i
+        i = Math.min(resRows.length, i + 500)
+        let rs = resRows.slice(j, i)
+        let sql = 'INSERT ALL ' + rs.join(' ') + ' SELECT * FROM DUAL '
+        //create async-type functions for parallelLimt
+        let fn = (() => {
+          return (callback) => {
+            let s = j
+            let e = i
+            oracle.execute(sql, [], (err) => {
+              if (err) return callback(`between ${s} and ${e}: ${err}`)
+              callback(null)
+            })
+          }
+        })(sql, i, j)
+        const fs = require('fs')
+        fs.writeFileSync('temp' + i + '.sql', sql)
+        inputGroups.push(fn)
+        callback(null, i)
+      }, (e, n) => {
+        if (e) return cb(e)
+        cb(null)
+      })
     },
-    //indexes
-    function(cb) {
-      var ndx = [];
-      columns.forEach(function(c) {
-        if (c.index) ndx.push(c.name);
-      });
-      async.each(ndx, function(n, cb2) {
-        var sql = 'CREATE INDEX ind_' + n + ' ON ' + table + '(' + n + ')';
-        oracle.execute(sql, [], function(err) {
-          if (err) return cb2(err);
-          cb2(null);
-        });
-      }, function(err) {
-        if (err) return cb(err);
-        cb(null);
-      });
+    (cb) => {
+      //run up to 3 at a time
+      async.parallelLimit(inputGroups, 3, (e, r) => {
+        if (e) return cb(e)
+        cb(null)
+      })
     },
-    //check number of inserted rows
-    function(cb) {
-      var sql = 'SELECT COUNT(*) AS RS FROM ' + table;
-      oracle.execute(sql, [], function(err, results) {
-        if (err) return cb(err);
-        resRows = results.rows[0][0];
-        cb(null);
-      });
+    (cb) => {
+      //indexes
+      cb(null)
     },
-    //check columns
-    function(cb) {
-      var schema = table.split('.')[0];
-      var tableName = table.split('.')[1];
-      var sql;
+    (cb) => {
+      //check rows
+      let sql = `SELECT COUNT(*) AS RS FROM ${table}`
+      oracle.execute(sql, [], (e, r) => {
+        if (e) return cb(e)
+        cb(null, r.rows[0][0])
+      })
+    },
+    (rows, cb) => {
+      //check columns
+      let schema = table.split('.')[0]
+      let tableName = table.split('.')[1]
+      let sql = `SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = `
       if (table.split('.').length > 1) {
-        sql = 'SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = \'' + tableName + '\' AND OWNER = \'' + schema + '\'';
+        sql += `'${tableName}' AND OWNER = '${schema}'`
       } else {
-        sql = 'SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = \'' + table + '\'';
+        sql += `'${table}'`
       }
-      oracle.execute(sql, [], function(err, results) {
-        if (err) return cb(err);
-        results.rows.forEach(function(v) {
-          resColumns.push(v[0]);
-        });
-        cb(null);
-      });
+      oracle.execute(sql, [], (e, r) => {
+        if (e) return cb(e)
+        let c = []
+        r.rows.forEach((v) => {
+          c.push(v[0])
+        })
+        cb(null, rows, c)
+      })
     }
-  ], function(err) {
+  ], (err, rows, cols) => {
     //disconnect
     try {
-      oracle.close(function(err) {
-        if (err) log.error(err);
-        return;
-      });
+      oracle.close((err) => {
+        if (err) log.error(err)
+      })
     } catch (e) {
-      log.error(e);
+      log.error(e)
     }
-    if (err) return moduleCallback(err);
-    moduleCallback(null, resRows, resColumns);
+    if (err) return moduleCallback(err)
+    moduleCallback(null, rows, cols)
   });
 };
