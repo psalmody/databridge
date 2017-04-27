@@ -43,7 +43,7 @@ module.exports = (opt, moduleCallback) => {
         })
         let columns = []
         //hold data temporarily in array until columns are written
-        // TODO move this to opfile and handle by all the same
+        // TODO move this temporary hold to opfile module and handle all sources this way
         let tempHold = []
         let flag = false
         // on rows either put in temporary data or append to file

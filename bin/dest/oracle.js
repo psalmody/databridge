@@ -1,4 +1,26 @@
+Object.defineProperty(global, '__stack', {
+  get: function() {
+    var orig = Error.prepareStackTrace;
+    Error.prepareStackTrace = function(_, stack) {
+      return stack;
+    };
+    var err = new Error;
+    Error.captureStackTrace(err, arguments.callee);
+    var stack = err.stack;
+    Error.prepareStackTrace = orig;
+    return stack;
+  }
+});
+
+Object.defineProperty(global, '__line', {
+  get: function() {
+    return 'line: ' + __stack[1].getLineNumber();
+  }
+});
+
 module.exports = (opt, columns, moduleCallback) => {
+
+  if (opt.spinner) opt.spinner.stop()
 
   const creds = require(opt.cfg.dirs.creds + 'oracle')
   const oracledb = require('oracledb')
@@ -7,12 +29,25 @@ module.exports = (opt, columns, moduleCallback) => {
   const opfile = opt.opfile
   const table = opt.table
   const log = opt.log
+  const tmp = require('tmp')
+  const fs = require('fs')
+  const winston = require('winston')
+
   let resRows = []
   let oracle
   let inputGroups = []
+  //let numInsertQueries = 0
 
   oracledb.autoCommit = true
+  oracledb.queueTimeout = 1
+  oracledb.poolMax = 25
+  oracledb.poolMin = 24
+  oracledb.poolTimeout = 1
 
+  //increase thread size for oracle
+  process.env.UV_THREADPOOL_SIZE = 100
+
+  //sql table generates CREATE TABLE sql
   function sqlTable() {
     let cols = []
     for (var i = 0; i < columns.length; i++) {
@@ -24,43 +59,76 @@ module.exports = (opt, columns, moduleCallback) => {
   async.waterfall([
     //connect
     (cb) => {
-      oracledb.getConnection(creds, (e, conn) => {
+      console.log(__line)
+      //oracledb.getConnection(creds, (e, conn) => {
+      oracledb.createPool(creds, (e, pool) => {
         if (e) return cb(e)
-        oracle = conn
+        oracle = pool
         cb(null)
       })
     },
     (cb) => {
+      console.log(__line)
       //drop table if not update
       if (opt.update) return cb(null)
-      oracle.execute('DROP TABLE ' + table, [], (e) => {
-        if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + e)
-        cb(null)
+      let sql = sqlTable()
+      oracle.getConnection((e, conn) => {
+        if (e) return cb(e)
+        conn.execute('DROP TABLE ' + table, [], (e) => {
+          if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + err);
+          conn.close((e) => {
+            if (e) return cb(e)
+            cb(null)
+          })
+        })
       })
     },
     (cb) => {
+      console.log(__line)
       //create table
       if (opt.update) return cb(null)
       let sql = sqlTable()
-      oracle.execute(sql, [], (e) => {
+      oracle.getConnection((e, conn) => {
+        console.log(__line, e)
         if (e) return cb(e)
-        cb(null)
+        conn.execute(sql, (e) => {
+          fs.writeFileSync('messedup.sql', sql)
+          console.log(__line, e, sql)
+          if (e) return cb(e)
+          conn.close((e) => {
+            console.log(__line, e)
+            if (e) return cb(e)
+            cb(null)
+          })
+        })
       })
     },
     (cb) => {
+      console.log(__line)
       let cs = []
       let first = true
       columns.forEach((c) => {
         cs.push(c.name)
       })
       //create sql for each into line
+      let sqlStart = `INTO ${table} (${cs.join(',')}) VALUES ('`
       function lineSQL(l) {
-        let s = ` INTO ${table} ( ${cs.join(', ')} ) VALUES ( '`
-        s += l.split('\t').join('\', \'')
-        s += `' ) `
-        let lf = s.replace(/(\'[0-9]+\/[0-9]+\/[0-9]+\')/g, 'TO_DATE($1, \'MM/DD/YYYY\')')
-        return lf
+        let s = sqlStart
+        let cells = (l.match(/\t/g) || []).length + 1
+        let append = cs.length - cells
+        //escape single quotes, replace tabs with ', ' and fix any dates without leading zero (01 instead of 1)
+        s += l.replace(/\'/g,'\'\'') //escape '
+          .replace(/\t/g, '\', \'') //tabs to ', '
+          .replace(/(\')([0-9])(\/)/g,'\'0$2\/') //fix months in dates where missing beginning 0
+          .replace(/(\/)([0-9])(\/)/g,'\/0$2\/') //fix day in dates where missing beginning 0
+          .replace(/\'([0-9]{2})\/([0-9]{2})\/([0-9]{4})\'/g, 'TO_DATE(\'$3-$1-$2\',\'YYYY-MM-DD\')') //add TO_DATE for dates
+        for (let i = 0; i < append; i++ ) {
+          s+= "','"
+        }
+        s += `')`
+        return s
       }
+      //line reader stream
       let lineRead = readline.createInterface({
         input: opfile.createReadStream()
       })
@@ -70,77 +138,149 @@ module.exports = (opt, columns, moduleCallback) => {
         .on('line', (l) => {
           //skip first row
           if (first === true) return first = false
+          if (l === '') return false
+          //push each non-empty line into resRows as a semi-SQL statement
           resRows.push(lineSQL(l))
         })
         .on('close', () => {
-          cb(null)
+          cb(null, cs)
         })
     },
-    (cb) => {
+    (cs, cb) => {
+      console.log(__line)
+      // create a tmp file and dump the sql for 100 rows at a time
+      // then create a async-style function to pass to inputGroups
+      // which will read the tmp-sql file and execute that query
+      // splice is used since slice causes a memory issue
+      let rows = resRows.length
       let i = 0
-      async.whilst(() => {
-        return i < resRows.length
-      }, (callback) => {
-        let j = i
-        i = Math.min(resRows.length, i + 500)
-        let rs = resRows.slice(j, i)
-        let sql = 'INSERT ALL ' + rs.join(' ') + ' SELECT * FROM DUAL '
-        //create async-type functions for parallelLimt
+      console.log(__line, Math.ceil(resRows.length/1000))
+      //numInsertQueries = Math.ceil(resRows.length/1000)
+      async.times(Math.ceil(resRows.length/1000), (n, next) => {
+        let r = resRows.splice(0, 1000)
+        let left = resRows.length
+        console.log(__line, r.length, resRows.length)
+        if (!r.length) {
+          //numInsertQueries--;
+          return next(null)
+        }
+        let tmpobj
+        try { tmpobj = tmp.fileSync() } catch(e) { next(e) }
+        let name = tmpobj.name
+        try { fs.writeFileSync(name, `INSERT ALL ${r.join(' ')} SELECT 1 FROM DUAL`) } catch(e) { next(e) }
         let fn = (() => {
           return (callback) => {
-            let s = j
-            let e = i
-            oracle.execute(sql, [], (err) => {
-              if (err) return callback(`between ${s} and ${e}: ${err}`)
-              callback(null)
+            oracle.getConnection((e, conn) => {
+              //console.log(__line, resRows.length)
+              if (e) return callback(e)
+              conn.execute(fs.readFileSync(name, 'utf8'), [], (err) => {
+                if (err) fs.writeFileSync('temp.broken.sql', fs.readFileSync(name, 'utf8'), 'utf8')
+                if (err) return callback(`with ${left} rows left: ${err}`)
+                console.log('left: ', left)
+                conn.close((e) => {
+                  if (e) return callback(e)
+                  //numInsertQueries--;
+                  //callback(null)
+                })
+                callback(null)
+              })
             })
           }
-        })(sql, i, j)
-        const fs = require('fs')
-        fs.writeFileSync('temp' + i + '.sql', sql)
+        })(name, left)
         inputGroups.push(fn)
-        callback(null, i)
-      }, (e, n) => {
-        if (e) return cb(e)
+        i += 1
+        //console.log(__line, i, resRows.length)
+        next(null)
+      }, (e) => {
+        console.log(__line, inputGroups.length)
+        //numInsertQueries = inputGroups.length
         cb(null)
       })
     },
     (cb) => {
-      //run up to 3 at a time
-      async.parallelLimit(inputGroups, 3, (e, r) => {
+      console.log(__line)
+      //run queries in parallel - oracledb connection pool
+      // is limiting to 4 connections at a time
+      //async.parallelLimit(inputGroups, 3, (e, r) => {
+      async.parallel(inputGroups, (e, r) => {
+        console.log('async.parallel',__line,e)
+        //console.log(oracle.connectionsInUse)
         if (e) return cb(e)
+        /*async.whilst(()=> {
+          console.log(__line, numInsertQueries)
+          return numInsertQueries > 0
+        }, (callback) => {
+          console.log(__line, numInsertQueries)
+          callback()
+        }, (e) => {
+          if (e) return cb(e)
+          cb(null)
+        })*/
         cb(null)
       })
     },
     (cb) => {
-      //indexes
-      cb(null)
+      console.log(__line)
+      let ndx = []
+      columns.forEach((c) => {
+        if (!c.index) return true
+        ndx.push(c.name)
+      })
+      let count = 0
+      let t = table.indexOf('.') === -1 ? table : table.split('.')[1]
+      ndx.forEach((c) => {
+        oracle.getConnection((e, conn) => {
+          if (e) return cb(e)
+          let x = `ind_${t}_${c}`.substring(0,25)
+          console.log(__line, table, x)
+          conn.execute(`CREATE INDEX ${x} ON ${table} (${c})`, (e, r) => {
+            if (e) return cb(e)
+            conn.close((e) => {
+              if (e) return cb(e)
+            })
+            count++
+            if (count === ndx.length) cb(null)
+          })
+        })
+      })
     },
     (cb) => {
+      console.log(__line)
       //check rows
       let sql = `SELECT COUNT(*) AS RS FROM ${table}`
-      oracle.execute(sql, [], (e, r) => {
+      oracle.getConnection((e, conn) => {
         if (e) return cb(e)
-        cb(null, r.rows[0][0])
+        conn.execute(sql, [], (e, r) => {
+          if (e) return cb(e)
+          conn.close((e) => {
+            if (e) return cb(e)
+            cb(null, r.rows[0][0])
+          })
+        })
       })
     },
     (rows, cb) => {
       //check columns
       let schema = table.split('.')[0]
       let tableName = table.split('.')[1]
-      let sql = `SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = `
+      let sql = 'SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '
       if (table.split('.').length > 1) {
         sql += `'${tableName}' AND OWNER = '${schema}'`
       } else {
         sql += `'${table}'`
       }
-      oracle.execute(sql, [], (e, r) => {
-        if (e) return cb(e)
-        let c = []
-        r.rows.forEach((v) => {
-          c.push(v[0])
+      oracle.getConnection((e, conn) => {
+        conn.execute(sql, [], (e, r) => {
+          if (e) return cb(e)
+          let c = []
+          r.rows.forEach((v) => {
+            c.push(v[0])
+          })
+          conn.close((e) => {
+            if (e) return cb(e)
+            cb(null, rows, c)
+          })
         })
-        cb(null, rows, c)
       })
     }
   ], (err, rows, cols) => {
