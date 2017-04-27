@@ -33,6 +33,21 @@ module.exports = (opt, columns, moduleCallback) => {
   const fs = require('fs')
   const winston = require('winston')
 
+  let logger = new (winston.Logger) ({
+    transports: [
+      new (winston.transports.Console) ({
+        timestamp: () => {
+          let d = new Date()
+          return `[${("0"+d.getHours()).slice(-2)}:${("0"+d.getMinutes()).slice(-2)}:${("0"+d.getSeconds()).slice(-2)}.${("000"+d.getMilliseconds()).slice(-3)}]`
+        },
+        formatter: (options) => {
+          return options.timestamp() +' '+ options.level.toUpperCase() +': '+ (options.message ? options.message : '') +
+          (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )
+        }
+      })
+    ]
+  })
+
   let resRows = []
   let oracle
   let inputGroups = []
@@ -59,7 +74,7 @@ module.exports = (opt, columns, moduleCallback) => {
   async.waterfall([
     //connect
     (cb) => {
-      console.log(__line)
+      logger.info(__line)
       //oracledb.getConnection(creds, (e, conn) => {
       oracledb.createPool(creds, (e, pool) => {
         if (e) return cb(e)
@@ -68,7 +83,7 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      console.log(__line)
+      logger.info(__line)
       //drop table if not update
       if (opt.update) return cb(null)
       let sql = sqlTable()
@@ -84,19 +99,19 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      console.log(__line)
+      logger.info(__line)
       //create table
       if (opt.update) return cb(null)
       let sql = sqlTable()
       oracle.getConnection((e, conn) => {
-        console.log(__line, e)
+        logger.info(__line, e)
         if (e) return cb(e)
         conn.execute(sql, (e) => {
           fs.writeFileSync('messedup.sql', sql)
-          console.log(__line, e, sql)
+          logger.info(__line, e, sql)
           if (e) return cb(e)
           conn.close((e) => {
-            console.log(__line, e)
+            logger.info(__line, e)
             if (e) return cb(e)
             cb(null)
           })
@@ -104,7 +119,7 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      console.log(__line)
+      logger.info(__line)
       let cs = []
       let first = true
       columns.forEach((c) => {
@@ -147,19 +162,19 @@ module.exports = (opt, columns, moduleCallback) => {
         })
     },
     (cs, cb) => {
-      console.log(__line)
-      // create a tmp file and dump the sql for 100 rows at a time
+      logger.info(__line)
+      // create a tmp file and dump the sql for 1000 rows at a time
       // then create a async-style function to pass to inputGroups
       // which will read the tmp-sql file and execute that query
       // splice is used since slice causes a memory issue
       let rows = resRows.length
       let i = 0
-      console.log(__line, Math.ceil(resRows.length/1000))
+      logger.info(__line, Math.ceil(resRows.length/1000))
       //numInsertQueries = Math.ceil(resRows.length/1000)
       async.times(Math.ceil(resRows.length/1000), (n, next) => {
         let r = resRows.splice(0, 1000)
         let left = resRows.length
-        console.log(__line, r.length, resRows.length)
+        logger.info(__line, r.length, resRows.length)
         if (!r.length) {
           //numInsertQueries--;
           return next(null)
@@ -171,12 +186,15 @@ module.exports = (opt, columns, moduleCallback) => {
         let fn = (() => {
           return (callback) => {
             oracle.getConnection((e, conn) => {
-              //console.log(__line, resRows.length)
+              //logger.info(__line, resRows.length)
               if (e) return callback(e)
-              conn.execute(fs.readFileSync(name, 'utf8'), [], (err) => {
+              logger.info('start query read')
+              let s = fs.readFileSync(name, 'utf8')
+              logger.info('end query read')
+              conn.execute(s, [], (err) => {
                 if (err) fs.writeFileSync('temp.broken.sql', fs.readFileSync(name, 'utf8'), 'utf8')
                 if (err) return callback(`with ${left} rows left: ${err}`)
-                console.log('left: ', left)
+                logger.info('left: ', left)
                 conn.close((e) => {
                   if (e) return callback(e)
                   //numInsertQueries--;
@@ -189,28 +207,28 @@ module.exports = (opt, columns, moduleCallback) => {
         })(name, left)
         inputGroups.push(fn)
         i += 1
-        //console.log(__line, i, resRows.length)
+        //logger.info(__line, i, resRows.length)
         next(null)
       }, (e) => {
-        console.log(__line, inputGroups.length)
+        logger.info(__line, inputGroups.length)
         //numInsertQueries = inputGroups.length
         cb(null)
       })
     },
     (cb) => {
-      console.log(__line)
+      logger.info(__line)
       //run queries in parallel - oracledb connection pool
       // is limiting to 4 connections at a time
       //async.parallelLimit(inputGroups, 3, (e, r) => {
       async.parallel(inputGroups, (e, r) => {
-        console.log('async.parallel',__line,e)
-        //console.log(oracle.connectionsInUse)
+        logger.info('async.parallel',__line,e)
+        //logger.info(oracle.connectionsInUse)
         if (e) return cb(e)
         /*async.whilst(()=> {
-          console.log(__line, numInsertQueries)
+          logger.info(__line, numInsertQueries)
           return numInsertQueries > 0
         }, (callback) => {
-          console.log(__line, numInsertQueries)
+          logger.info(__line, numInsertQueries)
           callback()
         }, (e) => {
           if (e) return cb(e)
@@ -220,7 +238,7 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      console.log(__line)
+      logger.info(__line)
       let ndx = []
       columns.forEach((c) => {
         if (!c.index) return true
@@ -232,7 +250,7 @@ module.exports = (opt, columns, moduleCallback) => {
         oracle.getConnection((e, conn) => {
           if (e) return cb(e)
           let x = `ind_${t}_${c}`.substring(0,25)
-          console.log(__line, table, x)
+          logger.info(__line, table, x)
           conn.execute(`CREATE INDEX ${x} ON ${table} (${c})`, (e, r) => {
             if (e) return cb(e)
             conn.close((e) => {
@@ -245,7 +263,7 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      console.log(__line)
+      logger.info(__line)
       //check rows
       let sql = `SELECT COUNT(*) AS RS FROM ${table}`
       oracle.getConnection((e, conn) => {
