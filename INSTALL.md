@@ -10,6 +10,13 @@ Use the `local` directory or copy it to a different location on your machine whe
 
 See [oracledb INSTALL](https://github.com/oracle/node-oracledb/blob/master/INSTALL.md) for installation.
 
+#### Requires
+
+* Oracle Instant Client Basic - v12.2.0.1.0 or higher (older versions didn't include Tools package)
+* Instant Client Package - Tools: sqlldr (Oracle Instant Client)
+* Instant Client Package - SDK: (for compiling oracledb)
+* ORACLE_HOME must be in path
+
 Once `oracledb` install completed, added to this package with `npm install oracledb`.
 
 Add a file `oracle.js` in the local/creds folder with the following format:
