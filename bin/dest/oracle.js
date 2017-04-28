@@ -1,23 +1,3 @@
-Object.defineProperty(global, '__stack', {
-  get: function() {
-    var orig = Error.prepareStackTrace;
-    Error.prepareStackTrace = function(_, stack) {
-      return stack;
-    };
-    var err = new Error;
-    Error.captureStackTrace(err, arguments.callee);
-    var stack = err.stack;
-    Error.prepareStackTrace = orig;
-    return stack;
-  }
-});
-
-Object.defineProperty(global, '__line', {
-  get: function() {
-    return 'line: ' + __stack[1].getLineNumber();
-  }
-});
-
 module.exports = (opt, columns, moduleCallback) => {
 
   if (opt.spinner) opt.spinner.stop()
@@ -31,36 +11,13 @@ module.exports = (opt, columns, moduleCallback) => {
   const log = opt.log
   const tmp = require('tmp')
   const fs = require('fs')
-  const winston = require('winston')
-
-  let logger = new (winston.Logger) ({
-    transports: [
-      new (winston.transports.Console) ({
-        timestamp: () => {
-          let d = new Date()
-          return `[${("0"+d.getHours()).slice(-2)}:${("0"+d.getMinutes()).slice(-2)}:${("0"+d.getSeconds()).slice(-2)}.${("000"+d.getMilliseconds()).slice(-3)}]`
-        },
-        formatter: (options) => {
-          return options.timestamp() +' '+ options.level.toUpperCase() +': '+ (options.message ? options.message : '') +
-          (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )
-        }
-      })
-    ]
-  })
+  const child_process = require('child_process')
 
   let resRows = []
   let oracle
   let inputGroups = []
-  //let numInsertQueries = 0
 
   oracledb.autoCommit = true
-  oracledb.queueTimeout = 1
-  oracledb.poolMax = 25
-  oracledb.poolMin = 24
-  oracledb.poolTimeout = 1
-
-  //increase thread size for oracle
-  process.env.UV_THREADPOOL_SIZE = 100
 
   //sql table generates CREATE TABLE sql
   function sqlTable() {
@@ -74,8 +31,7 @@ module.exports = (opt, columns, moduleCallback) => {
   async.waterfall([
     //connect
     (cb) => {
-      logger.info(__line)
-      //oracledb.getConnection(creds, (e, conn) => {
+      //connect with a pool
       oracledb.createPool(creds, (e, pool) => {
         if (e) return cb(e)
         oracle = pool
@@ -83,7 +39,6 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      logger.info(__line)
       //drop table if not update
       if (opt.update) return cb(null)
       let sql = sqlTable()
@@ -99,19 +54,14 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      logger.info(__line)
-      //create table
+      //create table if not update
       if (opt.update) return cb(null)
       let sql = sqlTable()
       oracle.getConnection((e, conn) => {
-        logger.info(__line, e)
         if (e) return cb(e)
         conn.execute(sql, (e) => {
-          fs.writeFileSync('messedup.sql', sql)
-          logger.info(__line, e, sql)
           if (e) return cb(e)
           conn.close((e) => {
-            logger.info(__line, e)
             if (e) return cb(e)
             cb(null)
           })
@@ -119,126 +69,60 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      logger.info(__line)
-      let cs = []
-      let first = true
-      columns.forEach((c) => {
-        cs.push(c.name)
-      })
-      //create sql for each into line
-      let sqlStart = `INTO ${table} (${cs.join(',')}) VALUES ('`
-      function lineSQL(l) {
-        let s = sqlStart
-        let cells = (l.match(/\t/g) || []).length + 1
-        let append = cs.length - cells
-        //escape single quotes, replace tabs with ', ' and fix any dates without leading zero (01 instead of 1)
-        s += l.replace(/\'/g,'\'\'') //escape '
-          .replace(/\t/g, '\', \'') //tabs to ', '
-          .replace(/(\')([0-9])(\/)/g,'\'0$2\/') //fix months in dates where missing beginning 0
-          .replace(/(\/)([0-9])(\/)/g,'\/0$2\/') //fix day in dates where missing beginning 0
-          .replace(/\'([0-9]{2})\/([0-9]{2})\/([0-9]{4})\'/g, 'TO_DATE(\'$3-$1-$2\',\'YYYY-MM-DD\')') //add TO_DATE for dates
-        for (let i = 0; i < append; i++ ) {
-          s+= "','"
-        }
-        s += `')`
-        return s
-      }
-      //line reader stream
-      let lineRead = readline.createInterface({
+      //do the TO_DATE replace for dates and create new temp data file
+      // output opfile to tmp file for slight changes for sqlldr
+      let dataFile = tmp.fileSync()
+      let lineReader = readline.createInterface({
         input: opfile.createReadStream()
       })
-      lineRead.on('error', (e) => {
-          cb(e)
-        })
-        .on('line', (l) => {
-          //skip first row
-          if (first === true) return first = false
-          if (l === '') return false
-          //push each non-empty line into resRows as a semi-SQL statement
-          resRows.push(lineSQL(l))
-        })
-        .on('close', () => {
-          cb(null, cs)
-        })
+      let lineCounter = 0;
+      fs.writeFileSync('temp.tsv','')
+      lineReader.on('error', (e) => {
+        return cb(e)
+      })
+      lineReader.on('line', (line) => {
+        let l = line.replace(/\t([0-9])(\/)/g,'\t0$1\/') //fix months in dates where missing beginning 0
+          .replace(/(\/)([0-9])(\/)/g,'\/0$2\/') //fix day in dates where missing beginning 0
+          .replace(/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/g, '$3-$1-$2') //change data format
+        lineCounter++
+        fs.appendFileSync(dataFile.name, l + '\t\n')
+        if(lineCounter < 20) fs.appendFileSync('temp.tsv',l+'\t\n')
+      })
+      lineReader.on('close', () => {
+        cb(null, dataFile)
+      })
     },
-    (cs, cb) => {
-      logger.info(__line)
-      // create a tmp file and dump the sql for 1000 rows at a time
-      // then create a async-style function to pass to inputGroups
-      // which will read the tmp-sql file and execute that query
-      // splice is used since slice causes a memory issue
-      let rows = resRows.length
-      let i = 0
-      logger.info(__line, Math.ceil(resRows.length/1000))
-      //numInsertQueries = Math.ceil(resRows.length/1000)
-      async.times(Math.ceil(resRows.length/1000), (n, next) => {
-        let r = resRows.splice(0, 1000)
-        let left = resRows.length
-        logger.info(__line, r.length, resRows.length)
-        if (!r.length) {
-          //numInsertQueries--;
-          return next(null)
-        }
-        let tmpobj
-        try { tmpobj = tmp.fileSync() } catch(e) { next(e) }
-        let name = tmpobj.name
-        try { fs.writeFileSync(name, `INSERT ALL ${r.join(' ')} SELECT 1 FROM DUAL`) } catch(e) { next(e) }
-        let fn = (() => {
-          return (callback) => {
-            oracle.getConnection((e, conn) => {
-              //logger.info(__line, resRows.length)
-              if (e) return callback(e)
-              logger.info('start query read')
-              let s = fs.readFileSync(name, 'utf8')
-              logger.info('end query read')
-              conn.execute(s, [], (err) => {
-                if (err) fs.writeFileSync('temp.broken.sql', fs.readFileSync(name, 'utf8'), 'utf8')
-                if (err) return callback(`with ${left} rows left: ${err}`)
-                logger.info('left: ', left)
-                conn.close((e) => {
-                  if (e) return callback(e)
-                  //numInsertQueries--;
-                  //callback(null)
-                })
-                callback(null)
-              })
-            })
-          }
-        })(name, left)
-        inputGroups.push(fn)
-        i += 1
-        //logger.info(__line, i, resRows.length)
-        next(null)
-      }, (e) => {
-        logger.info(__line, inputGroups.length)
-        //numInsertQueries = inputGroups.length
+    (dataFile, cb) => {
+      //run sqlldr
+      let cs = []
+      columns.forEach((c) => {
+        let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD'` : c.name
+        cs.push(n)
+      })
+      //connect string
+      let connect = creds.connectString
+      //control file
+      let ctl = `
+      OPTIONS (SKIP=1)
+      load data
+      infile '${dataFile.name}'
+      into table ${table}
+      fields terminated by "\t"
+      (${cs.join(', ')})
+      `
+      //create temp control file
+      let ctlFile = tmp.fileSync()
+      fs.writeFileSync(ctlFile.name, ctl)
+      let logFile = tmp.fileSync()
+      let command = `sqlldr '${creds.user}/${creds.password}@${connect}' control=${ctlFile.name} log=temp.log`//${logFile.name}`
+      //execute sqlldr
+      child_process.exec(command, (err, stdout, stderr) => {
+        if (err) return cb(err)
         cb(null)
       })
     },
     (cb) => {
-      logger.info(__line)
-      //run queries in parallel - oracledb connection pool
-      // is limiting to 4 connections at a time
-      //async.parallelLimit(inputGroups, 3, (e, r) => {
-      async.parallel(inputGroups, (e, r) => {
-        logger.info('async.parallel',__line,e)
-        //logger.info(oracle.connectionsInUse)
-        if (e) return cb(e)
-        /*async.whilst(()=> {
-          logger.info(__line, numInsertQueries)
-          return numInsertQueries > 0
-        }, (callback) => {
-          logger.info(__line, numInsertQueries)
-          callback()
-        }, (e) => {
-          if (e) return cb(e)
-          cb(null)
-        })*/
-        cb(null)
-      })
-    },
-    (cb) => {
-      logger.info(__line)
+      //create indexes
       let ndx = []
       columns.forEach((c) => {
         if (!c.index) return true
@@ -250,7 +134,6 @@ module.exports = (opt, columns, moduleCallback) => {
         oracle.getConnection((e, conn) => {
           if (e) return cb(e)
           let x = `ind_${t}_${c}`.substring(0,25)
-          logger.info(__line, table, x)
           conn.execute(`CREATE INDEX ${x} ON ${table} (${c})`, (e, r) => {
             if (e) return cb(e)
             conn.close((e) => {
@@ -263,7 +146,6 @@ module.exports = (opt, columns, moduleCallback) => {
       })
     },
     (cb) => {
-      logger.info(__line)
       //check rows
       let sql = `SELECT COUNT(*) AS RS FROM ${table}`
       oracle.getConnection((e, conn) => {
