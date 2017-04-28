@@ -33,7 +33,7 @@ module.exports = function(config, opt, moduleCallback) {
     return s;
   })();
   //setup log
-  opt.log = require('./log-' + opt.cfg.logto)(opt);
+  opt.log = require('./log')(opt);
 
   //setup response object
   var response = require(opt.bin + 'response')(opt);
