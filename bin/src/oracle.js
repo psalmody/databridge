@@ -1,114 +1,104 @@
-module.exports = function(opt, moduleCallback) {
+module.exports = (opt, moduleCallback) => {
+  if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source)
 
-  if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source);
-
-  var creds = require(opt.cfg.dirs.creds + 'oracle'),
-    oracle = require('oracledb'),
-    async = require('async'),
-    fs = require('fs'),
-    table = opt.table,
-    log = opt.log,
-    stringify = require('csv-stringify'),
-    bindQuery = require(opt.bin + 'bind-query'),
-    opfile = opt.opfile;
-
+  const creds = require(opt.cfg.dirs.creds + 'oracle')
+  const oracledb = require('oracledb')
+  const async = require('async')
+  const fs = require('fs')
+  const table = opt.table
+  const log = opt.log
+  const bindQuery = require(opt.bin + 'bind-query')
+  const opfile = opt.opfile
+  let oracle
 
   async.waterfall([
-      //connect to database
-      function(cb) {
-        oracle.getConnection(creds, function(err, conn) {
-          if (err) return cb(err);
-          oracle = conn;
-          cb(null);
-        });
+      //connect
+      (cb) => {
+        oracledb.getConnection(creds, (e, c) => {
+          if (e) return cb(e)
+          oracle = c
+          cb(null)
+        })
       },
       //read query
-      function(cb) {
-        var f = opt.cfg.dirs.input + opt.source + '/' + table + '.sql';
-        fs.readFile(f, 'utf8', function(err, data) {
-          if (err) return cb('fs readFile error on input query: ' + err);
-          cb(null, data);
-        });
+      (cb) => {
+        fs.readFile(`${opt.cfg.dirs.input}//${opt.source}/${table}.sql`, 'utf8', (e, data) => {
+          if (e) return cb('fs readFile error')
+          cb(null, data)
+        })
       },
-      //format query and prompt for binds
-      function(data, cb) {
-        try {
-          bindQuery(data, opt, function(err, sql) {
-            if (err) return cb(err);
-            cb(null, sql);
-          });
-        } catch (e) {
-          console.trace(e);
-        }
+      //bind variables
+      (data, cb) => {
+        bindQuery(data, opt, (e, sql) => {
+          if (e) return cb(e)
+          cb(null, sql)
+        })
       },
-      //run query
-      function(sql, cb) {
-        oracle.execute(sql, [], {
+      //execute
+      (sql, cb) => {
+        let counter = 0
+        let stream = oracle.queryStream(sql, [], {
           resultSet: true,
           prefetchRows: 10000
-        }, function(err, results) {
-          if (err) return cb('oracle SELECT query error: ' + err);
-          var columnDefs = results.metaData,
-            rowsProcessed = 0,
-            columns = [];
-
-          for (var i = 0; i < columnDefs.length; i++) {
-            columns.push(columnDefs[i].name);
-          }
-
-          opfile.append(columns.join('\t') + '\n', function(err) {
-            if (err) return cb(err);
-            processResultSet();
-          });
-
-
-          function processResultSet() {
-            results.resultSet.getRows(500, function(err, rows) {
-              if (err) return cb('oracle resultSet.getRows() error: ' + err);
-              if (rows.length) {
-                rowsProcessed += rows.length;
-                var rs = [];
-                rows.forEach(function(r) {
-                  var s = [];
-                  r.forEach(function(t) {
-                    t = (typeof(t) == 'string') ? t.replace(/\n|\r/g, '') : t;
-                    s.push(t);
-                  });
-                  rs.push(s);
-                });
-                stringify(rs, {
-                  delimiter: '\t'
-                }, function(err, csv) {
-                  if (err) return cb('csv-stringify error: ' + err);
-                  opfile.append(csv, function(err) {
-                    if (err) return cb('fs.writeFile error: ' + err);
-                    processResultSet(); //try to get more rows from the result set
-                  });
-                });
-                return;
-              }
-
-              results.resultSet.close(function(err) {
-                if (err) return cb('Closing resultSet error: ' + err);
-                cb(null, rowsProcessed, columns);
-              });
-            });
-          }
-        });
+        })
+        let columns = []
+          //hold data temporarily in array until columns are written
+          // TODO move this temporary hold to opfile module and handle all sources this way
+        let tempHold = []
+        let flag = false
+          // on rows either put in temporary data or append to file
+          // if columns are already in
+        stream.on('data', (d) => {
+            counter++
+            if (flag === false) {
+              //columns not written yet
+              tempHold.push(d.join('\t') + '\n')
+            } else {
+              //columns written, dump tempHold and start appending data
+              let t = tempHold.join('')
+              tempHold = []
+              opfile.append(t + d.join('\t') + '\n', (e) => {
+                if (e) return cb(e)
+              })
+            }
+          })
+          .on('error', (e) => {
+            cb(e)
+          })
+          .on('end', () => {
+            //may need to dump tempHold data
+            if (tempHold.length > 0) {
+              opfile.append(tempHold.join(''), (e) => {
+                if (e) return cb(e)
+                cb(null, counter, columns)
+              })
+            } else {
+              cb(null, counter, columns)
+            }
+          })
+          .on('metadata', (m) => {
+            //this is column names
+            m.forEach((c) => {
+              columns.push(c.name)
+            })
+            opfile.append(columns.join('\t') + '\n', (e) => {
+              if (e) return cb(e)
+              flag = true
+            })
+          })
       }
     ],
-    function(err, rows, columns) {
+    (err, rows, columns) => {
       if (err) {
-        log.error(err);
+        log.error(err)
         try {
-          oracle.release(function() {
-            return;
-          });
+          oracle.release()
         } catch (e) {
-          log.error(e);
+          log.error(e)
         }
-        return moduleCallback(err);
+        return moduleCallback(err)
       }
-      moduleCallback(null, rows, columns);
-    });
-};
+      moduleCallback(null, rows, columns)
+    })
+
+}
