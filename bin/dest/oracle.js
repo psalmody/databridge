@@ -131,6 +131,7 @@ module.exports = (opt, columns, moduleCallback) => {
         if (!c.index) return true
         ndx.push(c.name)
       })
+      if (ndx.length === 0) return cb(null)
       let count = 0
       let t = table.indexOf('.') === -1 ? table : table.split('.')[1]
       ndx.forEach((c) => {
