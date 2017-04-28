@@ -12,7 +12,7 @@ module.exports = (opt, moduleCallback) => {
   let oracle
 
   async.waterfall([
-    //connect
+      //connect
       (cb) => {
         oracledb.getConnection(creds, (e, c) => {
           if (e) return cb(e)
@@ -42,50 +42,50 @@ module.exports = (opt, moduleCallback) => {
           prefetchRows: 10000
         })
         let columns = []
-        //hold data temporarily in array until columns are written
-        // TODO move this temporary hold to opfile module and handle all sources this way
+          //hold data temporarily in array until columns are written
+          // TODO move this temporary hold to opfile module and handle all sources this way
         let tempHold = []
         let flag = false
-        // on rows either put in temporary data or append to file
-        // if columns are already in
+          // on rows either put in temporary data or append to file
+          // if columns are already in
         stream.on('data', (d) => {
-          counter++
-          if (flag === false) {
-            //columns not written yet
-            tempHold.push(d.join('\t') + '\n')
-          } else {
-            //columns written, dump tempHold and start appending data
-            let t = tempHold.join('')
-            tempHold = []
-            opfile.append(t + d.join('\t') + '\n', (e) => {
-              if (e) return cb(e)
-            })
-          }
-        })
-        .on('error', (e) => {
-          cb(e)
-        })
-        .on('end', () => {
-          //may need to dump tempHold data
-          if (tempHold.length > 0) {
-            opfile.append(tempHold.join(''), (e) => {
-              if (e) return cb(e)
+            counter++
+            if (flag === false) {
+              //columns not written yet
+              tempHold.push(d.join('\t') + '\n')
+            } else {
+              //columns written, dump tempHold and start appending data
+              let t = tempHold.join('')
+              tempHold = []
+              opfile.append(t + d.join('\t') + '\n', (e) => {
+                if (e) return cb(e)
+              })
+            }
+          })
+          .on('error', (e) => {
+            cb(e)
+          })
+          .on('end', () => {
+            //may need to dump tempHold data
+            if (tempHold.length > 0) {
+              opfile.append(tempHold.join(''), (e) => {
+                if (e) return cb(e)
+                cb(null, counter, columns)
+              })
+            } else {
               cb(null, counter, columns)
+            }
+          })
+          .on('metadata', (m) => {
+            //this is column names
+            m.forEach((c) => {
+              columns.push(c.name)
             })
-          } else {
-            cb(null, counter, columns)
-          }
-        })
-        .on('metadata', (m) => {
-          //this is column names
-          m.forEach((c) => {
-            columns.push(c.name)
+            opfile.append(columns.join('\t') + '\n', (e) => {
+              if (e) return cb(e)
+              flag = true
+            })
           })
-          opfile.append(columns.join('\t') + '\n', (e) => {
-            if (e) return cb(e)
-            flag = true
-          })
-        })
       }
     ],
     (err, rows, columns) => {

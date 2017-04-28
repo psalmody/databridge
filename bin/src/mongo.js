@@ -44,7 +44,7 @@ module.exports = function(opt, moduleCallback) {
           return a !== '_id';
         });
         //handle indexes
-        for (p in indexes) {
+        for (var p in indexes) {
           if (cols.indexOf(indexes[p][0][0]) > -1) cols[cols.indexOf(indexes[p][0][0])] = indexes[p][0][0] + '_IND';
         }
         //check for decimals and append _DEC if not _GPA or _DEC already and not a whole number
