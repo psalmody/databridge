@@ -1,7 +1,5 @@
 module.exports = (opt, columns, moduleCallback) => {
 
-  if (opt.spinner) opt.spinner.stop()
-
   const creds = require(opt.cfg.dirs.creds + 'oracle')
   const oracledb = require('oracledb')
   const async = require('async')
@@ -76,7 +74,7 @@ module.exports = (opt, columns, moduleCallback) => {
         input: opfile.createReadStream()
       })
       let lineCounter = 0;
-      fs.writeFileSync('temp.tsv','')
+      let wStream = fs.createWriteStream(dataFile.name)
       lineReader.on('error', (e) => {
         return cb(e)
       })
@@ -85,10 +83,10 @@ module.exports = (opt, columns, moduleCallback) => {
           .replace(/(\/)([0-9])(\/)/g,'\/0$2\/') //fix day in dates where missing beginning 0
           .replace(/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/g, '$3-$1-$2') //change data format
         lineCounter++
-        fs.appendFileSync(dataFile.name, l + '\t\n')
-        if(lineCounter < 20) fs.appendFileSync('temp.tsv',l+'\t\n')
+        wStream.write(l + '\n')
       })
       lineReader.on('close', () => {
+        wStream.end()
         cb(null, dataFile)
       })
     },
@@ -108,16 +106,24 @@ module.exports = (opt, columns, moduleCallback) => {
       infile '${dataFile.name}'
       into table ${table}
       fields terminated by "\t"
+      TRAILING NULLCOLS
       (${cs.join(', ')})
       `
       //create temp control file
       let ctlFile = tmp.fileSync()
       fs.writeFileSync(ctlFile.name, ctl)
       let logFile = tmp.fileSync()
-      let command = `sqlldr '${creds.user}/${creds.password}@${connect}' control=${ctlFile.name} log=temp.log`//${logFile.name}`
+      //let command = `sqlldr '${creds.user}/${creds.password}@${connect}' control=${ctlFile.name} log=${logFile.name}`
       //execute sqlldr
-      child_process.exec(command, (err, stdout, stderr) => {
-        if (err) return cb(err)
+      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`, `log=${logFile.name}`])
+      child.stdout.on('data', (d) => {
+        //console.log('stdout: ', d.toString())
+      })
+      child.stderr.on('data', (d) => {
+        log.log('stderr: ', d.toString())
+      })
+      child.on('close', (c) => {
+        console.log('child process exited with code ' + c)
         cb(null)
       })
     },
