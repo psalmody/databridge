@@ -8,3 +8,5 @@ pm2.json
 #testing files
 t-config.json
 t-pm2.json
+
+messedup\.sql
