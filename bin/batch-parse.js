@@ -17,7 +17,6 @@ module.exports = (batchName, batchFile) => {
       type: 'bridge',
       task: true
     })
-    console.log(o)
     //handle script type
     let fn = (()=>{
       if (options.type == 'script') {
