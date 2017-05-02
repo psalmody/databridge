@@ -173,6 +173,8 @@ module.exports = (opt, columns, moduleCallback) => {
       } else {
         sql += `'${table}'`
       }
+      //order by order in the database
+      sql += ' ORDER BY COLUMN_ID '
       oracle.getConnection((e, conn) => {
         conn.execute(sql, [], (e, r) => {
           if (e) return cb(e)
