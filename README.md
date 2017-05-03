@@ -205,6 +205,19 @@ mocha spec/sources --one=mysql
 
 ## Customizing sources / destinations
 
+#### Note about `require()`
+
+If you plan on using a separate input/output/source dir (as in when you ran npm install,
+  you told databridge to make the "local" folder outside the main databridge folder), you'll
+  need to either:
+
+- Install necessary packages (like database connection packages) inside that local directory.
+- Use something like `require.main.require` to include the database source or scripts from the main databridge directory.
+
+Databridge will be requiring the source directory but it will try to require from a different path than the main databridge directory.
+
+See this [great GitHubGist article by branneman](https://gist.github.com/branneman/8048520) for more information and options.
+
 #### Source modules
 
 Source modules are passed the config/opt object from the bridge.
