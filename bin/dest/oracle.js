@@ -20,9 +20,10 @@ module.exports = (opt, columns, moduleCallback) => {
   function sqlTable() {
     let cols = []
     for (var i = 0; i < columns.length; i++) {
-      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ')
+      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' NULL')
     }
-    return 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )'
+    let sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )'
+    return sql
   }
 
   async.waterfall([

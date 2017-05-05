@@ -4,43 +4,58 @@
  */
 module.exports = (opfile, callback) => {
   const chrono = require('chrono-node')
-  let columns = []
+  let returnColumns = []
 
-  //try and parse SQL data type from javascript data type
-  let getType = (c, o) => {
+  //run against sample and see if we can't assure the data types are right
+  // but we assume the column name can be spoofed
+  let typeCheck = (a, c) => {
     //if DATE in column title - assume date
-    if (c.toUpperCase().indexOf('DATE') > -1) return 'DATE NULL'
+    if (c.toUpperCase().indexOf('DATE') > -1) return 'DATE'
     //if TIMESTAMP in column title - assume date
-    if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE NULL'
+    if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE'
     //if _DEC assume decimal
-    if (c.toUpperCase().indexOf('_DEC') > -1) return 'DECIMAL NULL'
-    //if number - return as INT if no decimal, DEC if dec
-    if (o.match(/^-?\d*\.\d*$/g)) return 'DECIMAL NULL'
-    if (o.match(/^-?\d*$/g)) return 'INT NULL'
-    //try to parse date
-    if (chrono.parseDate(o)) return 'DATE NULL'
-    //default is a 255 length VARCHAR
-    return 'VARCHAR(255) NULL'
+    if (c.toUpperCase().indexOf('_DEC') > -1) return 'FLOAT(10)'
+
+    //check functions
+    let isBlank = (e) => {
+      return e === ''
+    }
+    let isDec = (e) => {
+      if (e === '') return true
+      return e.match(/^-?\d*\.?\d*$/g)
+    }
+    //try to parse from array
+    if (a.every(isBlank)) return 'VARCHAR(255)'
+    if (a.every(isDec)) return 'FLOAT(10)'
+
+    //default
+    return 'VARCHAR(255)'
   }
 
-  //get first two lines of output file (columns and first row of data)
-  opfile.twoLines((err, data) => {
+  //get sample of lines of output file (columns and first row of data)
+  opfile.sampleLines((err, rows, colNames) => {
     if (err) return callback(err)
-    //c is columns, d is first row of data
-    let c = data[0].split('\t')
-    let d = data[1].split('\t')
 
-    for (let i = 0; i < c.length; i++) {
-      //remove _IND from name
-      let name = c[i].replace(/_IND/gi, '').replace(/\ /g, '').replace(/_DEC/gi, '')
-      //if _IND in name, index it
-      let ndex = c[i].toUpperCase().indexOf('_IND') !== -1 ? true : false
-      columns.push({
-        name: name,
-        type: getType(name, d[i]),
+    //push data into R-style arrays (one array of per column)
+    // so firt column (name id_IND) = [1, 2, 3, 4, 5]
+    let columns = []
+    for (let i = 0; i < colNames.length; i++) {
+      columns[i] = []
+    }
+    for (let i = 0; i < rows.length; i++) {
+      let cells = rows[i].split('\t')
+      for (let j = 0; j < cells.length; j++) {
+        columns[j][i] = cells[j]
+      }
+    }
+    columns.forEach((values, i) => {
+      let ndex = colNames[i].toUpperCase().indexOf('_IND') !== -1 ? true : false
+      returnColumns.push({
+        name: colNames[i],
+        type: typeCheck(values, colNames[i]),
         index: ndex
       })
-    }
-    callback(null, columns)
-  });
-};
+    })
+    callback(null, returnColumns)
+  })
+}

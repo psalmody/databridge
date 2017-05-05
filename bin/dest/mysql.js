@@ -13,7 +13,7 @@ module.exports = function(opt, columns, moduleCallback) {
     var cols = [],
       ndxs = [];
     for (var i = 0; i < columns.length; i++) {
-      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ');
+      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' NULL');
       if (columns[i].index) ndxs.push(' INDEX `' + columns[i].name + '` (`' + columns[i].name + '`) ');
     }
     var sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ');
