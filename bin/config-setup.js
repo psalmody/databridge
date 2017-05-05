@@ -99,8 +99,6 @@ module.exports = function(dir, o, p, t) {
     if (typeof(config.schedule) == 'undefined') return 'schedule not defined.';
     if (!fs.existsSync(config.schedule) || !fs.lstatSync(config.schedule).isFile()) return 'schedule file not a valid file at ' + config.schedule;
     var pm2 = pm2cfg.apps[0];
-    if (!fs.existsSync(cdd(pm2.out_file)) || !fs.lstatSync(cdd(pm2.out_file)).isDirectory()) return 'pm2 out file directory not exist at ' + cdd(pm2.out_file);
-    if (!fs.existsSync(cdd(pm2.error_file)) || !fs.lstatSync(cdd(pm2.error_file)).isDirectory()) return 'pm2 error file directory not exist at ' + cdd(pm2.error_file);
     return true;
   };
 
