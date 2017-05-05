@@ -10,6 +10,7 @@ module.exports = (opt, columns, moduleCallback) => {
   const tmp = require('tmp')
   const fs = require('fs')
   const child_process = require('child_process')
+  const chrono = require('chrono-node')
 
   let oracle
 
@@ -71,6 +72,7 @@ module.exports = (opt, columns, moduleCallback) => {
         input: opfile.createReadStream()
       })
       let wStream = fs.createWriteStream(dataFile.name)
+      let dateCols = []
       lineReader.on('error', (e) => {
         return cb(e)
       })
@@ -78,6 +80,22 @@ module.exports = (opt, columns, moduleCallback) => {
         let l = line.replace(/\t([0-9])(\/)/g, '\t0$1\/') //fix months in dates where missing beginning 0
           .replace(/(\/)([0-9])(\/)/g, '\/0$2\/') //fix day in dates where missing beginning 0
           .replace(/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/g, '$3-$1-$2') //change data format
+        let dates = chrono.parse(l)
+        //parse dates and reformat based - include implied values
+        dates.forEach((d) => {
+          //console.log(d.start, typeof(d.start), typeof(d.start["ParsedComponents"]))
+          let v = d.start.knownValues
+          let i = d.start.impliedValues
+          let a = {
+            y: v.year || i.year,
+            m: v.month || i.month,
+            d: v.day || i.day,
+            h: v.hour || i.hour,
+            i: v.minute || i.minute,
+            s: v.second || i.second
+          }
+          l.replace(d.text, `${a.y}-${a.m}-${a.d} ${a.h}:${a.i}:${a.s}\t`)
+        })
         wStream.write(l + '\n')
       })
       lineReader.on('close', () => {
@@ -120,7 +138,7 @@ module.exports = (opt, columns, moduleCallback) => {
       })
       child.on('close', (c) => {
         if (c !== 0) {
-          log.log(fs.readFileSync(logFile.name,'utf8'))
+          console.log(fs.readFileSync(logFile.name,'utf8'))
           return cb('child process exited with code ' + c)
         }
         cb(null)
