@@ -119,8 +119,10 @@ module.exports = (opt, columns, moduleCallback) => {
         log.log('stderr: ', d.toString())
       })
       child.on('close', (c) => {
-        //console.log('child process exited with code ' + c)
-        if (c !== 0) return cb('child process exited with code ' + c)
+        if (c !== 0) {
+          log.log(fs.readFileSync(logFile.name,'utf8'))
+          return cb('child process exited with code ' + c)
+        }
         cb(null)
       })
     },
@@ -169,9 +171,9 @@ module.exports = (opt, columns, moduleCallback) => {
       let tableName = table.split('.')[1]
       let sql = 'SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '
       if (table.split('.').length > 1) {
-        sql += `'${tableName}' AND OWNER = '${schema}'`
+        sql += `'${tableName.toUpperCase()}' AND OWNER = '${schema.toUpperCase()}'`
       } else {
-        sql += `'${table}'`
+        sql += `'${table.toUpperCase()}'`
       }
       //order by order in the database
       sql += ' ORDER BY COLUMN_ID '
