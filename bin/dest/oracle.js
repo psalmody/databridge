@@ -118,10 +118,11 @@ module.exports = (opt, columns, moduleCallback) => {
       let dt = new Date()
       let dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
       let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table + '.log'
-      mkdirp.sync(opt.cfg.dirs.output + 'tsv/' + dir)
+      mkdirp.sync(opt.cfg.dirs.output + 'oracle/' + dir)
       //create temp control file
       let ctlFile = tmp.fileSync()
       let logFile = tmp.fileSync()
+      fs.writeFileSync(ctlFile.name, ctl)
       //control file
       let ctl = `
       OPTIONS (SKIP=1)
@@ -138,7 +139,6 @@ module.exports = (opt, columns, moduleCallback) => {
       ${append}
       (${cs.join(', ')})
       `
-      fs.writeFileSync(ctlFile.name, ctl)
         //execute sqlldr
       let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`])
       child.stdout.on('data', () => {
