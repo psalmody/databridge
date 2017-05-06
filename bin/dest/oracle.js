@@ -110,26 +110,37 @@ module.exports = (opt, columns, moduleCallback) => {
       columns.forEach((c) => {
           let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD'` : c.name
           cs.push(n)
-        })
+        //control file
         //connect string
       let connect = creds.connectString
-        //control file
+      let append = opt.update ? 'APPEND' : ''
+      //throw bad records into /local/output/oracle/
+      let dt = new Date()
+      let dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
+      let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table + '.log'
+      mkdirp.sync(opt.cfg.dirs.output + 'tsv/' + dir)
+      //create temp control file
+      let ctlFile = tmp.fileSync()
+      let logFile = tmp.fileSync()
+      //control file
       let ctl = `
       OPTIONS (SKIP=1)
       load data
       infile '${dataFile.name}'
+      LOG '${logFile.name}'
+      BADFILE '${outputFile}'
       into table ${table}
       fields terminated by "\t"
       TRAILING NULLCOLS
+      PARALLEL = TRUE
+      ERRORS = 99999
+      SILENT = FEEDBACK
+      ${append}
       (${cs.join(', ')})
       `
-        //create temp control file
-      let ctlFile = tmp.fileSync()
       fs.writeFileSync(ctlFile.name, ctl)
-      let logFile = tmp.fileSync()
-        //let command = `sqlldr '${creds.user}/${creds.password}@${connect}' control=${ctlFile.name} log=${logFile.name}`
         //execute sqlldr
-      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`, `log=${logFile.name}`])
+      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`])
       child.stdout.on('data', () => {
         //sqlldr spits out a bunch of info here - but it's too much for the log file
         // we'll just check row totals at the end
