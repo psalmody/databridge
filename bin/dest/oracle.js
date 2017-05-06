@@ -11,6 +11,7 @@ module.exports = (opt, columns, moduleCallback) => {
   const fs = require('fs')
   const child_process = require('child_process')
   const chrono = require('chrono-node')
+  const mkdirp = require('mkdirp')
 
   let oracle
 
@@ -108,8 +109,9 @@ module.exports = (opt, columns, moduleCallback) => {
       //run sqlldr
       let cs = []
       columns.forEach((c) => {
-          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD'` : c.name
+          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD HH24:MI:SS'` : c.name
           cs.push(n)
+      })
         //control file
         //connect string
       let connect = creds.connectString
@@ -117,40 +119,45 @@ module.exports = (opt, columns, moduleCallback) => {
       //throw bad records into /local/output/oracle/
       let dt = new Date()
       let dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
-      let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table + '.log'
+      let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table
       mkdirp.sync(opt.cfg.dirs.output + 'oracle/' + dir)
       //create temp control file
       let ctlFile = tmp.fileSync()
-      let logFile = tmp.fileSync()
-      fs.writeFileSync(ctlFile.name, ctl)
+      //let logFile = tmp.fileSync()
+      console.log(outputFile)
       //control file
       let ctl = `
-      OPTIONS (SKIP=1)
+      OPTIONS (
+        SKIP=1,
+        PARALLEL = TRUE,
+        ERRORS = 99999,
+        SILENT = (FEEDBACK)
+      )
       load data
       infile '${dataFile.name}'
-      LOG '${logFile.name}'
-      BADFILE '${outputFile}'
+      BADFILE '${outputFile}-BAD.log'
       into table ${table}
       fields terminated by "\t"
       TRAILING NULLCOLS
-      PARALLEL = TRUE
-      ERRORS = 99999
-      SILENT = FEEDBACK
       ${append}
       (${cs.join(', ')})
       `
+
+      fs.writeFileSync(ctlFile.name, ctl)
         //execute sqlldr
-      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`])
-      child.stdout.on('data', () => {
+      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`, `log=${outputFile}-LOG.log`])
+      child.stdout.on('data', (d) => {
         //sqlldr spits out a bunch of info here - but it's too much for the log file
         // we'll just check row totals at the end
+        console.log(d.toString())
       })
       child.stderr.on('data', (d) => {
         log.log('stderr: ', d.toString())
       })
       child.on('close', (c) => {
         if (c !== 0) {
-          console.log(fs.readFileSync(logFile.name,'utf8'))
+          console.log(fs.readFileSync(ctlFile.name,'utf8'))
+          console.log(fs.readFileSync(outputFile + '-LOG.log','utf8'))
           return cb('child process exited with code ' + c)
         }
         cb(null)
