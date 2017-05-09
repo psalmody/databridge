@@ -10,6 +10,8 @@ module.exports = (opt, columns, moduleCallback) => {
   const tmp = require('tmp')
   const fs = require('fs')
   const child_process = require('child_process')
+  const chrono = require('chrono-node')
+  const mkdirp = require('mkdirp')
 
   let oracle
 
@@ -19,9 +21,10 @@ module.exports = (opt, columns, moduleCallback) => {
   function sqlTable() {
     let cols = []
     for (var i = 0; i < columns.length; i++) {
-      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' ')
+      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' NULL')
     }
-    return 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )'
+    let sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ') + ' )'
+    return sql
   }
 
   async.waterfall([
@@ -71,6 +74,7 @@ module.exports = (opt, columns, moduleCallback) => {
         input: opfile.createReadStream()
       })
       let wStream = fs.createWriteStream(dataFile.name)
+      let dateCols = []
       lineReader.on('error', (e) => {
         return cb(e)
       })
@@ -78,6 +82,22 @@ module.exports = (opt, columns, moduleCallback) => {
         let l = line.replace(/\t([0-9])(\/)/g, '\t0$1\/') //fix months in dates where missing beginning 0
           .replace(/(\/)([0-9])(\/)/g, '\/0$2\/') //fix day in dates where missing beginning 0
           .replace(/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/g, '$3-$1-$2') //change data format
+        let dates = chrono.parse(l)
+        //parse dates and reformat based - include implied values
+        dates.forEach((d) => {
+          //console.log(d.start, typeof(d.start), typeof(d.start["ParsedComponents"]))
+          let v = d.start.knownValues
+          let i = d.start.impliedValues
+          let a = {
+            y: v.year || i.year,
+            m: v.month || i.month,
+            d: v.day || i.day,
+            h: v.hour || i.hour,
+            i: v.minute || i.minute,
+            s: v.second || i.second
+          }
+          l.replace(d.text, `${a.y}-${a.m}-${a.d} ${a.h}:${a.i}:${a.s}\t`)
+        })
         wStream.write(l + '\n')
       })
       lineReader.on('close', () => {
@@ -89,38 +109,57 @@ module.exports = (opt, columns, moduleCallback) => {
       //run sqlldr
       let cs = []
       columns.forEach((c) => {
-          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD'` : c.name
+          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD HH24:MI:SS'` : c.name
           cs.push(n)
-        })
+      })
+        //control file
         //connect string
       let connect = creds.connectString
-        //control file
+      let append = opt.update ? 'APPEND' : ''
+      //throw bad records into /local/output/oracle/
+      let dt = new Date()
+      let dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
+      let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table
+      mkdirp.sync(opt.cfg.dirs.output + 'oracle/' + dir)
+      //create temp control file
+      let ctlFile = tmp.fileSync()
+      //let logFile = tmp.fileSync()
+      console.log(outputFile)
+      //control file
       let ctl = `
-      OPTIONS (SKIP=1)
+      OPTIONS (
+        SKIP=1,
+        PARALLEL = TRUE,
+        ERRORS = 99999,
+        SILENT = (FEEDBACK)
+      )
       load data
       infile '${dataFile.name}'
+      BADFILE '${outputFile}-BAD.log'
       into table ${table}
       fields terminated by "\t"
       TRAILING NULLCOLS
+      ${append}
       (${cs.join(', ')})
       `
-        //create temp control file
-      let ctlFile = tmp.fileSync()
+
       fs.writeFileSync(ctlFile.name, ctl)
-      let logFile = tmp.fileSync()
-        //let command = `sqlldr '${creds.user}/${creds.password}@${connect}' control=${ctlFile.name} log=${logFile.name}`
         //execute sqlldr
-      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`, `log=${logFile.name}`])
-      child.stdout.on('data', () => {
+      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`, `log=${outputFile}-LOG.log`])
+      child.stdout.on('data', (d) => {
         //sqlldr spits out a bunch of info here - but it's too much for the log file
         // we'll just check row totals at the end
+        console.log(d.toString())
       })
       child.stderr.on('data', (d) => {
         log.log('stderr: ', d.toString())
       })
       child.on('close', (c) => {
-        //console.log('child process exited with code ' + c)
-        if (c !== 0) return cb('child process exited with code ' + c)
+        if (c !== 0) {
+          console.log(fs.readFileSync(ctlFile.name,'utf8'))
+          console.log(fs.readFileSync(outputFile + '-LOG.log','utf8'))
+          return cb('child process exited with code ' + c)
+        }
         cb(null)
       })
     },
@@ -169,9 +208,9 @@ module.exports = (opt, columns, moduleCallback) => {
       let tableName = table.split('.')[1]
       let sql = 'SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = '
       if (table.split('.').length > 1) {
-        sql += `'${tableName}' AND OWNER = '${schema}'`
+        sql += `'${tableName.toUpperCase()}' AND OWNER = '${schema.toUpperCase()}'`
       } else {
-        sql += `'${table}'`
+        sql += `'${table.toUpperCase()}'`
       }
       //order by order in the database
       sql += ' ORDER BY COLUMN_ID '
