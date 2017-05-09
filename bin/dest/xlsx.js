@@ -13,7 +13,7 @@ module.exports = (opt, columns, moduleCallback) => {
   XLSX.cellDates = true
 
   //read tsv file
-  let wb = XLSX.readFile(/*opt.opfile.filename*/'./local/input/tsv/SHORT_MOCK.txt', {
+  let wb = XLSX.readFile(opt.opfile.filename, {
     FS: '\t',
     cellDates: true
   })
@@ -44,7 +44,7 @@ module.exports = (opt, columns, moduleCallback) => {
   //mkdirp and write file
   mkdirp(opt.cfg.dirs.output + 'xlsx/' + dir, (e) => {
     if (e) return moduleCallback(e)
-    XLSX.writeFile(wb, outputFile, {cellDates: true})
+    XLSX.writeFile(wb, outputFile)
     moduleCallback(null, range.e.r, headers)
   })
 
