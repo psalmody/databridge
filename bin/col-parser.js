@@ -35,19 +35,20 @@ module.exports = (opfile, callback) => {
   //get sample of lines of output file (columns and first row of data)
   opfile.sampleLines((err, rows, colNames) => {
     if (err) return callback(err)
+    if (!rows.length) callback('No rows returned from opfile.sampleLines' + JSON.stringify(rows) + JSON.stringify(colNames))
 
     //push data into R-style arrays (one array of per column)
-    // so firt column (name id_IND) = [1, 2, 3, 4, 5]
+    // so first column (name id_IND) = [1, 2, 3, 4, 5]
     let columns = []
-    for (let i = 0; i < colNames.length; i++) {
-      columns[i] = []
-    }
-    for (let i = 0; i < rows.length; i++) {
-      let cells = rows[i].split('\t')
-      for (let j = 0; j < cells.length; j++) {
-        columns[j][i] = cells[j]
+    rows.forEach((r) => {
+      if (!r) return true
+      let cells = r.split('\t')
+      for (let i = 0; i < colNames.length; i++) {
+        columns[i] = columns[i] || []
+        let v = cells[i] || ''
+        columns[i].push(v)
       }
-    }
+    })
     columns.forEach((values, i) => {
       let ndex = colNames[i].toUpperCase().indexOf('_IND') !== -1 ? true : false
       returnColumns.push({
