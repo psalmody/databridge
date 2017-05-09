@@ -3,54 +3,65 @@ var fs = require('fs');
 var assert = require('chai').assert;
 var dirname = __dirname.replace(/\\/g, '/') + '/';
 var opfile = {
-  twoLines: function(callback) {
-    fs.readFile(dirname + 'assets/MOCK_DATA.txt', 'utf-8', function(err, data) {
+  sampleLines: function(callback) {
+    callback = typeof(callback) == 'undefined' ? function() {
+      return;
+    } : callback;
+    fs.readFile(dirname + 'assets/MOCK_DATA.txt', 'utf-8', 'utf-8', function(err, data) {
       if (err) return callback(err);
-      var two = data.replace(/\r/g, '').split('\n').slice(0, 2);
-      callback(null, two);
+      var returnArray = []
+      var lines = data.replace(/\r/g, '').split('\n')
+
+      var times = Math.min(lines.length - 1, 100)
+
+      for (var i = 0; i < times; i++) {
+        returnArray.push(lines[Math.floor(Math.random() * (lines.length-1) ) + 2])
+      }
+      //returns no error, random sampling of up to 100 lines (or all the lines if less than 100) and column names in array
+      callback(null, returnArray, lines[0].split('\t'))
     });
   }
 };
 
 var expect = [{
-  'name': 'id',
-  'type': 'VARCHAR(255) NULL',
+  'name': 'id_IND',
+  'type': 'FLOAT(10)',
   'index': true
 }, {
   'name': 'first_name',
-  'type': 'VARCHAR(255) NULL',
+  'type': 'VARCHAR(255)',
   'index': false
 }, {
   'name': 'last_name',
-  'type': 'VARCHAR(255) NULL',
+  'type': 'VARCHAR(255)',
   'index': false
 }, {
   'name': 'email',
-  'type': 'VARCHAR(255) NULL',
+  'type': 'VARCHAR(255)',
   'index': false
 }, {
   'name': 'gender',
-  'type': 'VARCHAR(255) NULL',
+  'type': 'VARCHAR(255)',
   'index': false
 }, {
   'name': 'ip_address',
-  'type': 'VARCHAR(255) NULL',
+  'type': 'VARCHAR(255)',
   'index': false
 }, {
   'name': 'testing_GPA',
-  'type': 'DECIMAL(8,2) NULL',
+  'type': 'FLOAT(10)',
   'index': false
 }, {
   'name': 'testing_DATE',
-  'type': 'DATE NULL',
+  'type': 'DATE',
   'index': false
 }, {
   'name': 'testing_TIMESTAMP',
-  'type': 'DATE NULL',
+  'type': 'DATE',
   'index': false
 }, {
-  'name': 'testing',
-  'type': 'VARCHAR(255) NULL',
+  'name': 'testing_DEC',
+  'type': 'FLOAT(10)',
   'index': false
 }];
 
