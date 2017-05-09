@@ -9,6 +9,8 @@ module.exports = (opt, moduleCallback) => {
   const log = opt.log
   const bindQuery = require(opt.bin + 'bind-query')
   const opfile = opt.opfile
+  const moment = require('moment')
+  
   let oracle
 
   async.waterfall([
@@ -50,14 +52,18 @@ module.exports = (opt, moduleCallback) => {
           // if columns are already in
         stream.on('data', (d) => {
             counter++
+            let row = d.map((c) => {
+              if (c instanceof Date) return moment(c).format('YYYY-MM-DD HH:mm:ss Z')
+              return c
+            })
             if (flag === false) {
               //columns not written yet
-              tempHold.push(d.join('\t') + '\n')
+              tempHold.push(row.join('\t') + '\n')
             } else {
               //columns written, dump tempHold and start appending data
               let t = tempHold.join('')
               tempHold = []
-              opfile.append(t + d.join('\t') + '\n', (e) => {
+              opfile.append(t + row.join('\t') + '\n', (e) => {
                 if (e) return cb(e)
               })
             }
