@@ -54,7 +54,7 @@
     "rimraf": "^2.5.4",
     "split": "^1.0.0",
     "tmp": "0.0.31",
-    "xlsx": "^0.9.13"
+    "xlsx": "^0.10.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
