@@ -67,7 +67,7 @@ module.exports = function(opt, moduleCallback) {
     function(rows, columns, cb) {
       prependFile(opfile.filename, columns, function(err) {
         if (err) return cb(err);
-        cb(null, rows, columns.replace(/\n/g, '').split('\t'));
+        cb(null, rows, columns.replace(/\n|_IND|_DEC/g, '').split('\t'));
       });
     }
   ], function(err, rows, columns) {

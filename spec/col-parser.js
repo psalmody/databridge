@@ -24,7 +24,7 @@ var opfile = {
 };
 
 var expect = [{
-  'name': 'id_IND',
+  'name': 'id',
   'type': 'FLOAT(10)',
   'index': true
 }, {
@@ -60,7 +60,7 @@ var expect = [{
   'type': 'DATE',
   'index': false
 }, {
-  'name': 'testing_DEC',
+  'name': 'testing',
   'type': 'FLOAT(10)',
   'index': false
 }];

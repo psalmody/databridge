@@ -82,6 +82,7 @@ module.exports = function(opt, moduleCallback) {
         return moduleCallback(e);
       }
       if (err) return moduleCallback(err);
-      moduleCallback(null, rows, cols);
+      //return columns without _IND or _DEC appended
+      moduleCallback(null, rows, cols.join('\t').replace(/_IND|_DEC/g, '').split('\t'));
     });
 };
