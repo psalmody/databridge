@@ -19,7 +19,7 @@ module.exports = (batchName, batchFile) => {
     })
     //handle script type
     let fn = (()=>{
-      if (options.type == 'script') {
+      if (o.type == 'script') {
         return (() => {
           let script = require(config.dirs.input + o.name)
           return function(responses, cb) {
@@ -31,7 +31,7 @@ module.exports = (batchName, batchFile) => {
             })
           }
         })(o)
-      } else if (options.type == 'bridge') {
+      } else if (o.type == 'bridge') {
         return (() => {
           return function(responses, cb) {
             bridge(config, o, function(err, response) {
@@ -41,7 +41,7 @@ module.exports = (batchName, batchFile) => {
               cb(null, responses)
             })
           }
-        })(options)
+        })(o)
       }
     })(o)
     //push into bridges array
