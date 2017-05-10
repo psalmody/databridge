@@ -52,7 +52,7 @@ module.exports = (opfile, callback) => {
     columns.forEach((values, i) => {
       let ndex = colNames[i].toUpperCase().indexOf('_IND') !== -1 ? true : false
       returnColumns.push({
-        name: colNames[i],
+        name: colNames[i].replace(/_IND|_DEC/g,''),
         type: typeCheck(values, colNames[i]),
         index: ndex
       })

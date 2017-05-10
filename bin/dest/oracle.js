@@ -99,7 +99,7 @@ module.exports = (opt, columns, moduleCallback) => {
         let dates = chrono.parse(l)
         //parse dates and reformat based - include implied values
         dates.forEach((d) => {
-          //console.log(d.start, typeof(d.start), typeof(d.start["ParsedComponents"]))
+          //log.log(d.start, typeof(d.start), typeof(d.start["ParsedComponents"]))
           let v = d.start.knownValues
           let i = d.start.impliedValues
           let a = {
@@ -138,7 +138,7 @@ module.exports = (opt, columns, moduleCallback) => {
       //create temp control file
       let ctlFile = tmp.fileSync()
       //let logFile = tmp.fileSync()
-      console.log(outputFile)
+      log.log(outputFile)
       //control file
       let ctl = `
       OPTIONS (
@@ -163,15 +163,15 @@ module.exports = (opt, columns, moduleCallback) => {
       child.stdout.on('data', (d) => {
         //sqlldr spits out a bunch of info here - but it's too much for the log file
         // we'll just check row totals at the end
-        console.log(d.toString())
+        log.log(d.toString())
       })
       child.stderr.on('data', (d) => {
         log.log('stderr: ', d.toString())
       })
       child.on('close', (c) => {
         if (c !== 0) {
-          console.log(fs.readFileSync(ctlFile.name,'utf8'))
-          console.log(fs.readFileSync(outputFile + '-LOG.log','utf8'))
+          log.log(fs.readFileSync(ctlFile.name,'utf8'))
+          log.log(fs.readFileSync(outputFile + '-LOG.log','utf8'))
           return cb('child process exited with code ' + c)
         }
         cb(null)
