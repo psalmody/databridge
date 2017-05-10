@@ -72,11 +72,23 @@ module.exports = (opt, columns, moduleCallback) => {
       oracle.getConnection((e, conn) => {
         if (e) return cb(e)
         conn.execute('TRUNCATE TABLE ' + table, (e) => {
-          if (e) return cb(e)
-          conn.release((e) => {
-            if (e) return cb(e)
-            cb(null)
-          })
+          if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('TRUNCATE TABLE error: ' + e)
+          if (e instanceof Error && e.toString().indexOf('table or view does not exist') !== -1) {
+            //if no table exists, ignore truncate order and create table anyway
+            conn.execute(sqlTable(), (e) => {
+              if (e) return cb(e)
+              conn.release((e) => {
+                if (e) return cb(e)
+                cb(null)
+              })
+            })
+          } else {
+            //release connection, table existed and truncated
+            conn.release((e) => {
+              if (e) return cb(e)
+              cb(null)
+            })
+          }
         })
       })
     },
