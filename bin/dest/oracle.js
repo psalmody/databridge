@@ -39,12 +39,12 @@ module.exports = (opt, columns, moduleCallback) => {
     },
     (cb) => {
       //drop table if not update
-      if (opt.update) return cb(null)
+      if (opt.update || opt.truncate) return cb(null)
       oracle.getConnection((e, conn) => {
         if (e) return cb(e)
         conn.execute('DROP TABLE ' + table, [], (e) => {
           if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + e);
-          conn.close((e) => {
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null)
           })
@@ -53,13 +53,27 @@ module.exports = (opt, columns, moduleCallback) => {
     },
     (cb) => {
       //create table if not update
-      if (opt.update) return cb(null)
+      if (opt.update || opt.truncate) return cb(null)
       let sql = sqlTable()
       oracle.getConnection((e, conn) => {
         if (e) return cb(e)
         conn.execute(sql, (e) => {
           if (e) return cb(e)
-          conn.close((e) => {
+          conn.release((e) => {
+            if (e) return cb(e)
+            cb(null)
+          })
+        })
+      })
+    },
+    (cb) => {
+      //truncate table if specified
+      if (!opt.truncate) return cb(null)
+      oracle.getConnection((e, conn) => {
+        if (e) return cb(e)
+        conn.execute('TRUNCATE TABLE ' + table, (e) => {
+          if (e) return cb(e)
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null)
           })
@@ -179,7 +193,7 @@ module.exports = (opt, columns, moduleCallback) => {
           let x = `ind_${t}_${c}`.substring(0, 25)
           conn.execute(`CREATE INDEX ${x} ON ${table} (${c})`, (e) => {
             if (e) return cb(e)
-            conn.close((e) => {
+            conn.release((e) => {
               if (e) return cb(e)
             })
             count++
@@ -195,7 +209,7 @@ module.exports = (opt, columns, moduleCallback) => {
         if (e) return cb(e)
         conn.execute(sql, [], (e, r) => {
           if (e) return cb(e)
-          conn.close((e) => {
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null, r.rows[0][0])
           })
@@ -221,7 +235,7 @@ module.exports = (opt, columns, moduleCallback) => {
           r.rows.forEach((v) => {
             c.push(v[0])
           })
-          conn.close((e) => {
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null, rows, c)
           })

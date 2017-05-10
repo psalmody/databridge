@@ -75,7 +75,8 @@ else if (missingKeys(program, ['batch']) == false) {
       binds: program.binds,
       table: program.table,
       task: program.task,
-      update: program.update
+      update: program.update,
+      truncate: program.truncate
     }, function(err, response) {
       if (err) return cb(err);
       //push clean version (no methods) of response
