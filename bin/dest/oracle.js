@@ -1,6 +1,6 @@
 module.exports = (opt, columns, moduleCallback) => {
 
-  const creds = require(opt.cfg.dirs.creds + 'oracle')
+  const creds = require(opt.cfg.dirs.creds + opt.destination)
   const oracledb = require('oracledb')
   const async = require('async')
   const readline = require('readline')
@@ -134,9 +134,10 @@ module.exports = (opt, columns, moduleCallback) => {
       //run sqlldr
       let cs = []
       columns.forEach((c) => {
-          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} TIMESTAMP "YYYY-MM-DD HH24:MI:SS TZR"` : c.name
-          cs.push(n)
-        })
+        let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD HH24:MI:SS'` : c.name
+        if (c.type.indexOf('FLOAT') !== -1) n = `${c.name} FLOAT EXTERNAL`
+        cs.push(n)
+      })
         //control file
         //connect string
       let connect = creds.connectString
@@ -147,15 +148,13 @@ module.exports = (opt, columns, moduleCallback) => {
       let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table
       mkdirp.sync(opt.cfg.dirs.output + 'oracle/' + dir)
         //create temp control file
-      let ctlFile = tmp.fileSync()
-        //let logFile = tmp.fileSync()
       log.log(outputFile)
         //control file
       let ctl = `
       OPTIONS (
         SKIP=1,
         PARALLEL = TRUE,
-        ERRORS = 99999,
+        ERRORS = 50,
         SILENT = (FEEDBACK)
       )
       load data
@@ -168,9 +167,9 @@ module.exports = (opt, columns, moduleCallback) => {
       (${cs.join(', ')})
       `
 
-      fs.writeFileSync(ctlFile.name, ctl)
+      fs.writeFileSync(outputFile + '-ctl.ctl', ctl)
         //execute sqlldr
-      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`, `log=${outputFile}-LOG.log`])
+      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${outputFile}-ctl.ctl`, `log=${outputFile}-LOG.log`])
       child.stdout.on('data', (d) => {
         //sqlldr spits out a bunch of info here - but it's too much for the log file
         // we'll just check row totals at the end
@@ -181,7 +180,7 @@ module.exports = (opt, columns, moduleCallback) => {
       })
       child.on('close', (c) => {
         if (c !== 0) {
-          log.log(fs.readFileSync(ctlFile.name, 'utf8'))
+          log.log(fs.readFileSync(outputFile + '-ctl.ctl', 'utf8'))
           log.log(fs.readFileSync(outputFile + '-LOG.log', 'utf8'))
           return cb('child process exited with code ' + c)
         }
