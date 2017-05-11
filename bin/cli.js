@@ -12,7 +12,7 @@ program.version(pkg.version)
   .option('-k, --task', 'This command is a schedule task or piping to output file.' + newline + 'Don\'t generate processing spinner.')
   .option('-c, --batch [batch]', 'Run json [batch] from batches/')
   .option('-u, --update', 'Update table (insert data only) don\'t overwrite ' + newline + 'existing table or update table structure ' + newline + '(for database destinations).')
-  .option('-n, --truncate', 'Drop all values in table and insert new values, ' + newline + 'don\'t drop table completely (for database destinations).')
+  .option('-n, --truncate', 'Drop all values in table and insert new values, ' + newline + 'don\'t drop table completely (for sql destinations only).')
   .on('--help', function() {
     console.log('  Examples: ');
     console.log('');
