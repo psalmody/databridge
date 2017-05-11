@@ -85,7 +85,6 @@ module.exports = function(dir, o, p, t) {
   };
 
   var valid = function() {
-    var cdd = require('./string-utilities').cdDotDot;
     var dirs = ['batches', 'creds', 'destinations', 'input', 'logs', 'output', 'sources'];
     //check all dirs are assigned and exist
     var msg = missingKeys(config.dirs, dirs);
@@ -98,7 +97,6 @@ module.exports = function(dir, o, p, t) {
     if (['console', 'file'].indexOf(config.logto) === -1) return 'logto type ' + config.logto + 'is not allowed. File or console only.';
     if (typeof(config.schedule) == 'undefined') return 'schedule not defined.';
     if (!fs.existsSync(config.schedule) || !fs.lstatSync(config.schedule).isFile()) return 'schedule file not a valid file at ' + config.schedule;
-    var pm2 = pm2cfg.apps[0];
     return true;
   };
 

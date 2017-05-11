@@ -6,7 +6,6 @@ module.exports = (opt, moduleCallback) => {
   const filename = `${opt.cfg.dirs.input}xlsx/${file}.xlsx`
   const log = opt.log
   const opfile = opt.opfile
-  const async = require('async')
 
   let workbook = XLSX.readFile(filename)
 
@@ -31,7 +30,7 @@ module.exports = (opt, moduleCallback) => {
       r: R
     })
     let cell = worksheet[v]
-    let hdr = "UNKNOWN " + C
+    let hdr = 'UNKNOWN ' + C
     if (cell && cell.t) {
       worksheet[v].v = worksheet[v].v.replace(/_IND|_DEC/, '')
       hdr = XLSX.utils.format_cell(cell)
@@ -39,7 +38,7 @@ module.exports = (opt, moduleCallback) => {
     headers.push(hdr)
   }
 
-  opfile.append(output, (e)=> {
+  opfile.append(output, (e) => {
     if (e) {
       log.error(e)
       return moduleCallback(e)

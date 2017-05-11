@@ -100,7 +100,6 @@ module.exports = (opt, columns, moduleCallback) => {
         input: opfile.createReadStream()
       })
       let wStream = fs.createWriteStream(dataFile.name)
-      let dateCols = []
       lineReader.on('error', (e) => {
         return cb(e)
       })
@@ -109,7 +108,7 @@ module.exports = (opt, columns, moduleCallback) => {
           .replace(/(\/)([0-9])(\/)/g, '\/0$2\/') //fix day in dates where missing beginning 0
           .replace(/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/g, '$3-$1-$2') //change data format
         let dates = chrono.parse(l)
-        //parse dates and reformat based - include implied values
+          //parse dates and reformat based - include implied values
         dates.forEach((d) => {
           //log.log(d.start, typeof(d.start), typeof(d.start["ParsedComponents"]))
           let v = d.start.knownValues
@@ -137,21 +136,21 @@ module.exports = (opt, columns, moduleCallback) => {
       columns.forEach((c) => {
           let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} TIMESTAMP "YYYY-MM-DD HH24:MI:SS TZR"` : c.name
           cs.push(n)
-      })
+        })
         //control file
         //connect string
       let connect = creds.connectString
       let append = opt.update ? 'APPEND' : ''
-      //throw bad records into /local/output/oracle/
+        //throw bad records into /local/output/oracle/
       let dt = new Date()
       let dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
       let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table
       mkdirp.sync(opt.cfg.dirs.output + 'oracle/' + dir)
-      //create temp control file
+        //create temp control file
       let ctlFile = tmp.fileSync()
-      //let logFile = tmp.fileSync()
+        //let logFile = tmp.fileSync()
       log.log(outputFile)
-      //control file
+        //control file
       let ctl = `
       OPTIONS (
         SKIP=1,
@@ -182,8 +181,8 @@ module.exports = (opt, columns, moduleCallback) => {
       })
       child.on('close', (c) => {
         if (c !== 0) {
-          log.log(fs.readFileSync(ctlFile.name,'utf8'))
-          log.log(fs.readFileSync(outputFile + '-LOG.log','utf8'))
+          log.log(fs.readFileSync(ctlFile.name, 'utf8'))
+          log.log(fs.readFileSync(outputFile + '-LOG.log', 'utf8'))
           return cb('child process exited with code ' + c)
         }
         cb(null)

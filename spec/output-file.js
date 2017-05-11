@@ -15,7 +15,7 @@ var opt = {
 var outputFile = require('../bin/output-file');
 var opfile;
 var mockFile = './spec/assets/MOCK_DATA.txt';
-let mockData = fs.readFileSync(mockFile,'utf8').replace(/\r/g, '');
+let mockData = fs.readFileSync(mockFile, 'utf8').replace(/\r/g, '');
 
 describe('Testing output-file', function() {
   it('Creates file', function(done) {
@@ -29,7 +29,7 @@ describe('Testing output-file', function() {
   it('Appends data', function(done) {
     opfile.append(mockData, function(e) {
       if (e) return done(new Error(e));
-      var d = fs.readFileSync(opfile.filename,'utf8');
+      var d = fs.readFileSync(opfile.filename, 'utf8');
       assert(mockData === d, 'mock data does not match opfile.filename data');
       done();
     });
@@ -37,8 +37,8 @@ describe('Testing output-file', function() {
   it('Returns first two lines of file.', function(done) {
     opfile.twoLines(function(e, two) {
       if (e) return done(new Error(e));
-      var lines = mockData.split('\n').slice(0,2)
-      assert(JSON.stringify(lines) === JSON.stringify(two), 'Lines do not match. \nShould be: ' + lines + '\nReturned: '+two);
+      var lines = mockData.split('\n').slice(0, 2)
+      assert(JSON.stringify(lines) === JSON.stringify(two), 'Lines do not match. \nShould be: ' + lines + '\nReturned: ' + two);
       done();
     });
   });

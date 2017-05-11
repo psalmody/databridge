@@ -30,7 +30,7 @@ module.exports = function(opt, moduleCallback) {
         })
         .on('fields', function(fields) {
           fields.forEach(function(field) {
-            columns.push(field.name.replace(/_IND|_DEC/g,''));
+            columns.push(field.name.replace(/_IND|_DEC/g, ''));
           });
         })
         .on('result', function(row) {

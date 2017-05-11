@@ -85,7 +85,7 @@ module.exports = (opt, moduleCallback) => {
           .on('metadata', (m) => {
             //this is column names
             m.forEach((c) => {
-              columns.push(c.name.replace(/_DEC|_IND/g,''))
+              columns.push(c.name.replace(/_DEC|_IND/g, ''))
             })
             opfile.append(columns.join('\t') + '\n', (e) => {
               if (e) return cb(e)

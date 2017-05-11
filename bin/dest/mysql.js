@@ -53,7 +53,7 @@ module.exports = (opt, columns, moduleCallback) => {
       db.query('TRUNCATE TABLE ' + table, (e) => {
         //if error but it isn't table doesn't exist, throw error at cb
         if (e instanceof Error && e.toString().indexOf('doesn\'t exist') === -1) return cb('TRUNCATE TABLE error: ' + e)
-        //if error but it's that the table doesn't exist, let's create it
+          //if error but it's that the table doesn't exist, let's create it
         if (e instanceof Error && e.toString().indexOf('doesn\'t exist') !== -1) {
           db.query(sqlTable(), (e) => {
             if (e) return cb(e)

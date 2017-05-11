@@ -66,7 +66,7 @@ module.exports = function(opt, moduleCallback) {
       var times = Math.min(lines.length - 1, 100)
 
       for (var i = 0; i < times; i++) {
-        returnArray.push(lines[Math.floor(Math.random() * (lines.length-1) ) + 2])
+        returnArray.push(lines[Math.floor(Math.random() * (lines.length - 1)) + 2])
       }
       //returns no error, random sampling of up to 100 lines (or all the lines if less than 100) and column names in array
       callback(null, returnArray, lines[0].split('\t'))
