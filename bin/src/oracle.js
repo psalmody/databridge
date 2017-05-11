@@ -53,7 +53,7 @@ module.exports = (opt, moduleCallback) => {
         stream.on('data', (d) => {
             counter++
             let row = d.map((c) => {
-              if (c instanceof Date) return moment(c).format('YYYY-MM-DD HH:mm:ss Z')
+              if (c instanceof Date) return moment(c).format('YYYY-MM-DD HH:mm:ss')
               return c
             })
             if (flag === false) {
