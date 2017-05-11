@@ -18,7 +18,7 @@ module.exports = (opt, columns, moduleCallback) => {
   oracledb.autoCommit = true
 
   //sql table generates CREATE TABLE sql
-  function sqlTable() {
+  let sqlTable = () => {
     let cols = []
     for (var i = 0; i < columns.length; i++) {
       cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' NULL')
@@ -135,7 +135,7 @@ module.exports = (opt, columns, moduleCallback) => {
       //run sqlldr
       let cs = []
       columns.forEach((c) => {
-          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD HH24:MI:SS'` : c.name
+          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} TIMESTAMP "YYYY-MM-DD HH24:MI:SS TZR"` : c.name
           cs.push(n)
       })
         //control file
