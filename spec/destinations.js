@@ -45,7 +45,7 @@ describe('Run all destinations with MOCK_DATA', function() {
   });
   it('Runs every destination', function() {
     async.each(destinations, function(dest) {
-      describe('Checking ' + dest, function() {
+      describe('Checking destination ' + dest, function() {
         this.timeout(30000);
         var destination = fs.existsSync('./bin/dest/' + dest + '.js') ? require('../bin/dest/' + dest) : require(config.dirs.destinations + dest);
         it('Ran destination ' + dest, function(done) {
