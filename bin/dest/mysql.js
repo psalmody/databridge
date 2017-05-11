@@ -1,123 +1,139 @@
-module.exports = function(opt, columns, moduleCallback) {
+module.exports = (opt, columns, moduleCallback) => {
 
-  var mysql = require('mysql'),
-    readline = require('readline'),
-    mySqlCreds = require(opt.cfg.dirs.creds + 'mysql'),
-    db = mysql.createConnection(mySqlCreds),
-    async = require('async'),
-    table = opt.source + '.' + opt.table.replace(/\./g, '_'),
-    opfile = opt.opfile,
-    log = opt.log;
+  const mysql = require('mysql')
+  const readline = require('readline')
+  const mySqlCreds = require(opt.cfg.dirs.creds + opt.destination)
+  let db = mysql.createConnection(mySqlCreds)
+  const async = require('async')
+  let table = opt.source + '.' + opt.table.replace(/\./g, '_')
+  let opfile = opt.opfile
+  let log = opt.log
 
-  function sqlTable() {
-    var cols = [],
-      ndxs = [];
-    for (var i = 0; i < columns.length; i++) {
-      cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' NULL');
-      if (columns[i].index) ndxs.push(' INDEX `' + columns[i].name + '` (`' + columns[i].name + '`) ');
-    }
-    var sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ');
-    if (ndxs.length) sql += ', ' + ndxs.join(',');
-    sql += ' )';
-    return sql;
+  let sqlTable = () => {
+    let cols = []
+    let ndxs = []
+    columns.forEach((c) => {
+      cols.push(' ' + c.name + ' ' + c.type + ' NULL')
+      if (c.index) ndxs.push(' INDEX `' + c.name + '` (`' + c.name + '`) ')
+    })
+    let sql = 'CREATE TABLE ' + table + ' ( ' + cols.join(', ')
+    if (ndxs.length) sql += ', ' + ndxs.join(',')
+    sql += ' )'
+    return sql
   }
 
   async.waterfall([
     //create database if not existing
-    function(cb) {
-      db.query('CREATE DATABASE IF NOT EXISTS ' + opt.source, function(err) {
-        if (err) return cb(err);
-        cb(null);
-      });
+    (cb) => {
+      db.query('CREATE DATABASE IF NOT EXISTS ' + opt.source, (err) => {
+        if (err) return cb(err)
+        cb(null)
+      })
     },
     //drop existing table
-    function(cb) {
-      if (opt.update) {
-        return cb(null); //don't drop table if update option
-      }
-      db.query('DROP TABLE IF EXISTS ' + table, function(err) {
-        if (err) return cb(err);
-        cb(null);
-      });
+    (cb) => {
+      if (opt.update || opt.truncate) return cb(null)
+      db.query('DROP TABLE IF EXISTS ' + table, (err) => {
+        if (err) return cb(err)
+        cb(null)
+      })
     },
     //create new table
-    function(cb) {
-      if (opt.update) return cb(null); //don't drop table if update option
-      var sql = sqlTable();
-      db.query(sql, function(err) {
-        if (err) return cb(err);
-        cb(null);
-      });
+    (cb) => {
+      if (opt.update || opt.truncate) return cb(null) //don't drop table if update option
+      let sql = sqlTable()
+      db.query(sql, (err) => {
+        if (err) return cb(err)
+        cb(null)
+      })
+    },
+    //truncate table if specified
+    (cb) => {
+      if (!opt.truncate) return cb(null)
+      db.query('TRUNCATE TABLE ' + table, (e) => {
+        //if error but it isn't table doesn't exist, throw error at cb
+        if (e instanceof Error && e.toString().indexOf('doesn\'t exist') === -1) return cb('TRUNCATE TABLE error: ' + e)
+        //if error but it's that the table doesn't exist, let's create it
+        if (e instanceof Error && e.toString().indexOf('doesn\'t exist') !== -1) {
+          db.query(sqlTable(), (e) => {
+            if (e) return cb(e)
+            cb(null)
+          })
+        } else {
+          //otherwise, truncated smoothly
+          cb(null)
+        }
+      })
     },
     //sql_mode to blank
-    function(cb) {
-      db.query('SET sql_mode = \'\'', function(err) {
-        if (err) return cb('SET sql_mode error: ' + err);
-        cb(null);
-      });
+    (cb) => {
+      db.query('SET sql_mode = \'\'', (err) => {
+        if (err) return cb('SET sql_mode error: ' + err)
+        cb(null)
+      })
     },
     //load data into table
-    function(cb) {
-      var sql = 'INSERT INTO ' + table + ' ';
-      var cs = [];
-      var first = true;
-      columns.forEach(function(c) {
-        cs.push(c.name);
-      });
-      sql += ' ( ' + cs.join(', ') + ' ) VALUES ';
-      var lineReader = readline.createInterface({
+    (cb) => {
+      let sql = 'INSERT INTO ' + table + ' '
+      let cs = []
+      let first = true
+      columns.forEach((c) => {
+        cs.push(c.name)
+      })
+      sql += ' ( ' + cs.join(', ') + ' ) VALUES '
+      let lineReader = readline.createInterface({
         input: opfile.createReadStream()
-      });
-      lineReader.on('error', function(err) {
-        return cb(err);
-      });
-      var insertLines = [];
-      lineReader.on('line', function(line) {
+      })
+      lineReader.on('error', (err) => {
+        return cb(err)
+      })
+      let insertLines = []
+      lineReader.on('line', (line) => {
         if (first) {
-          first = false;
+          first = false
         } else {
-          insertLines.push(' ( "' + line.split('\t').join('", "') + '")');
+          insertLines.push(' ( "' + line.split('\t').join('", "') + '")')
         }
-      });
-      lineReader.on('close', function() {
-        sql += insertLines.join(',');
-        cb(null, sql);
-      });
+      })
+      lineReader.on('close', () => {
+        sql += insertLines.join(',')
+        cb(null, sql)
+      })
     },
-    function(sql, cb) {
-      db.query(sql, function(err) {
-        if (err) return cb('Insert data error: ' + err);
-        cb(null);
-      });
+    (sql, cb) => {
+      db.query(sql, (err) => {
+        if (err) return cb('Insert data error: ' + err)
+        cb(null)
+      })
     },
     //check table rows
-    function(cb) {
-      db.query('SELECT count(*) as rows FROM ' + table, function(err, result) {
-        if (err) return cb('SELECT COUNT(*) err: ' + err);
-        cb(null, result[0].rows);
-      });
+    (cb) => {
+      db.query('SELECT count(*) as rows FROM ' + table, (err, result) => {
+        if (err) return cb('SELECT COUNT(*) err: ' + err)
+        cb(null, result[0].rows)
+      })
     },
-    function(rows, cb) {
+    (rows, cb) => {
       //check columns
-      var table_name = table.split('.')[1];
-      var sql = 'SELECT COLUMN_NAME as col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=\'' + opt.source + '\' AND TABLE_NAME=\'' + table_name + '\'';
-      db.query(sql, function(err, result) {
-        if (err) return cb('SELECT COLUMN_NAME err: ' + err);
-        var cols = [];
-        result.forEach(function(row) {
-          cols.push(row.col);
-        });
-        cb(null, rows, cols);
-      });
+      let table_name = table.split('.')[1]
+      let sql = 'SELECT COLUMN_NAME as col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=\'' + opt.source + '\' AND TABLE_NAME=\'' + table_name + '\''
+      db.query(sql, (err, result) => {
+        if (err) return cb('SELECT COLUMN_NAME err: ' + err)
+        let cols = []
+        result.forEach((row) => {
+          cols.push(row.col)
+        })
+        cb(null, rows, cols)
+      })
     }
-  ], function(err, rows, columns) {
-    db.end(function(err) {
-      if (err) moduleCallback(err);
-    });
+  ], (err, rows, columns) => {
+    db.end((err) => {
+      if (err) moduleCallback(err)
+    })
     if (err) {
-      log.error(err);
-      return moduleCallback(err);
+      log.error(err)
+      return moduleCallback(err)
     }
-    moduleCallback(null, rows, columns);
-  });
-};
+    moduleCallback(null, rows, columns)
+  })
+}
