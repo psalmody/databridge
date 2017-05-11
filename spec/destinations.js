@@ -49,6 +49,7 @@ describe('Run all destinations with MOCK_DATA', function() {
         this.timeout(30000);
         var destination = fs.existsSync('./bin/dest/' + dest + '.js') ? require('../bin/dest/' + dest) : require(config.dirs.destinations + dest);
         it('Ran destination ' + dest, function(done) {
+          opt.destination = dest;
           destination(opt, columns, function(err, rows, columns) {
             if (err) return done(new Error(err));
             response.destination.respond('ok', rows, columns);
