@@ -3,7 +3,6 @@
  * output file and return them as column definitions.
  */
 module.exports = (opfile, callback) => {
-  const chrono = require('chrono-node')
   let returnColumns = []
 
   //run against sample and see if we can't assure the data types are right
@@ -11,9 +10,9 @@ module.exports = (opfile, callback) => {
   let typeCheck = (a, c) => {
     //if DATE in column title - assume date
     if (c.toUpperCase().indexOf('DATE') > -1) return 'DATE'
-    //if TIMESTAMP in column title - assume date
+      //if TIMESTAMP in column title - assume date
     if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE'
-    //if _DEC assume decimal
+      //if _DEC assume decimal
     if (c.toUpperCase().indexOf('_DEC') > -1) return 'FLOAT(10)'
 
     //check functions
@@ -21,10 +20,10 @@ module.exports = (opfile, callback) => {
       return e === ''
     }
     let isDec = (e) => {
-      if (e === '') return true
-      return e.match(/^-?\d*\.?\d*$/g)
-    }
-    //try to parse from array
+        if (e === '') return true
+        return e.match(/^-?\d*\.?\d*$/g)
+      }
+      //try to parse from array
     if (a.every(isBlank)) return 'VARCHAR(255)'
     if (a.every(isDec)) return 'FLOAT(10)'
 
@@ -52,7 +51,7 @@ module.exports = (opfile, callback) => {
     columns.forEach((values, i) => {
       let ndex = colNames[i].toUpperCase().indexOf('_IND') !== -1 ? true : false
       returnColumns.push({
-        name: colNames[i],
+        name: colNames[i].replace(/_IND|_DEC/g, ''),
         type: typeCheck(values, colNames[i]),
         index: ndex
       })

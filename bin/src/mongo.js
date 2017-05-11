@@ -4,7 +4,7 @@ module.exports = function(opt, moduleCallback) {
 
   var async = require('async'),
     client = require('mongodb').MongoClient,
-    creds = require(opt.cfg.dirs.creds + 'mongo'),
+    creds = require(opt.cfg.dirs.creds + opt.source),
     db,
     collection,
     opfile = opt.opfile,
@@ -82,6 +82,7 @@ module.exports = function(opt, moduleCallback) {
         return moduleCallback(e);
       }
       if (err) return moduleCallback(err);
-      moduleCallback(null, rows, cols);
+      //return columns without _IND or _DEC appended
+      moduleCallback(null, rows, cols.join('\t').replace(/_IND|_DEC/g, '').split('\t'));
     });
 };

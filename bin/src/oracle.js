@@ -1,7 +1,7 @@
 module.exports = (opt, moduleCallback) => {
   if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source)
 
-  const creds = require(opt.cfg.dirs.creds + 'oracle')
+  const creds = require(opt.cfg.dirs.creds + opt.source)
   const oracledb = require('oracledb')
   const async = require('async')
   const fs = require('fs')
@@ -10,7 +10,7 @@ module.exports = (opt, moduleCallback) => {
   const bindQuery = require(opt.bin + 'bind-query')
   const opfile = opt.opfile
   const moment = require('moment')
-  
+
   let oracle
 
   async.waterfall([
@@ -53,7 +53,7 @@ module.exports = (opt, moduleCallback) => {
         stream.on('data', (d) => {
             counter++
             let row = d.map((c) => {
-              if (c instanceof Date) return moment(c).format('YYYY-MM-DD HH:mm:ss Z')
+              if (c instanceof Date) return moment(c).format('YYYY-MM-DD HH:mm:ss')
               return c
             })
             if (flag === false) {
@@ -85,7 +85,7 @@ module.exports = (opt, moduleCallback) => {
           .on('metadata', (m) => {
             //this is column names
             m.forEach((c) => {
-              columns.push(c.name)
+              columns.push(c.name.replace(/_DEC|_IND/g, ''))
             })
             opfile.append(columns.join('\t') + '\n', (e) => {
               if (e) return cb(e)

@@ -1,6 +1,6 @@
 module.exports = (opt, columns, moduleCallback) => {
 
-  const creds = require(opt.cfg.dirs.creds + 'oracle')
+  const creds = require(opt.cfg.dirs.creds + opt.destination)
   const oracledb = require('oracledb')
   const async = require('async')
   const readline = require('readline')
@@ -18,7 +18,7 @@ module.exports = (opt, columns, moduleCallback) => {
   oracledb.autoCommit = true
 
   //sql table generates CREATE TABLE sql
-  function sqlTable() {
+  let sqlTable = () => {
     let cols = []
     for (var i = 0; i < columns.length; i++) {
       cols.push(' ' + columns[i].name + ' ' + columns[i].type + ' NULL')
@@ -39,12 +39,12 @@ module.exports = (opt, columns, moduleCallback) => {
     },
     (cb) => {
       //drop table if not update
-      if (opt.update) return cb(null)
+      if (opt.update || opt.truncate) return cb(null)
       oracle.getConnection((e, conn) => {
         if (e) return cb(e)
         conn.execute('DROP TABLE ' + table, [], (e) => {
           if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + e);
-          conn.close((e) => {
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null)
           })
@@ -53,16 +53,42 @@ module.exports = (opt, columns, moduleCallback) => {
     },
     (cb) => {
       //create table if not update
-      if (opt.update) return cb(null)
+      if (opt.update || opt.truncate) return cb(null)
       let sql = sqlTable()
       oracle.getConnection((e, conn) => {
         if (e) return cb(e)
         conn.execute(sql, (e) => {
           if (e) return cb(e)
-          conn.close((e) => {
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null)
           })
+        })
+      })
+    },
+    (cb) => {
+      //truncate table if specified
+      if (!opt.truncate) return cb(null)
+      oracle.getConnection((e, conn) => {
+        if (e) return cb(e)
+        conn.execute('TRUNCATE TABLE ' + table, (e) => {
+          if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('TRUNCATE TABLE error: ' + e)
+          if (e instanceof Error && e.toString().indexOf('table or view does not exist') !== -1) {
+            //if no table exists, ignore truncate order and create table anyway
+            conn.execute(sqlTable(), (e) => {
+              if (e) return cb(e)
+              conn.release((e) => {
+                if (e) return cb(e)
+                cb(null)
+              })
+            })
+          } else {
+            //release connection, table existed and truncated
+            conn.release((e) => {
+              if (e) return cb(e)
+              cb(null)
+            })
+          }
         })
       })
     },
@@ -74,7 +100,6 @@ module.exports = (opt, columns, moduleCallback) => {
         input: opfile.createReadStream()
       })
       let wStream = fs.createWriteStream(dataFile.name)
-      let dateCols = []
       lineReader.on('error', (e) => {
         return cb(e)
       })
@@ -83,9 +108,9 @@ module.exports = (opt, columns, moduleCallback) => {
           .replace(/(\/)([0-9])(\/)/g, '\/0$2\/') //fix day in dates where missing beginning 0
           .replace(/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/g, '$3-$1-$2') //change data format
         let dates = chrono.parse(l)
-        //parse dates and reformat based - include implied values
+          //parse dates and reformat based - include implied values
         dates.forEach((d) => {
-          //console.log(d.start, typeof(d.start), typeof(d.start["ParsedComponents"]))
+          //log.log(d.start, typeof(d.start), typeof(d.start["ParsedComponents"]))
           let v = d.start.knownValues
           let i = d.start.impliedValues
           let a = {
@@ -110,27 +135,26 @@ module.exports = (opt, columns, moduleCallback) => {
       let cs = []
       columns.forEach((c) => {
           let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD HH24:MI:SS'` : c.name
+          if (c.type.indexOf('FLOAT') !== -1) n = `${c.name} FLOAT EXTERNAL`
           cs.push(n)
-      })
+        })
         //control file
         //connect string
       let connect = creds.connectString
       let append = opt.update ? 'APPEND' : ''
-      //throw bad records into /local/output/oracle/
+        //throw bad records into /local/output/oracle/
       let dt = new Date()
       let dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
       let outputFile = opt.cfg.dirs.output + 'oracle/' + dir + '/' + table
       mkdirp.sync(opt.cfg.dirs.output + 'oracle/' + dir)
-      //create temp control file
-      let ctlFile = tmp.fileSync()
-      //let logFile = tmp.fileSync()
-      console.log(outputFile)
-      //control file
+        //create temp control file
+      log.log(outputFile)
+        //control file
       let ctl = `
       OPTIONS (
         SKIP=1,
         PARALLEL = TRUE,
-        ERRORS = 99999,
+        ERRORS = 50,
         SILENT = (FEEDBACK)
       )
       load data
@@ -143,21 +167,21 @@ module.exports = (opt, columns, moduleCallback) => {
       (${cs.join(', ')})
       `
 
-      fs.writeFileSync(ctlFile.name, ctl)
+      fs.writeFileSync(outputFile + '-ctl.ctl', ctl)
         //execute sqlldr
-      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${ctlFile.name}`, `log=${outputFile}-LOG.log`])
+      let child = child_process.spawn('sqlldr', [`'${creds.user}/${creds.password}@${connect}'`, `control=${outputFile}-ctl.ctl`, `log=${outputFile}-LOG.log`])
       child.stdout.on('data', (d) => {
         //sqlldr spits out a bunch of info here - but it's too much for the log file
         // we'll just check row totals at the end
-        console.log(d.toString())
+        log.log(d.toString())
       })
       child.stderr.on('data', (d) => {
         log.log('stderr: ', d.toString())
       })
       child.on('close', (c) => {
         if (c !== 0) {
-          console.log(fs.readFileSync(ctlFile.name,'utf8'))
-          console.log(fs.readFileSync(outputFile + '-LOG.log','utf8'))
+          log.log(fs.readFileSync(outputFile + '-ctl.ctl', 'utf8'))
+          log.log(fs.readFileSync(outputFile + '-LOG.log', 'utf8'))
           return cb('child process exited with code ' + c)
         }
         cb(null)
@@ -179,7 +203,7 @@ module.exports = (opt, columns, moduleCallback) => {
           let x = `ind_${t}_${c}`.substring(0, 25)
           conn.execute(`CREATE INDEX ${x} ON ${table} (${c})`, (e) => {
             if (e) return cb(e)
-            conn.close((e) => {
+            conn.release((e) => {
               if (e) return cb(e)
             })
             count++
@@ -195,7 +219,7 @@ module.exports = (opt, columns, moduleCallback) => {
         if (e) return cb(e)
         conn.execute(sql, [], (e, r) => {
           if (e) return cb(e)
-          conn.close((e) => {
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null, r.rows[0][0])
           })
@@ -221,7 +245,7 @@ module.exports = (opt, columns, moduleCallback) => {
           r.rows.forEach((v) => {
             c.push(v[0])
           })
-          conn.close((e) => {
+          conn.release((e) => {
             if (e) return cb(e)
             cb(null, rows, c)
           })

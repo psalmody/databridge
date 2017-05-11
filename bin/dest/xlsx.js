@@ -5,7 +5,6 @@ module.exports = (opt, columns, moduleCallback) => {
   let dir = dt.getFullYear() + '-' + ('0' + (Number(dt.getMonth()) + 1).toString()).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
 
   const table = opt.source + '.' + opt.table
-  const fs = require('graceful-fs')
   const mkdirp = require('mkdirp')
   const outputFile = `${opt.cfg.dirs.output}xlsx/${dir}/${table}.xlsx`
   const XLSX = require('xlsx')
@@ -33,7 +32,7 @@ module.exports = (opt, columns, moduleCallback) => {
       r: R
     })
     let cell = worksheet[v]
-    let hdr = "UNKNOWN " + C
+    let hdr = 'UNKNOWN ' + C
     if (cell && cell.t) {
       worksheet[v].v = worksheet[v].v.replace(/_IND|_DEC/, '')
       hdr = XLSX.utils.format_cell(cell)

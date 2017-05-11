@@ -3,7 +3,7 @@ module.exports = function(opt, columns, moduleCallback) {
 
   var async = require('async'),
     client = require('mongodb').MongoClient,
-    creds = require(opt.cfg.dirs.creds + 'mongo'),
+    creds = require(opt.cfg.dirs.creds + opt.destination),
     db,
     collection,
     Stream = require('stream'),

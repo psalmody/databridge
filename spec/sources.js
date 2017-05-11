@@ -73,7 +73,7 @@ describe('Testing all sources', function() {
               if (err) return done(new Error(err));
               if (testing == 'mongo') {
                 assert(rows == 1000, '1000 rows were not returned. Rows returned: ' + rows);
-                assert(cs.join('') == 'id_INDfirst_namelast_nameemailgenderip_addresstesting_GPAtesting_DATEtesting_TIMESTAMPtesting_DEC', 'Column names did not match. Source returned: ' + cs.toString());
+                assert(cs.join('') == 'idfirst_namelast_nameemailgenderip_addresstesting_GPAtesting_DATEtesting_TIMESTAMPtesting', 'Column names did not match. Source returned: ' + cs.toString());
               } else {
                 assert(rows == 2, '2 rows were not returned. Rows returned: ' + rows);
                 assert(cs[0] == 'ONE' && cs[1] == 'TWO' && cs[2] == 'THREE' && cs[3] == 'FOUR', 'Column names did not match. Source returned: ' + cs.toString());
