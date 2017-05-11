@@ -134,10 +134,10 @@ module.exports = (opt, columns, moduleCallback) => {
       //run sqlldr
       let cs = []
       columns.forEach((c) => {
-        let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD HH24:MI:SS'` : c.name
-        if (c.type.indexOf('FLOAT') !== -1) n = `${c.name} FLOAT EXTERNAL`
-        cs.push(n)
-      })
+          let n = c.name.indexOf('DATE') !== -1 || c.name.indexOf('TIMESTAMP') !== -1 ? `${c.name} DATE 'YYYY-MM-DD HH24:MI:SS'` : c.name
+          if (c.type.indexOf('FLOAT') !== -1) n = `${c.name} FLOAT EXTERNAL`
+          cs.push(n)
+        })
         //control file
         //connect string
       let connect = creds.connectString

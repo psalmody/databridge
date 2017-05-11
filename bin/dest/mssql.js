@@ -1,4 +1,4 @@
-module.exports = (opt, columns, moduleCallback) =>  {
+module.exports = (opt, columns, moduleCallback) => {
 
   const mssql = require('mssql')
   const readline = require('readline')
@@ -27,24 +27,24 @@ module.exports = (opt, columns, moduleCallback) =>  {
 
   async.waterfall([
     //connect
-    (cb) =>  {
-      mssql.connect(creds, (err) =>  {
+    (cb) => {
+      mssql.connect(creds, (err) => {
         if (err) return cb('Connect error: ' + err)
         cb(null)
       })
     },
     //create database if necessary
-    (cb) =>  {
+    (cb) => {
       let s = `if not exists(select * from sys.databases where name = '${db}') create database ${db}`
       new mssql
         .Request()
-        .query(s, (err) =>  {
+        .query(s, (err) => {
           if (err) return cb(err)
           cb(null)
         })
     },
     //create schema if necessary
-    (cb) =>  {
+    (cb) => {
       let s = `USE ${db} IF (SCHEMA_ID('${schema}') IS NULL ) BEGIN EXEC ('CREATE SCHEMA [${schema}] AUTHORIZATION [dbo]') END`
       new mssql
         .Request()
@@ -54,17 +54,17 @@ module.exports = (opt, columns, moduleCallback) =>  {
         })
     },
     //drop table if exists
-    (cb) =>  {
+    (cb) => {
       //don't drop table if update or truncate
       if (opt.update || opt.truncate) return cb(null)
       let sql = `USE ${db} IF OBJECT_ID('${table}') IS NOT NULL DROP TABLE ${table}`
-      new mssql.Request().query(sql, (e) =>  {
+      new mssql.Request().query(sql, (e) => {
         if (e) return cb('Drop table error: ' + e)
         cb(null)
       })
     },
     //create table
-    (cb) =>  {
+    (cb) => {
       //don't drop table if update or truncate
       if (opt.update || opt.truncate) return cb(null)
       new mssql.Request().query(`USE ${db} ` + sqlTable(), (e) => {
@@ -76,7 +76,7 @@ module.exports = (opt, columns, moduleCallback) =>  {
     (cb) => {
       if (!opt.truncate) return cb(null)
       new mssql.Request().query('TRUNCATE TABLE ' + table, (e) => {
-        if(e instanceof Error && e.toString().indexOf('because it does not exist') !== -1) {
+        if (e instanceof Error && e.toString().indexOf('because it does not exist') !== -1) {
           //if table doesn't exist, make it
           console.log('creating missing table')
           new mssql.Request().query(`USE ${db} ` + sqlTable(), (e) => {
@@ -90,22 +90,22 @@ module.exports = (opt, columns, moduleCallback) =>  {
       })
     },
     //create insert statement
-    (cb) =>  {
+    (cb) => {
       let sql = `USE ${db} INSERT INTO ${table} `
       let cs = []
       let first = true
-      columns.forEach((c) =>  {
+      columns.forEach((c) => {
         cs.push(c.name)
       })
       sql += ` ( ${cs.join(', ')} ) VALUES `
       let lineReader = readline.createInterface({
         input: opfile.createReadStream()
       })
-      lineReader.on('error', (err) =>  {
+      lineReader.on('error', (err) => {
         return cb('Readline error: ' + err)
       })
       let insertLines = []
-      lineReader.on('line', (line) =>  {
+      lineReader.on('line', (line) => {
         if (first) {
           first = false
         } else {
@@ -114,48 +114,48 @@ module.exports = (opt, columns, moduleCallback) =>  {
           insertLines.push(l)
         }
       })
-      lineReader.on('close', () =>  {
+      lineReader.on('close', () => {
         cb(null, sql, insertLines)
       })
     },
     //insert lines
-    (sql, lines, cb) =>  {
+    (sql, lines, cb) => {
       let batchCount = Math.ceil(lines.length / 500)
       let arr = []
       for (let i = 0; i < batchCount; i++) {
         arr.push(i + 1)
       }
-      async.map(arr, (i, callback) =>  {
+      async.map(arr, (i, callback) => {
         let stmt = sql + lines.slice(i * 500 - 500, i * 500).join(', ')
         new mssql.Request().query(stmt, (err) => {
           if (err) return callback('Insert values error: ' + err)
           callback(null)
         })
-      }, (err) =>  {
+      }, (err) => {
         if (err) return cb(err)
         cb(null)
       })
     },
     //check number of inserted rows
-    (cb) =>  {
-      new mssql.Request().query(`USE ${db} SELECT count(*) as rows FROM ${table}`, (err, recordset) =>  {
+    (cb) => {
+      new mssql.Request().query(`USE ${db} SELECT count(*) as rows FROM ${table}`, (err, recordset) => {
         if (err) return cb('Check row number error: ' + err)
         cb(null, recordset[0].rows)
       })
     },
-    (rows, cb) =>  {
+    (rows, cb) => {
       let sql = `USE ${db} SELECT COLUMN_NAME col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${table.split('.')[1]}' AND TABLE_SCHEMA = '${schema}'`
       new mssql.Request()
-        .query(sql, (err, recordset) =>  {
+        .query(sql, (err, recordset) => {
           if (err) return cb(err)
           let columns = []
-          recordset.forEach((row) =>  {
+          recordset.forEach((row) => {
             columns.push(row.col)
           })
           cb(null, rows, columns)
         })
     }
-  ], (err, rows, columns) =>  {
+  ], (err, rows, columns) => {
     try {
       mssql.close()
     } catch (e) {
