@@ -2,7 +2,7 @@ module.exports = function(opt, moduleCallback) {
   if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source);
   var mssql = require('mssql'),
     async = require('async'),
-    creds = require(opt.cfg.dirs.creds + 'mssql'),
+    creds = require(opt.cfg.dirs.creds + opt.source),
     fs = require('fs'),
     table = opt.table.indexOf('.') > -1 ? opt.table : 'dbo.' + opt.table,
     log = opt.log,

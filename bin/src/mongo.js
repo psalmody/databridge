@@ -4,7 +4,7 @@ module.exports = function(opt, moduleCallback) {
 
   var async = require('async'),
     client = require('mongodb').MongoClient,
-    creds = require(opt.cfg.dirs.creds + 'mongo'),
+    creds = require(opt.cfg.dirs.creds + opt.source),
     db,
     collection,
     opfile = opt.opfile,

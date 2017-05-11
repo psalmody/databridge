@@ -2,7 +2,7 @@ module.exports = function(opt, moduleCallback) {
   if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for source mysql.');
 
   var mysql = require('mysql'),
-    creds = require(opt.cfg.dirs.creds + 'mysql'),
+    creds = require(opt.cfg.dirs.creds + opt.source),
     async = require('async'),
     fs = require('fs'),
     prependFile = require('prepend-file'),

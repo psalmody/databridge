@@ -1,7 +1,7 @@
 module.exports = (opt, moduleCallback) => {
   if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for ' + opt.source)
 
-  const creds = require(opt.cfg.dirs.creds + 'oracle')
+  const creds = require(opt.cfg.dirs.creds + opt.source)
   const oracledb = require('oracledb')
   const async = require('async')
   const fs = require('fs')

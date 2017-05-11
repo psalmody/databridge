@@ -218,6 +218,24 @@ Databridge will be requiring the source directory but it will try to require fro
 
 See this [great GitHubGist article by branneman](https://gist.github.com/branneman/8048520) for more information and options.
 
+#### Multiple similar sources (oracle => oracle)
+
+One way to accomplish transfer from two separate databases of the same type is
+to create a source or destination from one to the other that changes the
+source name (and therefore the credentials/connection file). For example,
+a custom oracle source could be added inside `local/sources/newsource.js` would
+make databridge look for `creds/newsource.js`. Here's how to do that:
+
+```js
+//include oracle source from bin/src/
+module.exports = (opt, moduleCallback) => {
+  const oracle = require.main.require('./bin/src/oracle')
+  oracle(opt, (e, r, c) => {
+    moduleCallback(e, r, c)
+  })
+}
+```
+
 #### Source modules
 
 Source modules are passed the config/opt object from the bridge.
