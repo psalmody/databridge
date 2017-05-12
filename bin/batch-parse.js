@@ -13,14 +13,14 @@ module.exports = (batchName, batchFile) => {
 
   batch.forEach((options) => {
     //defaults for batch items - type: 'bridge' and task: true
-    let o = Object.assign({}, options, {
+    let o = Object.assign({}, {
         type: 'bridge',
         task: true
-      })
+      }, options)
       //handle script type
-    let fn = (() => {
+    let fn = ((o) => {
         if (o.type == 'script') {
-          return (() => {
+          return ((o) => {
             let script = require(config.dirs.input + o.name)
             return function(responses, cb) {
               script(config, o, function(err, response) {
@@ -32,7 +32,7 @@ module.exports = (batchName, batchFile) => {
             }
           })(o)
         } else if (o.type == 'bridge') {
-          return (() => {
+          return ((o) => {
             return function(responses, cb) {
               bridge(config, o, function(err, response) {
                 if (err) return cb(err)
