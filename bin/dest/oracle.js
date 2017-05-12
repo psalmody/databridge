@@ -31,65 +31,42 @@ module.exports = (opt, columns, moduleCallback) => {
     //connect
     (cb) => {
       //connect with a pool
-      oracledb.createPool(creds, (e, pool) => {
+      oracledb.getConnection(creds, (e, connection) => {
         if (e) return cb(e)
-        oracle = pool
+        oracle = connection
         cb(null)
       })
     },
     (cb) => {
       //drop table if not update
       if (opt.update || opt.truncate) return cb(null)
-      oracle.getConnection((e, conn) => {
-        if (e) return cb(e)
-        conn.execute('DROP TABLE ' + table, [], (e) => {
-          if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + e);
-          conn.release((e) => {
-            if (e) return cb(e)
-            cb(null)
-          })
-        })
+      oracle.execute('DROP TABLE ' + table, [], (e) => {
+        if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('oracle drop table error: ' + e);
+        cb(null)
       })
     },
     (cb) => {
       //create table if not update
       if (opt.update || opt.truncate) return cb(null)
-      let sql = sqlTable()
-      oracle.getConnection((e, conn) => {
+      oracle.execute(sqlTable(), (e) => {
         if (e) return cb(e)
-        conn.execute(sql, (e) => {
-          if (e) return cb(e)
-          conn.release((e) => {
-            if (e) return cb(e)
-            cb(null)
-          })
-        })
+        cb(null)
       })
     },
     (cb) => {
       //truncate table if specified
       if (!opt.truncate) return cb(null)
-      oracle.getConnection((e, conn) => {
-        if (e) return cb(e)
-        conn.execute('TRUNCATE TABLE ' + table, (e) => {
-          if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('TRUNCATE TABLE error: ' + e)
-          if (e instanceof Error && e.toString().indexOf('table or view does not exist') !== -1) {
-            //if no table exists, ignore truncate order and create table anyway
-            conn.execute(sqlTable(), (e) => {
-              if (e) return cb(e)
-              conn.release((e) => {
-                if (e) return cb(e)
-                cb(null)
-              })
-            })
-          } else {
-            //release connection, table existed and truncated
-            conn.release((e) => {
-              if (e) return cb(e)
-              cb(null)
-            })
-          }
-        })
+      conn.execute('TRUNCATE TABLE ' + table, (e) => {
+        if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('TRUNCATE TABLE error: ' + e)
+        if (e instanceof Error && e.toString().indexOf('table or view does not exist') !== -1) {
+          //if no table exists, ignore truncate order and create table anyway
+          conn.execute(sqlTable(), (e) => {
+            if (e) return cb(e)
+            cb(null)
+          })
+        } else {
+          cb(null)
+        }
       })
     },
     (cb) => {
@@ -198,32 +175,20 @@ module.exports = (opt, columns, moduleCallback) => {
       let count = 0
       let t = table.indexOf('.') === -1 ? table : table.split('.')[1]
       ndx.forEach((c) => {
-        oracle.getConnection((e, conn) => {
+        let x = `ind_${t}_${c}`.substring(0, 25)
+        oracle.execute(`CREATE INDEX ${x} ON ${table} (${c})`, (e) => {
           if (e) return cb(e)
-          let x = `ind_${t}_${c}`.substring(0, 25)
-          conn.execute(`CREATE INDEX ${x} ON ${table} (${c})`, (e) => {
-            if (e) return cb(e)
-            conn.release((e) => {
-              if (e) return cb(e)
-            })
-            count++
-            if (count === ndx.length) cb(null)
-          })
+          count++
+          if (count === ndx.length) cb(null)
         })
       })
     },
     (cb) => {
       //check rows
       let sql = `SELECT COUNT(*) AS RS FROM ${table}`
-      oracle.getConnection((e, conn) => {
+      oracle.execute(sql, [], (e, r) => {
         if (e) return cb(e)
-        conn.execute(sql, [], (e, r) => {
-          if (e) return cb(e)
-          conn.release((e) => {
-            if (e) return cb(e)
-            cb(null, r.rows[0][0])
-          })
-        })
+        cb(null, r.rows[0][0])
       })
     },
     (rows, cb) => {
@@ -238,18 +203,13 @@ module.exports = (opt, columns, moduleCallback) => {
       }
       //order by order in the database
       sql += ' ORDER BY COLUMN_ID '
-      oracle.getConnection((e, conn) => {
-        conn.execute(sql, [], (e, r) => {
-          if (e) return cb(e)
-          let c = []
-          r.rows.forEach((v) => {
-            c.push(v[0])
-          })
-          conn.release((e) => {
-            if (e) return cb(e)
-            cb(null, rows, c)
-          })
+      oracle.execute(sql, [], (e, r) => {
+        if (e) return cb(e)
+        let c = []
+        r.rows.forEach((v) => {
+          c.push(v[0])
         })
+        cb(null, rows, c)
       })
     }
   ], (err, rows, cols) => {
