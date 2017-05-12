@@ -1,6 +1,6 @@
 {
   "name": "databridge",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Data bridging software to modularize, automate and schedule the transfer of data between different sources and destinations.",
   "keywords": [
     "data",
