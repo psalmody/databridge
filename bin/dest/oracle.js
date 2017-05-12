@@ -56,11 +56,11 @@ module.exports = (opt, columns, moduleCallback) => {
     (cb) => {
       //truncate table if specified
       if (!opt.truncate) return cb(null)
-      conn.execute('TRUNCATE TABLE ' + table, (e) => {
+      oracle.execute('TRUNCATE TABLE ' + table, (e) => {
         if (e instanceof Error && e.toString().indexOf('table or view does not exist') == -1) return cb('TRUNCATE TABLE error: ' + e)
         if (e instanceof Error && e.toString().indexOf('table or view does not exist') !== -1) {
           //if no table exists, ignore truncate order and create table anyway
-          conn.execute(sqlTable(), (e) => {
+          oracle.execute(sqlTable(), (e) => {
             if (e) return cb(e)
             cb(null)
           })
