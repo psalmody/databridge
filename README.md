@@ -118,16 +118,22 @@ npm run service-stop
 
 It is possible to [run pm2 at startup](http://pm2.keymetrics.io/docs/usage/startup/).
 
-#### Schedule Configuration
-
-Each schedule object requires `type` attribute: `bridge` or `batch`.
+#### Schedule / Batch Configuration
 
 > NOTE: When using the service, it cannot prompt for bind variables if
 > needed. Therefore, any sources that require bind variables will throw
 > an error if bind variables are not defined. Each job object in that case
 > MUST have a `binds: true` or defined `binds: {...}` attribute.
 
-Each schedule object requires `cron` attribute in the following format:
+Option for truncate allows for truncating the table without
+completely dropping and recreating (sql databases only). Use `"truncate": true` or `-n`.
+
+Option for update allows for appending values to the table rather
+than completely deleting table and recreating (databases only). Use `"update": true` or `-u`.
+
+Run a custom script with `"type": "script"` and the name of the file (no extension) inside `local/input/` under `"name": "script"`.
+
+Each schedule object requires `cron` attribute in the following format.
 
 ```
 *    *    *    *    *    *
@@ -155,7 +161,8 @@ Example `schedule.json` file:
   "binds": true,
   "source": "oracle",
   "destination": "mssql",
-  "table": "employees.ferpa_certified"
+  "table": "employees.ferpa_certified",
+  "truncate": true
 }, {
   "type": "bridge",
   "name": "mssql surveys.population_open => csv",
@@ -171,7 +178,8 @@ Example `schedule.json` file:
   "binds": true,
   "source": "xlsx",
   "destination": "mssql",
-  "table": "employees.ferpa_certified"
+  "table": "employees.ferpa_certified",
+  "update": true
 }, {
   "type": "script",
   "name": "name of script inside input directory, file extension",
