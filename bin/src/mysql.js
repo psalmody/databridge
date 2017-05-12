@@ -2,7 +2,7 @@ module.exports = function(opt, moduleCallback) {
   if (typeof(opt.table) == 'undefined') return moduleCallback('Table required for source mysql.');
 
   var mysql = require('mysql'),
-    creds = require(opt.cfg.dirs.creds + 'mysql'),
+    creds = require(opt.cfg.dirs.creds + opt.source),
     async = require('async'),
     fs = require('fs'),
     prependFile = require('prepend-file'),
@@ -30,7 +30,7 @@ module.exports = function(opt, moduleCallback) {
         })
         .on('fields', function(fields) {
           fields.forEach(function(field) {
-            columns.push(field.name);
+            columns.push(field.name.replace(/_IND|_DEC/g, ''));
           });
         })
         .on('result', function(row) {

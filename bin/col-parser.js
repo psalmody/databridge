@@ -2,43 +2,60 @@
  * Attempts to parse data from the first two lines of the
  * output file and return them as column definitions.
  */
-module.exports = function(opfile, callback) {
-  var columns = [];
+module.exports = (opfile, callback) => {
+  let returnColumns = []
 
-  //try and parse SQL data type from javascript data type
-  function getType(c, o) {
-    //if GPA is in column title - it's a decimal
-    if (c.toUpperCase().indexOf('GPA') > -1) return 'DECIMAL(8,2) NULL';
+  //run against sample and see if we can't assure the data types are right
+  // but we assume the column name can be spoofed
+  let typeCheck = (a, c) => {
     //if DATE in column title - assume date
-    if (c.toUpperCase().indexOf('DATE') > -1) return 'DATE NULL';
-    //if TIMESTAMP in column title - assume date
-    if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE NULL';
-    //if _DEC assume decimal
-    if (c.toUpperCase().indexOf('_DEC') > -1) return 'DECIMAL(8,2) NULL';
-    //if number - return as INT
-    if (typeof(o) == 'number') return 'INT NULL';
-    //default is a 255 length VARCHAR
-    return 'VARCHAR(255) NULL';
+    if (c.toUpperCase().indexOf('DATE') > -1) return 'DATE'
+      //if TIMESTAMP in column title - assume date
+    if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE'
+      //if _DEC assume decimal
+    if (c.toUpperCase().indexOf('_DEC') > -1) return 'FLOAT(10)'
+
+    //check functions
+    let isBlank = (e) => {
+      return e === ''
+    }
+    let isDec = (e) => {
+        if (e === '') return true
+        return e.match(/^-?\d*\.?\d*$/g)
+      }
+      //try to parse from array
+    if (a.every(isBlank)) return 'VARCHAR(255)'
+    if (a.every(isDec)) return 'FLOAT(10)'
+
+    //default
+    return 'VARCHAR(255)'
   }
 
-  //get first two lines of output file (columns and first row of data)
-  opfile.twoLines(function(err, data) {
-    if (err) callback(err);
-    //c is columns, d is first row of data
-    var c = data[0].split('\t');
-    var d = data[1].split('\t');
+  //get sample of lines of output file (columns and first row of data)
+  opfile.sampleLines((err, rows, colNames) => {
+    if (err) return callback(err)
+    if (!rows.length) callback('No rows returned from opfile.sampleLines' + JSON.stringify(rows) + JSON.stringify(colNames))
 
-    for (var i = 0; i < c.length; i++) {
-      //remove _IND from name
-      var name = c[i].replace(/_IND/gi, '').replace(/\ /g, '').replace(/_DEC/gi, '');
-      //if _IND in name, index it
-      var ndex = c[i].toUpperCase().indexOf('_IND') !== -1 ? true : false;
-      columns.push({
-        name: name,
-        type: getType(name, d[i]),
+    //push data into R-style arrays (one array of per column)
+    // so first column (name id_IND) = [1, 2, 3, 4, 5]
+    let columns = []
+    rows.forEach((r) => {
+      if (!r) return true
+      let cells = r.split('\t')
+      for (let i = 0; i < colNames.length; i++) {
+        columns[i] = columns[i] || []
+        let v = cells[i] || ''
+        columns[i].push(v)
+      }
+    })
+    columns.forEach((values, i) => {
+      let ndex = colNames[i].toUpperCase().indexOf('_IND') !== -1 ? true : false
+      returnColumns.push({
+        name: colNames[i].replace(/_IND|_DEC/g, ''),
+        type: typeCheck(values, colNames[i]),
         index: ndex
-      });
-    }
-    callback(null, columns);
-  });
-};
+      })
+    })
+    callback(null, returnColumns)
+  })
+}

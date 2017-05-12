@@ -14,13 +14,8 @@ var opt = {
 };
 var outputFile = require('../bin/output-file');
 var opfile;
-var appendData = {
-  test: 'test',
-  test45: 'test 45',
-  how_DATE: 'sdfskdjf',
-  tessdft: 1
-};
-var appendJson = JSON.stringify(appendData, null, 2);
+var mockFile = './spec/assets/MOCK_DATA.txt';
+let mockData = fs.readFileSync(mockFile, 'utf8').replace(/\r/g, '');
 
 describe('Testing output-file', function() {
   it('Creates file', function(done) {
@@ -32,21 +27,30 @@ describe('Testing output-file', function() {
     });
   });
   it('Appends data', function(done) {
-    opfile.append(JSON.stringify(appendData, null, 2), function(e) {
+    opfile.append(mockData, function(e) {
       if (e) return done(new Error(e));
-      var d = fs.readFileSync(opfile.filename);
-      assert(JSON.stringify(appendData, null, 2) == d);
+      var d = fs.readFileSync(opfile.filename, 'utf8');
+      assert(mockData === d, 'mock data does not match opfile.filename data');
       done();
     });
   });
   it('Returns first two lines of file.', function(done) {
     opfile.twoLines(function(e, two) {
       if (e) return done(new Error(e));
-      var lines = appendJson.split('\n');
-      assert(lines[0] == two[0] && lines[1] == two[1], 'Lines do not match. Expected:\n' + lines[0] + '\n' + lines[1] + '\nReturned:\n' + two[0] + '\n' + two[1]);
+      var lines = mockData.split('\n').slice(0, 2)
+      assert(JSON.stringify(lines) === JSON.stringify(two), 'Lines do not match. \nShould be: ' + lines + '\nReturned: ' + two);
       done();
     });
   });
+  it('Returns sample lines from file (up to 100).', function(done) {
+    opfile.sampleLines(function(e, rows, columns) {
+      if (e) return done(new Error(e));
+      assert(rows.length === 100, '100 sample lines not returned.')
+      var mockCols = mockData.split('\n')[0].split('\t')
+      assert(JSON.stringify(columns) === JSON.stringify(mockCols), `Columns mistmatched. Should be:\n${mockCols}\nReturned:\n${columns}`)
+      done();
+    })
+  })
   it('Creates write and read stream', function() {
     assert(opfile.createWriteStream() instanceof fs.WriteStream, 'Not instance of write stream.');
     assert(opfile.createReadStream() instanceof fs.ReadStream, 'Not instance of read stream.');

@@ -118,16 +118,22 @@ npm run service-stop
 
 It is possible to [run pm2 at startup](http://pm2.keymetrics.io/docs/usage/startup/).
 
-#### Schedule Configuration
-
-Each schedule object requires `type` attribute: `bridge` or `batch`.
+#### Schedule / Batch Configuration
 
 > NOTE: When using the service, it cannot prompt for bind variables if
 > needed. Therefore, any sources that require bind variables will throw
 > an error if bind variables are not defined. Each job object in that case
 > MUST have a `binds: true` or defined `binds: {...}` attribute.
 
-Each schedule object requires `cron` attribute in the following format:
+Option for truncate allows for truncating the table without
+completely dropping and recreating (sql databases only). Use `"truncate": true` or `-n`.
+
+Option for update allows for appending values to the table rather
+than completely deleting table and recreating (databases only). Use `"update": true` or `-u`.
+
+Run a custom script with `"type": "script"` and the name of the file (no extension) inside `local/input/` under `"name": "script"`.
+
+Each schedule object requires `cron` attribute in the following format.
 
 ```
 *    *    *    *    *    *
@@ -155,7 +161,8 @@ Example `schedule.json` file:
   "binds": true,
   "source": "oracle",
   "destination": "mssql",
-  "table": "employees.ferpa_certified"
+  "table": "employees.ferpa_certified",
+  "truncate": true
 }, {
   "type": "bridge",
   "name": "mssql surveys.population_open => csv",
@@ -171,7 +178,8 @@ Example `schedule.json` file:
   "binds": true,
   "source": "xlsx",
   "destination": "mssql",
-  "table": "employees.ferpa_certified"
+  "table": "employees.ferpa_certified",
+  "update": true
 }, {
   "type": "script",
   "name": "name of script inside input directory, file extension",
@@ -204,6 +212,37 @@ mocha spec/sources --one=mysql
 ```
 
 ## Customizing sources / destinations
+
+#### Note about `require()`
+
+If you plan on using a separate input/output/source dir (as in when you ran npm install,
+  you told databridge to make the "local" folder outside the main databridge folder), you'll
+  need to either:
+
+- Install necessary packages (like database connection packages) inside that local directory.
+- Use something like `require.main.require` to include the database source or scripts from the main databridge directory.
+
+Databridge will be requiring the source directory but it will try to require from a different path than the main databridge directory.
+
+See this [great GitHubGist article by branneman](https://gist.github.com/branneman/8048520) for more information and options.
+
+#### Multiple similar sources (oracle => oracle)
+
+One way to accomplish transfer from two separate databases of the same type is
+to create a source or destination from one to the other that changes the
+source name (and therefore the credentials/connection file). For example,
+a custom oracle source could be added inside `local/sources/newsource.js` would
+make databridge look for `creds/newsource.js`. Here's how to do that:
+
+```js
+//include oracle source from bin/src/
+module.exports = (opt, moduleCallback) => {
+  const oracle = require.main.require('./bin/src/oracle')
+  oracle(opt, (e, r, c) => {
+    moduleCallback(e, r, c)
+  })
+}
+```
 
 #### Source modules
 
