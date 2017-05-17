@@ -13,7 +13,7 @@ module.exports = (opfile, callback) => {
       //if TIMESTAMP in column title - assume date
     if (c.toUpperCase().indexOf('TIMESTAMP') > -1) return 'DATE'
       //if _DEC assume decimal
-    if (c.toUpperCase().indexOf('_DEC') > -1) return 'FLOAT(10)'
+    if (c.toUpperCase().indexOf('_DEC') > -1) return 'FLOAT(126)'
 
     //check functions
     let isBlank = (e) => {
