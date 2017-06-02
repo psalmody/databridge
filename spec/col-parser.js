@@ -25,7 +25,7 @@ var opfile = {
 
 var expect = [{
   'name': 'id',
-  'type': 'FLOAT(10)',
+  'type': 'FLOAT(53)',
   'index': true
 }, {
   'name': 'first_name',
@@ -49,7 +49,7 @@ var expect = [{
   'index': false
 }, {
   'name': 'testing_GPA',
-  'type': 'FLOAT(10)',
+  'type': 'FLOAT(53)',
   'index': false
 }, {
   'name': 'testing_DATE',
@@ -61,7 +61,7 @@ var expect = [{
   'index': false
 }, {
   'name': 'testing',
-  'type': 'FLOAT(10)',
+  'type': 'FLOAT(53)',
   'index': false
 }];
 
