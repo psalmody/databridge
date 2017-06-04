@@ -48,9 +48,6 @@ module.exports = function(dir, o, p, t) {
     'schedule': cleanDir(dir + '/schedule.json')
   };
 
-  var pm2ErrorFile = (typeof(p) == 'undefined' || typeof(p.error_file) == 'undefined') ? cleanDir(dir + '/logs/schedule.log') : p.error_file;
-  var pm2OutFile = (typeof(p) == 'undefined' || typeof(p.out_file) == 'undefined') ? cleanDir(dir + '/logs/schedule.log') : p.out_file;
-
   var pm2cfg = {
     'apps': [{
       'name': 'databridge',
@@ -62,8 +59,7 @@ module.exports = function(dir, o, p, t) {
       'env_production': {
         'NODE_ENV': 'production'
       },
-      'error_file': pm2ErrorFile,
-      'out_file': pm2OutFile,
+      merge_logs: true,
       'log_date_format': 'YYYY-MM-DD HH:mm:ss Z'
     }]
   };
