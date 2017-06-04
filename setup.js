@@ -16,23 +16,11 @@ var questions = [{
     if (!fs.lstatSync(v).isDirectory()) return 'Not a directory.';
     return true;
   }
-}, {
-  type: 'list',
-  name: 'logto',
-  message: 'Setup logging to',
-  choices: [{
-    name: 'Files',
-    value: 'file'
-  }, {
-    name: 'Console',
-    value: 'console'
-  }]
 }];
 
 inquirer.prompt(questions).then(function(a) {
   var binds = (fs.existsSync('./config.json')) ? require('./config').defaultBindVars : {};
   var config = configSetup(a.defaultDir, {
-    logto: a.logto,
     defaultBindVars: binds
   });
   var v = config.valid();

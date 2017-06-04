@@ -7,8 +7,6 @@ var assert = require('chai').assert;
 var outputFile = require('../bin/output-file');
 var mkdirp = require('mkdirp');
 
-config.logto = 'test';
-
 // all sources
 describe('Testing all sources', function() {
   var sources = require('../bin/list-src')(config);
@@ -39,7 +37,7 @@ describe('Testing all sources', function() {
               },
               bin: dirname + '/../bin/',
               table: table,
-              log: require('../bin/log-test')(),
+              log: require('../bin/log-console')({spinner: false}),
               source: testing
             };
 

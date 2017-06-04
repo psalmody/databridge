@@ -56,7 +56,7 @@ else if (missingKeys(program, ['batch']) == false) {
       program.help();
       return;
     }
-    if (config.logto == 'console') console.log(responses);
+    console.log(responses);
   });
 } else {
   //otherwise, run bridge once

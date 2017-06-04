@@ -28,11 +28,6 @@ describe('Testing config.json', function() {
     done();
   });
 
-  it('Should have logto option', function(done) {
-    assert(typeof(cfg.logto) == 'undefined' ? false : true, typeof(cfg.logto));
-    done();
-  });
-
   it('If schedule defined, file exists', function() {
     if (typeof(cfg.schedule) == 'undefined') return assert(true);
     assert(fs.lstatSync(cfg.schedule).isFile(), 'Not a file ' + cfg.schedule);

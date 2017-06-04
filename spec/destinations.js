@@ -11,10 +11,9 @@ var colParser = require('../bin/col-parser');
 var columns;
 var Timer = require('../bin/timer');
 var fs = require('fs');
-opt.log = require('../bin/log-test')(Object.assign({}, config, opt));
+opt.log = require('../bin/log-console')(Object.assign({}, config, opt));
 opt.timer = new Timer();
 opt.source = 'DB_TEST';
-config.logto = 'test';
 var response = require('../bin/response')(Object.assign({}, config, opt));
 
 describe('Run all destinations with MOCK_DATA', function() {
