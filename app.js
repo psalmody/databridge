@@ -5,7 +5,6 @@
 
 const program = require('./bin/cli')
 const colors = require('colors')
-const bridge = require('./bin/bridge')
 const missingKeys = require('./bin/missing-keys')
 const runBridges = require('./bin/bridge-runner')
 const config = require('./config.json')
@@ -56,27 +55,21 @@ else if (Object.keys(program).includes('batch')) {
     program.help();
   }
   //run one bridge
-  runBridges([function(responses, cb) {
-    bridge(config, {
-      source: program.source,
-      destination: program.destination,
-      binds: program.binds,
-      table: program.table,
-      task: program.task,
-      update: program.update,
-      truncate: program.truncate
-    }, function(err, response) {
-      if (err) return cb(err);
-      //push clean version (no methods) of response
-      responses.push(response.strip());
-      cb(null, responses);
-    });
-  }], function(err) {
+  const Bridge = require('./bin/bridge')
+  const bridge = new Bridge({config: config, opt: {
+    source: program.source,
+    destination: program.destination,
+    binds: program.binds,
+    table: program.table,
+    update: program.update,
+    truncate: program.truncate
+  }})
+  bridge.run((err,response) => {
     if (err) {
-      process.stdout.clearLine();
-      process.stdout.cursorTo(0);
-      console.error(colors.red(err));
+      process.stdout.clearLine()
+      process.stdout.cursorTo(0)
+      console.error(err)
       return;
     }
-  });
+  })
 }

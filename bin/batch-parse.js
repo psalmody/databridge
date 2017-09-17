@@ -7,9 +7,19 @@
  */
 module.exports = (batchName, batchFile) => {
   const batch = require(batchFile)
-  const bridge = require('./bridge')
-  let bridges = []
+  const Bridge = require('./bridge')
   const config = require('../config.json')
+
+  return batch.map((b) => {
+    let o = Object.assign({}, {
+      type: 'bridge',
+      task: true
+    }, b)
+    return new Bridge({config: config, opt: o})
+  })
+
+  let bridges = []
+
 
   batch.forEach((options) => {
     //defaults for batch items - type: 'bridge' and task: true
