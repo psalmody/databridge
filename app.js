@@ -5,7 +5,6 @@
 
 const program = require('./bin/cli')
 const colors = require('colors')
-const missingKeys = require('./bin/missing-keys')
 const runBridges = require('./bin/bridge-runner')
 const config = require('./config.json')
 
@@ -35,8 +34,8 @@ else if (['batch','show'].every(e => Object.keys(program).includes(e))) {
 }
 //run batch if specified
 else if (Object.keys(program).includes('batch')) {
-  var parseBatch = require('./bin/batch-parse');
-  var bridges = parseBatch(program.batch, config.dirs.batches + program.batch);
+  const parseBatch = require('./bin/batch-parse');
+  const bridges = parseBatch(program.batch, config.dirs.batches + program.batch);
   runBridges(bridges, function(err, responses) {
     if (err) {
       console.error(colors.red(err));
@@ -44,26 +43,18 @@ else if (Object.keys(program).includes('batch')) {
       return;
     }
     if (config.logto == 'console') console.log(responses);
-  });
+  })
 } else {
   //otherwise, run bridge once
   //only source / destination are required - each source module should throw
   //an error if table is necessary
-  var missing = missingKeys(program, ['source', 'destination']);
-  if (missing.length) {
-    console.error(colors.red('Wrong usage.'));
-    program.help();
+  if (!['source','destination'].every(e => Object.keys(program).includes(e))) {
+    console.error(colors.red('Wrong usage.'))
+    program.help()
   }
   //run one bridge
   const Bridge = require('./bin/bridge')
-  const bridge = new Bridge({config: config, opt: {
-    source: program.source,
-    destination: program.destination,
-    binds: program.binds,
-    table: program.table,
-    update: program.update,
-    truncate: program.truncate
-  }})
+  const bridge = new Bridge({config: config, opt: program})
   bridge.run((err,response) => {
     if (err) {
       process.stdout.clearLine()
