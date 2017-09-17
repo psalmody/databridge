@@ -26,7 +26,7 @@ module.exports = (opfile, callback) => {
   //get sample of lines of output file (columns and first row of data)
   opfile.sampleLines((err, rows, colNames) => {
     if (err) return callback(err)
-    if (!rows.length) callback('No rows returned from opfile.sampleLines' + JSON.stringify(rows) + JSON.stringify(colNames))
+    if (!rows.length) return callback('No rows returned from opfile.sampleLines' + JSON.stringify(rows) + JSON.stringify(colNames))
 
     //push data into R-style arrays (one array of per column)
     // so first column (name id_IND) = [1, 2, 3, 4, 5]
