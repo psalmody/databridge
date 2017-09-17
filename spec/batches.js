@@ -29,6 +29,16 @@ if (batches.length != 0) {
         var bad;
         var badIndex;
         batchSettings.every(function(bridge, index) {
+          //if script, check existsSync
+          if(bridge.type === 'script') {
+            if (!fs.fileExistsSync(config.dirs.input + bridge.name + '.js')) {
+              ok = false;
+              bad = bridge;
+              badIndex = index;
+              return false;
+            }
+            return true;
+          }
           //if not a string, bad
           if (typeof(bridge.destination) !== 'string') {
             ok = false;
