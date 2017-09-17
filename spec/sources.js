@@ -4,7 +4,7 @@ var config = Object.assign({}, require('../config.json'));
 config.TESTING = true;
 var removeFileExtension = require('../bin/string-utilities').removeFileExtension;
 var assert = require('chai').assert;
-var outputFile = require('../bin/output-file');
+var OutputFile = require('../bin/output-file');
 var mkdirp = require('mkdirp');
 
 config.logto = 'test';
@@ -41,20 +41,14 @@ describe('Testing all sources', function() {
               table: table,
               log: require('../bin/log-test')(),
               source: testing
-            };
+            }
+            opt.opfile = new OutputFile(opt)
 
             async.waterfall([
               function(cb) {
                 mkdirp(opt.cfg.dirs.output, function(err) {
                   if (err) return cb(err);
                   assert(fs.existsSync(opt.cfg.dirs.output), 'Output folder not created. ' + opt.cfg.dirs.output);
-                  cb(null);
-                });
-              },
-              function(cb) {
-                outputFile(opt, function(err, opfile) {
-                  if (err) return cb(err);
-                  opt.opfile = opfile;
                   cb(null);
                 });
               },

@@ -15,17 +15,9 @@ module.exports = (opfile, callback) => {
       //if _DEC assume decimal
     if (c.toUpperCase().indexOf('_DEC') > -1) return 'FLOAT(53)'
 
-    //check functions
-    let isBlank = (e) => {
-      return e === ''
-    }
-    let isDec = (e) => {
-        if (e === '') return true
-        return e.match(/^-?\d*\.?\d*$/g)
-      }
-      //try to parse from array
-    if (a.every(isBlank)) return 'VARCHAR(255)'
-    if (a.every(isDec)) return 'FLOAT(53)'
+    //try to parse from array
+    if (a.every(e => e === '')) return 'VARCHAR(255)'
+    if (a.every(e => e.match(/^-?\d*\.?\d*$/g))) return 'FLOAT(53)'
 
     //default
     return 'VARCHAR(255)'
@@ -34,12 +26,12 @@ module.exports = (opfile, callback) => {
   //get sample of lines of output file (columns and first row of data)
   opfile.sampleLines((err, rows, colNames) => {
     if (err) return callback(err)
-    if (!rows.length) callback('No rows returned from opfile.sampleLines' + JSON.stringify(rows) + JSON.stringify(colNames))
+    if (!rows.length) return callback('No rows returned from opfile.sampleLines' + JSON.stringify(rows) + JSON.stringify(colNames))
 
     //push data into R-style arrays (one array of per column)
     // so first column (name id_IND) = [1, 2, 3, 4, 5]
     let columns = []
-    rows.forEach((r) => {
+    rows.forEach(r => {
       if (!r) return true
       let cells = r.split('\t')
       for (let i = 0; i < colNames.length; i++) {

@@ -22,7 +22,7 @@ module.exports = function(opt, moduleCallback) {
     },
     function(sql, cb) {
       var query = db.query(sql);
-      var opfileWriteStream = opfile.createWriteStream();
+      var opfileWriteStream = opfile.writeStream;
       var rowsProcessed = 0;
       var columns = [];
       query.on('error', function(err) {

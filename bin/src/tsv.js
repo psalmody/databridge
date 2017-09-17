@@ -37,7 +37,7 @@ module.exports = function(opt, moduleCallback) {
         done();
       };
       //pipe data from csv to output file
-      var oStream = opfile.createWriteStream();
+      var oStream = opfile.writeStream;
       var rStream = fs.createReadStream(filename);
       oStream.on('error', function(err) {
         cb(err);

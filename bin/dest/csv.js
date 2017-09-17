@@ -45,7 +45,7 @@ module.exports = function(opt, columns, moduleCallback) {
         callback();
       };
       //pipe data
-      var opfileRStream = opfile.createReadStream();
+      var opfileRStream = opfile.readStream;
       var outputCSVStream = fs.createWriteStream(opt.cfg.dirs.output + 'csv/' + dir + '/' + table + '.csv');
       outputCSVStream.on('error', function(err) {
         cb(err);

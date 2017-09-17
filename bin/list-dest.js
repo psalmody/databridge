@@ -5,23 +5,18 @@
  * @return {array}     available destinations
  */
 module.exports = function(cfg) {
-  var fs = require('fs'),
-    i = fs.readdirSync('./bin/dest').filter(function(f) {
-      return f.indexOf('.') !== 0;
-    }),
-    l = fs.readdirSync(cfg.dirs.destinations).filter(function(f) {
-      return f.indexOf('.') !== 0;
-    });
+  const fs = require('fs')
+  const i = fs.readdirSync('./bin/dest').filter(f => f.indexOf('.') !== 0)
+  const l = fs.readdirSync(cfg.dirs.destinations).filter(f => f.indexOf('.') !== 0)
 
-  var noExt = require('./string-utilities').removeFileExtension;
+  const {removeFileExtension} = require('./string-utilities')
 
-  var a = cfg.TESTING == true ? i : i.concat(l);
+  let a = cfg.TESTING == true ? i : i.concat(l);
 
-  var s = [];
-
-  a.forEach(function(v) {
-    if (s.indexOf(v !== -1)) s.push(noExt(v));
-  });
-
-  return (s);
-};
+  let s = []
+  a.forEach(v => {
+    v = removeFileExtension(v)
+    if (s.indexOf(v !== -1)) s.push(v)
+  })
+  return s
+}

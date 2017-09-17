@@ -63,7 +63,7 @@ module.exports = function(opt, moduleCallback) {
       },
       function(docs, cb) {
         //append data to output file
-        var wStream = opfile.createWriteStream();
+        var wStream = opfile.writeStream;
         docs.forEach(function(d) {
           var vals = [];
           for (var k in d) {
