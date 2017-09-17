@@ -42,7 +42,7 @@ else if (Object.keys(program).includes('batch')) {
       program.help();
       return;
     }
-    if (config.logto == 'console') console.log(responses);
+    if (config.logto == 'console' && responses) console.log(responses);
   })
 } else {
   //otherwise, run bridge once
