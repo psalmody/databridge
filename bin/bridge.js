@@ -1,139 +1,99 @@
-/**
- * bin/bridge - Bridging between source and destination
- *
- * @param  {type} config         config.json
- * @param  {type} opt            option object must contain source/table/destination
- * @param  {function} moduleCallback  callback when complete passed error/null
- *                                    and result object
- * @return {undefined}
- */
-module.exports = function(config, opt, moduleCallback) {
 
-  //setup timer and define shortcuts for log/error
-  var async = require('async'),
-    missingKeys = require('./missing-keys'),
-    colParser = require('./col-parser'),
-    Spinner = require('cli-spinner').Spinner,
-    outputFile = require('./output-file'),
-    source,
-    destination,
-    err,
-    Timer = require('./timer');
+const Timer = require('./timer')
+const {Spinner} = require('cli-spinner')
+const opFile = require('./output-file')
+const colParser = require('./col-parser')
+const async = require('async')
 
-
-  //opt includes all things the source/destination scripts need
-  opt.cfg = config;
-  opt.bin = __dirname.replace(/\\/g, '/') + '/';
-  //start timer
-  opt.timer = new Timer();
-  //spinner if not task
-  opt.spinner = (opt.task) ? false : (function() {
-    var s = new Spinner('processing... %s');
-    s.setSpinnerString(0);
-    return s;
-  })();
-  //setup log
-  opt.log = require('./log-' + opt.cfg.logto)(opt);
-
-  //setup response object
-  var response = require(opt.bin + 'response')(opt);
-  response.binds = opt.binds;
-  //check usage first
-  if (missingKeys(opt, ['source', 'destination']) !== false) return moduleCallback('Bad usage for bridge. Check your syntax.');
-
-  //try to require source -- npm installed first
-  try {
-    source = require('./src/' + opt.source);
-  } catch (e) {
-    //try to require source from local module
-    try {
-      source = require(opt.cfg.dirs.sources + opt.source);
-    } catch (e2) {
-      err = '\n  ' + e.toString() + '\n  ' + e2.toString();
-      return moduleCallback('Invalid source.' + err);
-    }
+class Bridge {
+  constructor({config, opt}) {
+    const {bin, task, binds, source, destination} = opt
+    this.logto = config.logto || 'console'
+    this.cfg = config
+    this.opt = opt
+    this.opt.cfg = config
+    this.opt.bin = __dirname.replace(/\\/g, '/') + '/'
+    this.opt.timer = new Timer()
+    this.opt.spinner = (task) ? false : (() => {
+      const s = new Spinner('processing... %s')
+      s.setSpinnerString(0)
+      return s
+    })()
+    this.opt.log = require('./log-' + this.logto)(opt)
+    this.response = require(this.opt.bin + 'response')(this.opt)
+    this.response.binds = this.binds
+    this.source = require('./src/' + source) || require(cfg.dirs.sources + source)
+    this.destination = require('./dest/' + destination) || require(cfg.dirs.destinations + destination)
   }
-  //try to require destination
-  try {
-    destination = require('./dest/' + opt.destination);
-  } catch (e) {
-    //try to require destination from local module
-    try {
-      destination = require(opt.cfg.dirs.destinations + opt.destination);
-    } catch (e2) {
-      err = '\n  ' + e.toString() + '\n  ' + e2.toString();
-      return moduleCallback('Invalid destination.' + err);
-    }
+  get binds() {
+    return this.opt.binds
   }
-
-  async.waterfall([
-    //setup opfile
-    function(cb) {
-      outputFile(opt, function(err, opfile) {
-        if (err) return moduleCallback(err);
-        opt.opfile = opfile;
-        cb(null);
-      });
-    },
-    //run source
-    function(cb) {
-      if (opt.spinner) opt.spinner.start();
-      //start logging with response object
-      response.source.start();
-      try {
-        source(opt, function(err, rows, columns) {
-          response.source.stop();
-          if (err) {
-            response.source.error(err);
-            return cb(err);
-          }
-          response.source.respond('ok', rows, columns);
-          if (rows == 0) return cb('No data returned from source.');
-          cb(null);
-        });
-      } catch (e) {
-        console.trace(e);
-      }
-    },
-    //attempt to get column definitions
-    function(cb) {
-      colParser(opt.opfile, function(err, parsedCols) {
-        if (err) return cb(err);
-        cb(null, parsedCols);
-      });
-    },
-    function(parsedCols, cb) {
-      response.destination.start();
-      destination(opt, parsedCols, function(err, rows, columns) {
-        response.destination.stop();
-        if (err) {
-          response.destination.error(err);
-          return cb(err);
+  run(callback) {
+    const outputFile = (callback) => {
+      opFile(this.opt, (e, o) => {
+        if (e) return callback(e)
+        this.opt.opfile = o
+        callback(null)
+      })
+    }
+    const runSource = (callback) => {
+      if (this.spinner) this.spinner.start()
+      this.response.source.start()
+      this.source(this.opt, (e, rows, columns) => {
+        this.response.source.stop()
+        if (e) {
+          this.response.source.error(e)
+          return callback(e)
         }
-        response.destination.respond('ok', rows, columns);
-        cb(null);
-      });
+        this.response.source.respond('ok', rows, columns)
+        if (rows === 0) return callback('No data returned from source.')
+        callback(null)
+      })
     }
-  ], function(err) {
-    //try and clean up the output file and stop spinner
-    try {
-      opt.opfile.clean();
-    } catch (e) {
-      if (typeof(opfile) !== 'undefined') opt.log.error(e);
+    const runColumns = (callback) => {
+      colParser(this.opt.opfile, (err, parsedCols) => {
+        if (err) return callback(err)
+        this.parsedCols = parsedCols
+        callback(null)
+      })
     }
-    //error handling
-    if (err) {
-      opt.log.error(err);
-      opt.log.error(opt.timer.str());
-      if (opt.spinner) opt.spinner.stop(true);
-      return moduleCallback(err);
+    const runDestination = (callback) => {
+      this.response.destination.start()
+      this.destination(this.opt, this.parsedCols, (err, rows, columns) => {
+        this.response.destination.stop()
+        if (err) {
+          this.response.destination.error(err)
+          return callback(err)
+        }
+        this.response.destination.respond('ok', rows, columns)
+        callback(null)
+      })
     }
-    //success! log and return response object
-    opt.log.group('Finished Bridge').log(opt.timer.str());
-    opt.log.log('Completed ' + opt.source + ' ' + opt.table + ' to ' + opt.destination + '.');
-    //response.check() returns null if no problem
-    opt.log.log(JSON.stringify(response.strip(), null, 2));
-    if (opt.spinner) opt.spinner.stop(true);
-    return moduleCallback(response.check(), response);
-  });
-};
+    const cleanupOutput = (callback) => {
+      try {
+        this.opt.opfile.clean()
+      } catch(e) {
+        if (typeof(this.opt.opfile) !== 'undefined') this.opt.log.error(e)
+        return callback(e)
+      }
+      callback(null)
+    }
+    async.waterfall([outputFile, runSource, runColumns, runDestination, cleanupOutput], (e) => {
+      if (e) {
+        this.opt.log.error(e)
+        this.opt.log.error(this.timer.str())
+        if (this.opt.spinner) this.opt.spinner.stop(true)
+        return callback(e)
+      }
+      //success
+      this.opt.log.group('Finished bridge').log(this.opt.timer.str())
+      this.opt.log.log(`Completed ${this.opt.source} ${this.opt.table} to ${this.opt.destination}.`)
+      this.opt.log.log(JSON.stringify(this.response.strip(), null, 2))
+      if(this.opt.spinner) this.opt.spinner.stop(true)
+      return callback(this.response.check(), this.response)
+    })
+  }
+}
+
+//now run
+module.exports = Bridge
