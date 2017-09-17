@@ -26,7 +26,7 @@ module.exports = function(opt, columns, moduleCallback) {
       var rowsProcessed = 0;
       var first = true;
       var columns;
-      var rStream = opfile.createReadStream();
+      var rStream = opfile.readStream;
       var oStream = fs.createWriteStream(outputFile);
       var tStream = new Stream.Transform();
       tStream._transform = function(chunk, encoding, callback) {

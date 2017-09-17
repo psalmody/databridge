@@ -55,7 +55,7 @@ module.exports = function(opt, columns, moduleCallback) {
       tab2JSONStream.on('error', function(err) {
         cb(err);
       });
-      var opfileRStream = opfile.createReadStream();
+      var opfileRStream = opfile.readStream;
       var outputJSONStream = fs.createWriteStream(opt.cfg.dirs.output + 'json/' + dir + '/' + table + '.json');
       outputJSONStream.on('error', function(err) {
         cb(err);

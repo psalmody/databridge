@@ -1,7 +1,7 @@
 var async = require('async');
 var config = Object.assign({}, require('../config.json'));
 config.TESTING = true;
-var outputFile = require('../bin/output-file');
+var OutputFile = require('../bin/output-file');
 var opt = {
   cfg: config,
   table: 'MOCK_DATA'
@@ -19,19 +19,16 @@ var response = require('../bin/response')(Object.assign({}, config, opt));
 
 describe('Run all destinations with MOCK_DATA', function() {
   it('Overrides opfile without error', function(done) {
-    outputFile(opt, function(err, op) {
-      opt.opfile = op;
-      //force to use MOCK_DATA as output-ed data
-      opt.opfile.filename = __dirname.replace(/\\/g, '/') + '/assets/MOCK_DATA.txt';
-      opt.opfile.twoLines(function(err, data) {
-        if (err) return done(err);
-        var test2Lines = [
-          'id_IND\tfirst_name\tlast_name\temail\tgender\tip_address\ttesting_GPA\ttesting_DATE\ttesting_TIMESTAMP\ttesting_DEC',
-          '1\tEmily\tFisher\tefisher0@google.de\tFemale\t161.31.81.163\t89.64\t2015-11-15\t2016-01-29\t89.62'
-        ];
-        if (data[0] !== test2Lines[0] || data[1] !== test2Lines[1]) return done(new Error('Data returned by opfile.twoLines() did not match MOCK_DATA.\n' + data.toString() + test2Lines.toString()));
-        done();
-      });
+    opt.opfile = new OutputFile(opt)
+    opt.opfile.filename = __dirname.replace(/\\/g, '/') + '/assets/MOCK_DATA.txt';
+    opt.opfile.twoLines((err, data) => {
+      if (err) return done(new Error(err));
+      var test2Lines = [
+        'id_IND\tfirst_name\tlast_name\temail\tgender\tip_address\ttesting_GPA\ttesting_DATE\ttesting_TIMESTAMP\ttesting_DEC',
+        '1\tEmily\tFisher\tefisher0@google.de\tFemale\t161.31.81.163\t89.64\t2015-11-15\t2016-01-29\t89.62'
+      ];
+      if (data[0] !== test2Lines[0] || data[1] !== test2Lines[1]) return done(new Error('Data returned by opfile.twoLines() did not match MOCK_DATA.\n' + data.toString() + test2Lines.toString()));
+      done();
     });
   });
   it('Parsed columns without error', function(done) {

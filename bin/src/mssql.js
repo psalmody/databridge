@@ -39,7 +39,7 @@ module.exports = function(opt, moduleCallback) {
       var rowsProcessed = 0;
 
       //trying stream for opfile
-      var opfileWStream = opfile.createWriteStream();
+      var opfileWStream = opfile.writeStream;
 
       request.stream = true;
       request.query(sql);

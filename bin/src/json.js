@@ -8,7 +8,7 @@ module.exports = (opt, moduleCallback) => {
 
   let data = require(filename)
 
-  let wStream = opfile.createWriteStream()
+  let wStream = opfile.writeStream
 
   //write columns
   wStream.write(Object.keys(data[0]).join('\t') + '\n')

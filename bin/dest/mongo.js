@@ -111,7 +111,7 @@ module.exports = function(opt, columns, moduleCallback) {
         mongoWriteStream.on('finish', function() {
           cb(null, rowCount, indexes);
         });
-        var opfileRStream = opfile.createReadStream();
+        var opfileRStream = opfile.readStream;
         opfileRStream.pipe(split()).pipe(mongoWriteStream);
       },
       function(rowCount, indexes, cb) {

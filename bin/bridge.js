@@ -1,7 +1,7 @@
 
 const Timer = require('./timer')
 const {Spinner} = require('cli-spinner')
-const opFile = require('./output-file')
+const OutputFile = require('./output-file')
 const colParser = require('./col-parser')
 const async = require('async')
 
@@ -29,13 +29,7 @@ class Bridge {
     return this.opt.binds
   }
   run(callback) {
-    const outputFile = (callback) => {
-      opFile(this.opt, (e, o) => {
-        if (e) return callback(e)
-        this.opt.opfile = o
-        callback(null)
-      })
-    }
+    this.opt.opfile = new OutputFile(this.opt)
     const runSource = (callback) => {
       if (this.spinner) this.spinner.start()
       this.response.source.start()
@@ -78,15 +72,15 @@ class Bridge {
       }
       callback(null)
     }
-    async.waterfall([outputFile, runSource, runColumns, runDestination, cleanupOutput], (e) => {
+    async.waterfall([runSource, runColumns, runDestination, cleanupOutput], (e) => {
       if (e) {
         this.opt.log.error(e)
-        this.opt.log.error(this.timer.str())
+        this.opt.log.error(this.timer.string)
         if (this.opt.spinner) this.opt.spinner.stop(true)
         return callback(e)
       }
       //success
-      this.opt.log.group('Finished bridge').log(this.opt.timer.str())
+      this.opt.log.group('Finished bridge').log(this.opt.timer.string)
       this.opt.log.log(`Completed ${this.opt.source} ${this.opt.table} to ${this.opt.destination}.`)
       this.opt.log.log(JSON.stringify(this.response.strip(), null, 2))
       if(this.opt.spinner) this.opt.spinner.stop(true)
