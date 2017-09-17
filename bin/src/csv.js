@@ -42,7 +42,7 @@ module.exports = function(opt, moduleCallback) {
         done();
       };
       //pipe data from csv to output file
-      var opfileWStream = opfile.createWriteStream();
+      var opfileWStream = opfile.writeStream;
       var readCSVStream = fs.createReadStream(filename);
 
       opfileWStream.on('error', function(err) {

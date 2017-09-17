@@ -82,7 +82,7 @@ module.exports = (opt, columns, moduleCallback) => {
       })
       sql += ' ( ' + cs.join(', ') + ' ) VALUES '
       let lineReader = readline.createInterface({
-        input: opfile.createReadStream()
+        input: opfile.readStream
       })
       lineReader.on('error', (err) => {
         return cb(err)

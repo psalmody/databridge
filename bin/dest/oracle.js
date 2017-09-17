@@ -74,7 +74,7 @@ module.exports = (opt, columns, moduleCallback) => {
       // output opfile to tmp file for slight changes for sqlldr
       let dataFile = tmp.fileSync()
       let lineReader = readline.createInterface({
-        input: opfile.createReadStream()
+        input: opfile.readStream
       })
       let wStream = fs.createWriteStream(dataFile.name)
       lineReader.on('error', (e) => {

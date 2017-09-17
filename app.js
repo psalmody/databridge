@@ -3,92 +3,64 @@
  * tool prividing all the command line options.
  */
 
-var program = require('./bin/cli'),
-  colors = require('colors'),
-  bridge = require('./bin/bridge'),
-  missingKeys = require('./bin/missing-keys'),
-  runBridges = require('./bin/bridge-runner'),
-  config = require('./config.json');
+const program = require('./bin/cli')
+const colors = require('colors')
+const runBridges = require('./bin/bridge-runner')
+const config = require('./config.json')
 
 //show valid tables
-if (missingKeys(program, ['source', 'table', 'show']) == false) {
+if (['source','table','show'].every(e => Object.keys(program).includes(e))) {
   try {
-    console.log('\n  Valid tables for ' + program.source + ':');
-    var tables = require('./bin/list-tables')(program.source);
-    tables.forEach(function(t) {
-      console.log('    ' + t);
-    });
+    console.log('\n  Valid tables for ' + program.source + ':')
+    require('./bin/list-tables')(program.source).map(t => console.log(`   ${t}`))
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
 }
 //show valid sources
-else if (missingKeys(program, ['source', 'show']) == false) {
-  var srcs = require('./bin/list-src')(config);
+else if (['source','show'].every(e=>Object.keys(program).includes(e)) && program.source === true) {
   console.log('\n  Valid sources:');
-  srcs.forEach(function(v) {
-    console.log('    ' + v);
-  });
+  require('./bin/list-src')(config).map(v => console.log(`    ${v}`));
 }
 //show valid destinations
-else if (missingKeys(program, ['destination', 'show']) == false) {
-  var dests = require('./bin/list-dest')(config);
-  console.log('\n  Valid destinations:');
-  dests.forEach(function(v) {
-    console.log('    ' + v);
-  });
+else if (['destination','show'].every(e => Object.keys(program).includes(e))) {
+  console.log('\n  Valid destinations:')
+  require('./bin/list-dest')(config).map(v => console.log(`    ${v}`))
 }
 //show valid batches
-else if (missingKeys(program, ['batch', 'show']) == false) {
-  var batches = require('./bin/list-batches')();
+else if (['batch','show'].every(e => Object.keys(program).includes(e))) {
   console.log('\n  Valid batches:');
-  batches.forEach(function(batch) {
-    console.log('    ' + batch);
-  });
+  require('./bin/list-batches')().map(v => console.log(`    ${v}`))
 }
 //run batch if specified
-else if (missingKeys(program, ['batch']) == false) {
-  var parseBatch = require('./bin/batch-parse');
-  var bridges = parseBatch(program.batch, config.dirs.batches + program.batch);
+else if (Object.keys(program).includes('batch')) {
+  const parseBatch = require('./bin/batch-parse');
+  const bridges = parseBatch(program.batch, config.dirs.batches + program.batch);
   runBridges(bridges, function(err, responses) {
     if (err) {
       console.error(colors.red(err));
       program.help();
       return;
     }
-    if (config.logto == 'console') console.log(responses);
-  });
+    if (config.logto == 'console' && responses) console.log(responses);
+  })
 } else {
   //otherwise, run bridge once
   //only source / destination are required - each source module should throw
   //an error if table is necessary
-  var missing = missingKeys(program, ['source', 'destination']);
-  if (missing.length) {
-    console.error(colors.red('Wrong usage.'));
-    program.help();
+  if (!['source','destination'].every(e => Object.keys(program).includes(e))) {
+    console.error(colors.red('Wrong usage.'))
+    program.help()
   }
   //run one bridge
-  runBridges([function(responses, cb) {
-    bridge(config, {
-      source: program.source,
-      destination: program.destination,
-      binds: program.binds,
-      table: program.table,
-      task: program.task,
-      update: program.update,
-      truncate: program.truncate
-    }, function(err, response) {
-      if (err) return cb(err);
-      //push clean version (no methods) of response
-      responses.push(response.strip());
-      cb(null, responses);
-    });
-  }], function(err) {
+  const Bridge = require('./bin/bridge')
+  const bridge = new Bridge({config: config, opt: program})
+  bridge.run((err,response) => {
     if (err) {
-      process.stdout.clearLine();
-      process.stdout.cursorTo(0);
-      console.error(colors.red(err));
+      process.stdout.clearLine()
+      process.stdout.cursorTo(0)
+      console.error(err)
       return;
     }
-  });
+  })
 }
