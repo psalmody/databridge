@@ -3,51 +3,39 @@
  * tool prividing all the command line options.
  */
 
-var program = require('./bin/cli'),
-  colors = require('colors'),
-  bridge = require('./bin/bridge'),
-  missingKeys = require('./bin/missing-keys'),
-  runBridges = require('./bin/bridge-runner'),
-  config = require('./config.json');
+const program = require('./bin/cli')
+const colors = require('colors')
+const bridge = require('./bin/bridge')
+const missingKeys = require('./bin/missing-keys')
+const runBridges = require('./bin/bridge-runner')
+const config = require('./config.json')
 
 //show valid tables
-if (missingKeys(program, ['source', 'table', 'show']) == false) {
+if (['source','table','show'].every(e => Object.keys(program).includes(e))) {
   try {
-    console.log('\n  Valid tables for ' + program.source + ':');
-    var tables = require('./bin/list-tables')(program.source);
-    tables.forEach(function(t) {
-      console.log('    ' + t);
-    });
+    console.log('\n  Valid tables for ' + program.source + ':')
+    require('./bin/list-tables')(program.source).map(t => console.log(`   ${t}`))
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
 }
 //show valid sources
-else if (missingKeys(program, ['source', 'show']) == false) {
-  var srcs = require('./bin/list-src')(config);
+else if (['source','show'].every(e=>Object.keys(program).includes(e)) && program.source === true) {
   console.log('\n  Valid sources:');
-  srcs.forEach(function(v) {
-    console.log('    ' + v);
-  });
+  require('./bin/list-src')(config).map(v => console.log(`    ${v}`));
 }
 //show valid destinations
-else if (missingKeys(program, ['destination', 'show']) == false) {
-  var dests = require('./bin/list-dest')(config);
-  console.log('\n  Valid destinations:');
-  dests.forEach(function(v) {
-    console.log('    ' + v);
-  });
+else if (['destination','show'].every(e => Object.keys(program).includes(e))) {
+  console.log('\n  Valid destinations:')
+  require('./bin/list-dest')(config).map(v => console.log(`    ${v}`))
 }
 //show valid batches
-else if (missingKeys(program, ['batch', 'show']) == false) {
-  var batches = require('./bin/list-batches')();
+else if (['batch','show'].every(e => Object.keys(program).includes(e))) {
   console.log('\n  Valid batches:');
-  batches.forEach(function(batch) {
-    console.log('    ' + batch);
-  });
+  require('./bin/list-batches')().map(v => console.log(`    ${v}`))
 }
 //run batch if specified
-else if (missingKeys(program, ['batch']) == false) {
+else if (Object.keys(program).includes('batch')) {
   var parseBatch = require('./bin/batch-parse');
   var bridges = parseBatch(program.batch, config.dirs.batches + program.batch);
   runBridges(bridges, function(err, responses) {
