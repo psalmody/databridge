@@ -13,50 +13,9 @@ module.exports = (batchName, batchFile) => {
   return batch.map((b) => {
     let o = Object.assign({}, {
       type: 'bridge',
-      task: true
+      task: true,
+      batch: batchName
     }, b)
     return new Bridge({config: config, opt: o})
   })
-
-  let bridges = []
-
-
-  batch.forEach((options) => {
-    //defaults for batch items - type: 'bridge' and task: true
-    let o = Object.assign({}, {
-        type: 'bridge',
-        task: true
-      }, options)
-      //handle script type
-    let fn = ((o) => {
-        if (o.type == 'script') {
-          return ((o) => {
-            let script = require(config.dirs.input + o.name)
-            return function(responses, cb) {
-              script(config, o, function(err, response) {
-                if (err) return cb(err)
-                  //push clean version (no methods) of response
-                responses.push(response)
-                cb(null, responses)
-              })
-            }
-          })(o)
-        } else if (o.type == 'bridge') {
-          return ((o) => {
-            return function(responses, cb) {
-              bridge(config, o, function(err, response) {
-                if (err) return cb(err)
-                  //push clean version (no methods) of response
-                responses.push(response.strip())
-                cb(null, responses)
-              })
-            }
-          })(o)
-        }
-      })(o)
-      //push into bridges array
-    bridges.push(fn)
-  })
-
-  return bridges
 }
