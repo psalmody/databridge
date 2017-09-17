@@ -3,7 +3,7 @@
  *
  * @param  {string} batchName name of the batch (for logging/output folder)
  * @param  {string} batchFile path of the json batch file
- * @return {array}           array of bridge functions to run
+ * @return {array}           array of Bridge instances
  */
 module.exports = (batchName, batchFile) => {
   const batch = require(batchFile)
