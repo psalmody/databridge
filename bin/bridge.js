@@ -4,6 +4,7 @@ const {Spinner} = require('cli-spinner')
 const OutputFile = require('./output-file')
 const colParser = require('./col-parser')
 const async = require('async')
+const fs = require('fs')
 
 class Bridge {
   constructor({config, opt}) {
@@ -22,8 +23,9 @@ class Bridge {
     this.opt.log = require('./log-' + this.logto)(opt)
     this.response = require(this.opt.bin + 'response')(this.opt)
     this.response.binds = this.binds
-    this.source = require('./src/' + source) || require(cfg.dirs.sources + source)
-    this.destination = require('./dest/' + destination) || require(cfg.dirs.destinations + destination)
+    //require source and destination from bin first, then try local source/destination
+    this.source = fs.existsSync(`${this.opt.bin}src/${source}.js`) ? require('./src/' + source) : require(config.dirs.sources + source)
+    this.destination = fs.existsSync(`${this.opt.bin}dest/${destination}.js`) ? require('./dest/' + destination) : require(config.dirs.destinations + destination)
   }
   get binds() {
     return this.opt.binds
