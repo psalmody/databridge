@@ -75,12 +75,12 @@ class Bridge {
     async.waterfall([runSource, runColumns, runDestination, cleanupOutput], (e) => {
       if (e) {
         this.opt.log.error(e)
-        this.opt.log.error(this.timer.string)
+        this.opt.log.error(this.opt.timer.str)
         if (this.opt.spinner) this.opt.spinner.stop(true)
         return callback(e)
       }
       //success
-      this.opt.log.group('Finished bridge').log(this.opt.timer.string)
+      this.opt.log.group('Finished bridge').log(this.opt.timer.str)
       this.opt.log.log(`Completed ${this.opt.source} ${this.opt.table} to ${this.opt.destination}.`)
       this.opt.log.log(JSON.stringify(this.response.strip(), null, 2))
       if(this.opt.spinner) this.opt.spinner.stop(true)
