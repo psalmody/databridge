@@ -137,10 +137,10 @@ module.exports = (opt, columns, moduleCallback) => {
       load data
       infile '${dataFile.name}'
       BADFILE '${outputFile}-BAD.log'
+      ${append}
       into table ${table}
       fields terminated by "\t"
       TRAILING NULLCOLS
-      ${append}
       (${cs.join(', ')})
       `
 
